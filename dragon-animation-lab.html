@@ -232,6 +232,7 @@ const MODEL_SOURCES = [
   }
 ];
 const ORIGINAL_POSE_VALUE = '__original_pose__';
+const DERIVED_FLIGHT_CLIP = 'Dragon_Ancient_Breath_FlightLoop';
 const queryParams = new URLSearchParams(window.location.search);
 const viewport = document.getElementById('viewport');
 const modelSelect = document.getElementById('model-select');
@@ -354,6 +355,7 @@ function restoreOriginalPose() {
 
 function selectDefaultClip() {
   return getRequestedClip() ||
+    clips.find(clip => isNamedClip(clip, DERIVED_FLIGHT_CLIP)) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle_FlyTransition')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Patrol_Idle')) ||
@@ -364,6 +366,21 @@ function selectDefaultClip() {
 
 function isNamedClip(clip, name) {
   return clip.name === name || clip.name.includes(`|${name}|`);
+}
+
+function buildPlayableClips(rawClips) {
+  const result = rawClips.slice();
+  const breath = rawClips.find(clip => /^Dragon_Ancient_Attack_Breath$/i.test(clip.name)) ||
+    rawClips.find(clip => /attack_breath/i.test(clip.name));
+
+  if (breath && THREE.AnimationUtils && typeof THREE.AnimationUtils.subclip === 'function') {
+    const flightLoop = THREE.AnimationUtils.subclip(breath, DERIVED_FLIGHT_CLIP, 44, 150, 30);
+    if (flightLoop && flightLoop.tracks && flightLoop.tracks.length) {
+      result.unshift(flightLoop);
+    }
+  }
+
+  return result;
 }
 
 function getQueryValue(...names) {
@@ -474,7 +491,7 @@ async function loadModel(source) {
   fitModelInSocket(model);
   captureOriginalPose(model);
   modelSocket.add(model);
-  clips = asset.animations || model.animations || [];
+  clips = buildPlayableClips(asset.animations || model.animations || []);
 
   const originalOption = document.createElement('option');
   originalOption.value = ORIGINAL_POSE_VALUE;

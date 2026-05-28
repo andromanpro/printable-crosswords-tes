@@ -47,6 +47,8 @@ const MODEL_SOURCES = [
   { url: 'assets/models/dragon/scene.gltf', label: 'Dragon glTF' }
 ];
 
+const DERIVED_FLIGHT_CLIP = 'Dragon_Ancient_Breath_FlightLoop';
+const INTRO_MIN_MS = 4200;
 const canAnimate = !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const gltfLoader = new GLTFLoader();
 const fbxLoader = new FBXLoader();
@@ -90,6 +92,8 @@ let fallbackParts = {};
 let targetTimer = 4.2;
 let fireCooldown = 5.5;
 let fireTime = 0;
+let loadingStartedAt = 0;
+let loadingIntroTimer = 0;
 
 function setEnabled(next) {
   enabled = Boolean(next && stage && canAnimate);
@@ -99,6 +103,8 @@ function setEnabled(next) {
   if (!enabled) {
     stop();
     stage.classList.remove('is-breathing');
+    stage.classList.remove('is-loading');
+    document.body.classList.remove('dragon-cinematic-loading');
     return;
   }
 
@@ -149,8 +155,8 @@ function init() {
 
   createBackdropParticles();
   createFireSystem();
-  createFallbackDragon();
-  loadDragonModel();
+  beginLoadingIntro();
+  void loadDragonModel();
   onResize();
 
   window.addEventListener('resize', onResize, { passive: true });
@@ -397,11 +403,15 @@ async function loadDragonModel() {
         ? await fbxLoader.loadAsync(source.url)
         : await gltfLoader.loadAsync(source.url);
       installModel(asset, source);
+      finishLoadingIntro();
       return;
     } catch (error) {
       console.warn('[dragon-cinematic] Model failed:', source.url, error);
     }
   }
+
+  createFallbackDragon();
+  failLoadingIntro();
 }
 
 async function modelUrlExists(url) {
@@ -466,12 +476,13 @@ function installModel(asset, source) {
   model.rotation.y = typeof source.rotationY === 'number' ? source.rotationY : Math.PI / 2;
   modelSocket.add(model);
 
-  const clips = asset.animations || model.animations || [];
+  const clips = buildPlayableClips(asset.animations || model.animations || []);
   if (clips.length) {
     mixer = new THREE.AnimationMixer(model);
     clipNames = clips.map(clip => clip.name);
     const requestedClip = getRequestedClip(clips);
     const idleClip = requestedClip || pickClip(clips, [
+      new RegExp(`^${DERIVED_FLIGHT_CLIP}$`, 'i'),
       /^Dragon_Ancient_Idle_FlyTransition$/i,
       /^Dragon_Ancient_Patrol_Idle$/i,
       /^Dragon_Ancient_Idle$/i,
@@ -508,6 +519,23 @@ function installModel(asset, source) {
   stage.dataset.animations = String(clips.length);
   stage.dataset.idleClip = idleAction ? idleAction.getClip().name : '';
   stage.dataset.breathClip = breathAction ? breathAction.getClip().name : '';
+}
+
+function buildPlayableClips(clips) {
+  const result = clips.slice();
+  const breath = pickClip(clips, [
+    /^Dragon_Ancient_Attack_Breath$/i,
+    /attack_breath/i
+  ]);
+
+  if (breath && THREE.AnimationUtils && typeof THREE.AnimationUtils.subclip === 'function') {
+    const flightLoop = THREE.AnimationUtils.subclip(breath, DERIVED_FLIGHT_CLIP, 44, 150, 30);
+    if (flightLoop && flightLoop.tracks && flightLoop.tracks.length) {
+      result.unshift(flightLoop);
+    }
+  }
+
+  return result;
 }
 
 function pickClip(clips, patterns) {
@@ -836,21 +864,47 @@ function updateFire(dt) {
 
 function getMouthWorldPosition() {
   tmpVec.copy(mouthLocal);
-  return dragonGroup.localToWorld(tmpVec.clone());
+  return modelSocket ? modelSocket.localToWorld(tmpVec.clone()) : dragonGroup.localToWorld(tmpVec.clone());
 }
 
 function getDragonForward() {
-  return fireForwardLocal.clone().applyQuaternion(dragonGroup.quaternion).normalize();
+  const mouth = getMouthWorldPosition();
+  tmpVec.copy(mouthLocal).add(fireForwardLocal);
+  const ahead = modelSocket ? modelSocket.localToWorld(tmpVec.clone()) : dragonGroup.localToWorld(tmpVec.clone());
+  return ahead.sub(mouth).normalize();
 }
 
-function getFireDirection(mouth) {
-  if (camera) {
-    const targetWorld = screenToWorld(window.innerWidth * 0.52, window.innerHeight * 0.58, mouth.z);
-    const aimed = targetWorld.sub(mouth);
-    if (aimed.lengthSq() > 0.0001) return aimed.normalize();
-  }
-
+function getFireDirection() {
   return getDragonForward();
+}
+
+function beginLoadingIntro() {
+  loadingStartedAt = performance.now();
+  window.clearTimeout(loadingIntroTimer);
+  document.body.classList.remove('dragon-cinematic-ready', 'dragon-cinematic-failed');
+  document.body.classList.add('dragon-cinematic-loading');
+  stage.classList.add('is-loading');
+  stage.dataset.loadState = 'loading';
+}
+
+function finishLoadingIntro() {
+  const elapsed = performance.now() - loadingStartedAt;
+  const delay = Math.max(0, INTRO_MIN_MS - elapsed);
+  window.clearTimeout(loadingIntroTimer);
+  loadingIntroTimer = window.setTimeout(() => {
+    document.body.classList.remove('dragon-cinematic-loading');
+    document.body.classList.add('dragon-cinematic-ready');
+    stage.classList.remove('is-loading');
+    stage.dataset.loadState = 'ready';
+  }, delay);
+}
+
+function failLoadingIntro() {
+  window.clearTimeout(loadingIntroTimer);
+  document.body.classList.remove('dragon-cinematic-loading');
+  document.body.classList.add('dragon-cinematic-failed');
+  stage.classList.remove('is-loading');
+  stage.dataset.loadState = 'fallback';
 }
 
 function onPointerMove(event) {

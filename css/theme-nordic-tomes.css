@@ -1231,3 +1231,248 @@ body.theme-skyrim .scroll-paper:empty::before {
   letter-spacing: 0.04em;
   opacity: 0.7;
 }
+
+/* Cinematic Skyrim backdrop and intro overlay */
+body.theme-skyrim {
+  background-color: #05070a;
+  background-image:
+    radial-gradient(ellipse 80% 42% at 50% 0%, rgba(137, 173, 188, 0.15), transparent 64%),
+    linear-gradient(180deg, rgba(2, 4, 7, 0.36) 0%, rgba(3, 5, 8, 0.62) 48%, rgba(2, 2, 2, 0.9) 100%),
+    url("../assets/images/nordic-fortress-bg.png");
+  background-size: 100% 100%, 100% 100%, cover;
+  background-position: center, center, center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body.theme-skyrim::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 48%, transparent 0%, rgba(0,0,0,0.28) 62%, rgba(0,0,0,0.62) 100%),
+    linear-gradient(180deg, rgba(255,255,255,0.06), transparent 18%, transparent 78%, rgba(0,0,0,0.34));
+}
+body.theme-skyrim .controls,
+body.theme-skyrim main {
+  position: relative;
+  z-index: 1;
+}
+
+body.theme-skyrim .dragon-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 680ms ease, visibility 680ms ease;
+  background:
+    radial-gradient(ellipse 52% 34% at 58% 34%, rgba(208, 226, 230, 0.12), transparent 64%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(1, 2, 4, 0.58) 48%, rgba(0, 0, 0, 0.86)),
+    url("../assets/images/nordic-fortress-bg.png") center top / cover no-repeat;
+}
+body.theme-skyrim .dragon-loading-screen::before,
+body.theme-skyrim .dragon-loading-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+body.theme-skyrim .dragon-loading-screen::before {
+  background:
+    linear-gradient(110deg, transparent 0%, rgba(210, 236, 255, 0.12) 45%, transparent 58%),
+    radial-gradient(ellipse 38% 16% at 50% 104%, rgba(0,0,0,0.72), transparent 70%);
+  animation: dragon-loader-aurora 5.6s ease-in-out infinite alternate;
+}
+body.theme-skyrim .dragon-loading-screen::after {
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.72) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(235,245,255,0.48) 0 1px, transparent 1.5px);
+  background-size: 120px 120px, 180px 180px;
+  animation: dragon-loader-snow 8s linear infinite;
+  opacity: 0.38;
+}
+body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading .dragon-loading-screen {
+  opacity: 1;
+  visibility: visible;
+}
+body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading .dragon-cinematic-stage {
+  z-index: 9;
+  opacity: 1;
+}
+body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading .controls,
+body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading main {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+body.theme-skyrim .dragon-loader-copy {
+  position: absolute;
+  left: clamp(28px, 7vw, 110px);
+  bottom: clamp(44px, 10vh, 110px);
+  width: min(520px, calc(100vw - 56px));
+  z-index: 2;
+  color: #f2e0b6;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.82), 0 0 26px rgba(133, 175, 190, 0.26);
+}
+body.theme-skyrim .dragon-loader-kicker {
+  font-family: 'Constantia', 'Cambria', serif;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #c7a86e;
+  margin-bottom: 12px;
+}
+body.theme-skyrim .dragon-loader-title {
+  font-family: 'Trajan Pro', 'Constantia', 'Cambria', 'Georgia', serif;
+  font-size: 64px;
+  line-height: 0.92;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+body.theme-skyrim .dragon-loader-bar {
+  width: min(360px, 68vw);
+  height: 3px;
+  margin-top: 26px;
+  background: rgba(211, 184, 124, 0.22);
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(210, 181, 105, 0.22);
+}
+body.theme-skyrim .dragon-loader-bar span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #efd894, transparent);
+  animation: dragon-loader-bar 1.35s ease-in-out infinite;
+}
+
+body.theme-skyrim .scroll-paper,
+body.theme-skyrim .clues-container > div {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(112, 66, 22, 0.16) 0 2px, transparent 3px),
+    radial-gradient(circle at 84% 76%, rgba(92, 48, 16, 0.13) 0 2px, transparent 3px),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 241, 190, 0.28), transparent 42%),
+    repeating-linear-gradient(104deg, transparent 0 8px, rgba(95, 60, 26, 0.045) 8px 9px),
+    linear-gradient(180deg, #f0dbad 0%, #d7b982 48%, #b68e58 100%);
+  color: var(--tome-ink);
+  border: 1px solid rgba(86, 55, 22, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 244, 203, 0.26),
+    inset 0 0 34px rgba(96, 55, 18, 0.32),
+    0 16px 38px rgba(0,0,0,0.5);
+}
+body.theme-skyrim .scroll-paper {
+  padding: 20px;
+}
+body.theme-skyrim .clues-container {
+  max-width: 1040px;
+  margin: 10px auto 0;
+  gap: 32px;
+  align-items: start;
+}
+body.theme-skyrim .clues-container > div {
+  position: relative;
+  padding: 42px 30px 44px;
+  min-height: 260px;
+}
+body.theme-skyrim .clues-container > div::before,
+body.theme-skyrim .clues-container > div::after {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: 13px;
+  background:
+    radial-gradient(ellipse 14px 17px at 0% 50%, #2a1d10 0 65%, #1a1208 82%, transparent 100%),
+    radial-gradient(ellipse 14px 17px at 100% 50%, #2a1d10 0 65%, #1a1208 82%, transparent 100%),
+    repeating-linear-gradient(115deg, transparent 0 4px, rgba(70,43,18,0.12) 4px 5px),
+    linear-gradient(180deg, #6e4d28 0%, #b8956c 20%, #e0c293 42%, #b18856 74%, #3a2510 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,235,180,0.32),
+    inset 0 -2px 4px rgba(0,0,0,0.55),
+    0 3px 7px rgba(0,0,0,0.62);
+}
+body.theme-skyrim .clues-container > div::before { top: 0; }
+body.theme-skyrim .clues-container > div::after { bottom: 0; }
+body.theme-skyrim .clues-container h3,
+body.theme-skyrim .clues-container li,
+body.theme-skyrim .clues-container li b {
+  color: var(--tome-ink);
+  text-shadow: 0 1px 0 rgba(255, 239, 186, 0.24);
+}
+body.theme-skyrim .clues-container h3 {
+  color: #4a2d0e;
+}
+body.theme-skyrim .clues-container h3::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(83,52,20,0.45) 18%, rgba(60,35,12,0.78) 50%, rgba(83,52,20,0.45) 82%, transparent 100%);
+}
+body.theme-skyrim .clues-container li b {
+  color: #6c4115;
+}
+body.theme-skyrim .wax-seal {
+  width: 74px;
+  height: 74px;
+  top: -22px;
+  right: -20px;
+  transform: rotate(10deg);
+  border-radius: 48% 54% 47% 56%;
+  clip-path: polygon(49% 0%, 62% 7%, 78% 4%, 89% 15%, 96% 30%, 100% 48%, 93% 63%, 95% 80%, 80% 91%, 63% 96%, 50% 100%, 36% 94%, 20% 96%, 8% 82%, 2% 65%, 0% 48%, 6% 32%, 4% 17%, 19% 7%, 36% 5%);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='%23150503'><path d='M50 13 C43 19 40 25 42 31 C35 28 27 28 18 34 C28 34 37 38 43 45 C35 45 27 49 20 58 C32 54 42 55 48 62 C47 70 42 78 32 86 C46 83 54 76 58 66 C66 70 72 77 76 88 C80 73 76 62 66 55 C73 52 82 52 91 57 C84 47 75 42 64 42 C70 36 78 33 88 33 C78 26 68 26 58 31 C61 24 58 18 50 13 Z'/><path d='M48 34 C47 30 49 27 52 24 C54 28 55 31 53 35 L58 38 L52 41 L47 39 L42 41 L45 36 Z' fill='%23300a05'/><path d='M39 45 C31 40 23 38 13 40 L10 37 C23 32 34 35 43 42 Z'/><path d='M61 45 C70 40 79 38 90 40 L93 37 C80 32 67 35 57 42 Z'/></g><g fill='none' stroke='%23610f08' stroke-width='2' opacity='.8'><circle cx='50' cy='50' r='37'/><circle cx='50' cy='50' r='31'/></g></svg>") center / 74% 74% no-repeat,
+    radial-gradient(circle at 34% 24%, rgba(255, 155, 106, 0.7), transparent 18%),
+    radial-gradient(circle at 55% 58%, #961e16 0%, #5f100c 58%, #2b0503 100%);
+  filter:
+    drop-shadow(0 5px 8px rgba(0,0,0,0.78))
+    drop-shadow(0 0 14px rgba(174, 31, 18, 0.3));
+}
+body.theme-skyrim .wax-seal svg {
+  display: none;
+}
+body.theme-skyrim .wax-seal::before,
+body.theme-skyrim .wax-seal::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+body.theme-skyrim .wax-seal::before {
+  border: 1px solid rgba(20, 2, 1, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255,190,130,0.18),
+    inset 0 -4px 8px rgba(0,0,0,0.34);
+}
+body.theme-skyrim .wax-seal::after {
+  inset: 8px 16px auto 15px;
+  height: 18px;
+  background: radial-gradient(ellipse at center, rgba(255,205,165,0.38), transparent 72%);
+  transform: rotate(-16deg);
+}
+
+@keyframes dragon-loader-aurora {
+  0% { opacity: 0.42; transform: translateX(-3%) skewX(-4deg); }
+  100% { opacity: 0.72; transform: translateX(4%) skewX(4deg); }
+}
+@keyframes dragon-loader-snow {
+  0% { background-position: 0 -120px, 0 -180px; }
+  100% { background-position: 80px 120px, -120px 180px; }
+}
+@keyframes dragon-loader-bar {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(260%); }
+}
+@media (max-width: 720px) {
+  body.theme-skyrim .dragon-loader-title { font-size: 42px; }
+  body.theme-skyrim .dragon-loader-kicker { font-size: 12px; }
+}
+@media print {
+  body.theme-skyrim .dragon-loading-screen { display: none !important; }
+}

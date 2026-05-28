@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <title>Кроссворды по The Elder Scrolls</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/ui.css?v=58">
-  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=58">
-  <link rel="stylesheet" href="css/print.css?v=58">
+  <link rel="stylesheet" href="css/ui.css?v=59">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=59">
+  <link rel="stylesheet" href="css/print.css?v=59">
 </head>
 <body>
 
@@ -23,6 +23,13 @@
 </div>
 
 <div id="dragon-cinematic-stage" class="dragon-cinematic-stage" aria-hidden="true"></div>
+<div id="dragon-loading-screen" class="dragon-loading-screen" aria-hidden="true">
+  <div class="dragon-loader-copy">
+    <div class="dragon-loader-kicker">Загрузка древнего дракона</div>
+    <div class="dragon-loader-title">Север пробуждается</div>
+    <div class="dragon-loader-bar"><span></span></div>
+  </div>
+</div>
 
 <!-- Скелетный дракон-курсор — собственный SVG (clean-room), боковой профиль с одной парой больших крыльев -->
 <svg class="skyrim-dragon-skel" viewBox="-160 -160 320 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -661,21 +668,21 @@
   Режим 3D-сцены использует ES-модуль Three.js; для GLB-модели нужен локальный HTTP-сервер.
 -->
 <script>window.CW = window.CW || {}; CW.BASE_WORDS_RAW = [];</script>
-<script src="data/pack-skyrim-core.js?v=58"></script>
-<script src="data/pack-tes-deep-lore.js?v=58"></script>
-<script src="js/data-loader.js?v=58"></script>
-<script src="js/editor.js?v=58"></script>
-<script src="js/rng.js?v=58"></script>
-<script src="js/history.js?v=58"></script>
-<script src="js/puzzles.js?v=58"></script>
-<script src="js/grid.js?v=58"></script>
-<script src="js/generator-classic.js?v=58"></script>
-<script src="js/renderer.js?v=58"></script>
-<script src="js/app.js?v=58"></script>
-<script src="js/dragon-controller.js?v=58"></script>
-<script src="js/skyrim-decor.js?v=58"></script>
-<script src="js/dragon-wander.js?v=58"></script>
-<script src="js/skeleton-dragon.js?v=58"></script>
+<script src="data/pack-skyrim-core.js?v=59"></script>
+<script src="data/pack-tes-deep-lore.js?v=59"></script>
+<script src="js/data-loader.js?v=59"></script>
+<script src="js/editor.js?v=59"></script>
+<script src="js/rng.js?v=59"></script>
+<script src="js/history.js?v=59"></script>
+<script src="js/puzzles.js?v=59"></script>
+<script src="js/grid.js?v=59"></script>
+<script src="js/generator-classic.js?v=59"></script>
+<script src="js/renderer.js?v=59"></script>
+<script src="js/app.js?v=59"></script>
+<script src="js/dragon-controller.js?v=59"></script>
+<script src="js/skyrim-decor.js?v=59"></script>
+<script src="js/dragon-wander.js?v=59"></script>
+<script src="js/skeleton-dragon.js?v=59"></script>
 <script type="importmap">
 {
   "imports": {
@@ -683,6 +690,6 @@
   }
 }
 </script>
-<script type="module" src="js/dragon-cinematic.js?v=58"></script>
+<script type="module" src="js/dragon-cinematic.js?v=59"></script>
 </body>
 </html>
