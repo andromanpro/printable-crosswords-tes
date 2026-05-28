@@ -4,11 +4,34 @@
   <meta charset="UTF-8">
   <title>Кроссворды по The Elder Scrolls</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/ui.css?v=59">
-  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=59">
-  <link rel="stylesheet" href="css/print.css?v=59">
+  <style>
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #05070a;
+      color: #f2e0b6;
+    }
+  </style>
+  <link rel="stylesheet" href="css/ui.css?v=61">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=61">
+  <link rel="stylesheet" href="css/print.css?v=61">
 </head>
-<body>
+<body class="font-medium theme-skyrim">
+<script>
+  (function () {
+    const valid = ['fly', 'cursor', 'cinematic', 'none'];
+    let saved = null;
+    let requested = null;
+    try { saved = localStorage.getItem('cw_dragon_mode_v1'); } catch (e) { /* ignore */ }
+    try { requested = new URLSearchParams(location.search).get('dragon'); } catch (e) { /* ignore */ }
+    const mode = valid.includes(requested) ? requested : (valid.includes(saved) ? saved : 'fly');
+    document.body.classList.add('dragon-mode-' + mode);
+    if (mode === 'cinematic') {
+      document.body.classList.add('dragon-cinematic-loading');
+    }
+  })();
+</script>
 
 <!-- Skyrim ambient: снежные хлопья (24 шт) + дракон-силуэт пролетающий через экран -->
 <div class="snow-layer" aria-hidden="true">
@@ -24,6 +47,10 @@
 
 <div id="dragon-cinematic-stage" class="dragon-cinematic-stage" aria-hidden="true"></div>
 <div id="dragon-loading-screen" class="dragon-loading-screen" aria-hidden="true">
+  <video class="dragon-intro-video" autoplay muted loop playsinline preload="auto" poster="assets/images/dragon-intro-videoframe.png">
+    <source src="assets/videos/dragon-intro-bg.webm?v=61" type="video/webm">
+    <source src="assets/videos/dragon-intro-bg.mp4?v=61" type="video/mp4">
+  </video>
   <div class="dragon-loader-copy">
     <div class="dragon-loader-kicker">Загрузка древнего дракона</div>
     <div class="dragon-loader-title">Север пробуждается</div>
@@ -668,21 +695,21 @@
   Режим 3D-сцены использует ES-модуль Three.js; для GLB-модели нужен локальный HTTP-сервер.
 -->
 <script>window.CW = window.CW || {}; CW.BASE_WORDS_RAW = [];</script>
-<script src="data/pack-skyrim-core.js?v=59"></script>
-<script src="data/pack-tes-deep-lore.js?v=59"></script>
-<script src="js/data-loader.js?v=59"></script>
-<script src="js/editor.js?v=59"></script>
-<script src="js/rng.js?v=59"></script>
-<script src="js/history.js?v=59"></script>
-<script src="js/puzzles.js?v=59"></script>
-<script src="js/grid.js?v=59"></script>
-<script src="js/generator-classic.js?v=59"></script>
-<script src="js/renderer.js?v=59"></script>
-<script src="js/app.js?v=59"></script>
-<script src="js/dragon-controller.js?v=59"></script>
-<script src="js/skyrim-decor.js?v=59"></script>
-<script src="js/dragon-wander.js?v=59"></script>
-<script src="js/skeleton-dragon.js?v=59"></script>
+<script src="data/pack-skyrim-core.js?v=61"></script>
+<script src="data/pack-tes-deep-lore.js?v=61"></script>
+<script src="js/data-loader.js?v=61"></script>
+<script src="js/editor.js?v=61"></script>
+<script src="js/rng.js?v=61"></script>
+<script src="js/history.js?v=61"></script>
+<script src="js/puzzles.js?v=61"></script>
+<script src="js/grid.js?v=61"></script>
+<script src="js/generator-classic.js?v=61"></script>
+<script src="js/renderer.js?v=61"></script>
+<script src="js/app.js?v=61"></script>
+<script src="js/dragon-controller.js?v=61"></script>
+<script src="js/skyrim-decor.js?v=61"></script>
+<script src="js/dragon-wander.js?v=61"></script>
+<script src="js/skeleton-dragon.js?v=61"></script>
 <script type="importmap">
 {
   "imports": {
@@ -690,6 +717,6 @@
   }
 }
 </script>
-<script type="module" src="js/dragon-cinematic.js?v=59"></script>
+<script type="module" src="js/dragon-cinematic.js?v=61"></script>
 </body>
 </html>

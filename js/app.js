@@ -7,6 +7,7 @@
   let currentPuzzleId = null;   // id записи в истории, если показываем из истории
   let currentPuzzleFromHistory = false;
   let serial = 1;
+  let initialAutoGenerateTimer = null;
 
   function init() {
     if (!window.CW || !CW.WORDS) {
@@ -96,22 +97,18 @@
     renderPacksList();
     renderHistoryList();
     updateStatus();
+    scheduleInitialAutoGenerate();
   }
 
   // ---- Сворачиваемая панель настроек (одна общая кнопка) ----
   // Клик по «Настройки ▶» toggle'ит весь блок .ctrl-grid.
-  // По умолчанию свёрнуто. Состояние в localStorage.
+  // По умолчанию всегда свёрнуто; раскрытие живёт только в текущей сессии страницы.
   function initCollapsibleGroups() {
-    const KEY = 'cw_settings_expanded_v1';
     const btn = document.getElementById('btn-toggle-settings');
     const grid = document.getElementById('ctrl-grid');
     if (!btn || !grid) return;
 
     let expanded = false;
-    try {
-      const saved = localStorage.getItem(KEY);
-      expanded = saved === '1';
-    } catch (e) {}
 
     const apply = () => {
       grid.classList.toggle('collapsed', !expanded);
@@ -122,8 +119,15 @@
     btn.addEventListener('click', () => {
       expanded = !expanded;
       apply();
-      try { localStorage.setItem(KEY, expanded ? '1' : '0'); } catch (e) {}
     });
+  }
+
+  function scheduleInitialAutoGenerate() {
+    window.clearTimeout(initialAutoGenerateTimer);
+    initialAutoGenerateTimer = window.setTimeout(() => {
+      if (currentGrid || document.body.classList.contains('mode-editor')) return;
+      onGenerate();
+    }, 6400);
   }
 
   function applyThemeUi() {

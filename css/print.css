@@ -24,6 +24,12 @@
     color: black !important;
     font: 11pt "Times New Roman", serif !important;
   }
+  body.theme-skyrim::before,
+  body.theme-skyrim::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+  }
 
   .controls,
   .ctrl-buttons,
@@ -46,9 +52,21 @@
 
   .puzzle-title {
     text-align: center;
+    position: relative;
     margin: 0 0 6mm !important;
     font: 700 13pt "Times New Roman", serif !important;
     page-break-after: avoid;
+  }
+  body.theme-skyrim .puzzle-title::after,
+  .puzzle-title::after {
+    content: "" !important;
+    display: block !important;
+    width: 24mm;
+    height: 24mm;
+    margin: 3mm auto 0;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g fill='black'><rect x='26' y='18' width='14' height='45' rx='7' transform='rotate(-17 33 40)'/><rect x='44' y='9' width='15' height='55' rx='7.5' transform='rotate(-5 51 37)'/><rect x='63' y='10' width='15' height='53' rx='7.5' transform='rotate(6 70 37)'/><rect x='82' y='22' width='13' height='43' rx='6.5' transform='rotate(20 88 43)'/><path d='M34 58c10-7 28-9 42-5 14 4 23 14 26 30 3 18-9 30-30 32-17 2-31-6-38-22l-8-18c-7 6-16 9-26 7 5-11 16-20 34-24Z'/><path d='M28 68c-10 0-19 6-25 17 10 3 23 0 35-10Z'/></g></svg>") center / contain no-repeat !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .grid-container {
@@ -56,6 +74,27 @@
     page-break-inside: avoid;
     display: flex;
     justify-content: center;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  body.theme-skyrim .grid-container,
+  body.theme-skyrim .scroll-paper {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .scroll-paper {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .scroll-rod-top,
+  .scroll-rod-bottom,
+  .scroll-wand,
+  .wax-seal {
+    display: none !important;
   }
 
   .grid {

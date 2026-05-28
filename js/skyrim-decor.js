@@ -115,7 +115,6 @@
     const seal = document.createElement('div');
     seal.className = 'wax-seal';
     seal.setAttribute('aria-hidden', 'true');
-    seal.innerHTML = WAX_SEAL_SVG;
     gc.appendChild(rodTop);
     gc.appendChild(inner);
     gc.appendChild(rodBot);

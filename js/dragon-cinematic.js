@@ -53,13 +53,10 @@ const canAnimate = !window.matchMedia || !window.matchMedia('(prefers-reduced-mo
 const gltfLoader = new GLTFLoader();
 const fbxLoader = new FBXLoader();
 const pointer = new THREE.Vector2(0, 0);
-const target = new THREE.Vector3(1.15, 0.58, -0.35);
-const position = new THREE.Vector3(-1.15, 0.52, -0.25);
-const lastPosition = new THREE.Vector3().copy(position);
-const forwardAxis = new THREE.Vector3(1, 0, 0);
+const target = new THREE.Vector3(1.15, -0.82, -0.35);
+const position = new THREE.Vector3(1.15, -0.82, -0.35);
 const mouthLocal = new THREE.Vector3(1.82, 0.05, 0);
 const fireForwardLocal = new THREE.Vector3(1, 0, 0);
-const tmpForward = new THREE.Vector3();
 const tmpQuat = new THREE.Quaternion();
 const tmpVec = new THREE.Vector3();
 
@@ -89,7 +86,6 @@ let flameTexture = null;
 let smokeTexture = null;
 let fireParticles = [];
 let fallbackParts = {};
-let targetTimer = 4.2;
 let fireCooldown = 5.5;
 let fireTime = 0;
 let loadingStartedAt = 0;
@@ -668,26 +664,17 @@ function updateCamera() {
 }
 
 function updateFlight(dt, elapsed) {
-  targetTimer -= dt;
-  if (targetTimer <= 0 || position.distanceTo(target) < 0.4) {
-    chooseTarget();
-  }
+  target.copy(getBottomAnchor(elapsed));
+  position.lerp(target, 1 - Math.pow(0.96, dt * 60));
 
-  lastPosition.copy(position);
-  position.lerp(target, 1 - Math.pow(0.985, dt * 60));
-
-  const bob = Math.sin(elapsed * 2.4) * 0.11 + Math.sin(elapsed * 0.8) * 0.05;
+  const bob = Math.sin(elapsed * 1.6) * 0.055 + Math.sin(elapsed * 0.72) * 0.025;
   dragonGroup.position.copy(position);
   dragonGroup.position.y += bob;
 
-  tmpForward.copy(position).sub(lastPosition);
-  if (tmpForward.lengthSq() > 0.00002) {
-    tmpForward.normalize();
-    tmpQuat.setFromUnitVectors(forwardAxis, tmpForward);
-    dragonGroup.quaternion.slerp(tmpQuat, 0.055);
-  }
+  tmpQuat.identity();
+  dragonGroup.quaternion.slerp(tmpQuat, 0.14);
 
-  dragonGroup.scale.setScalar(1 + Math.sin(elapsed * 1.15) * 0.018);
+  dragonGroup.scale.setScalar(0.92 + Math.sin(elapsed * 1.15) * 0.012);
 
   if (fallbackParts.leftWing && fallbackParts.rightWing) {
     const flap = Math.sin(elapsed * 8.2) * 0.52;
@@ -703,35 +690,14 @@ function updateFlight(dt, elapsed) {
   }
 }
 
-function chooseTarget() {
-  const anchors = collectAnchors();
-  const pick = anchors[Math.floor(Math.random() * anchors.length)] || new THREE.Vector3(0, 1, 0);
-  target.copy(pick);
-  target.x += THREE.MathUtils.randFloatSpread(0.9);
-  target.y += THREE.MathUtils.randFloatSpread(0.5);
-  target.z += THREE.MathUtils.randFloat(-0.7, 0.55);
-  targetTimer = THREE.MathUtils.randFloat(3.2, 6.4);
-}
-
-function collectAnchors() {
-  const anchors = [
-    screenToWorld(window.innerWidth * 0.18, window.innerHeight * 0.52, -0.4),
-    screenToWorld(window.innerWidth * 0.82, window.innerHeight * 0.48, -0.8),
-    screenToWorld(window.innerWidth * 0.78, window.innerHeight * 0.78, -0.2),
-    screenToWorld(window.innerWidth * 0.22, window.innerHeight * 0.72, 0.2)
-  ];
-
-  ['#grid-container', '#clues-container'].forEach((selector, index) => {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.width < 8 || rect.height < 8) return;
-    const x = rect.left + rect.width * (index % 2 ? 0.18 : 0.86);
-    const y = rect.top + rect.height * (index < 2 ? 0.38 : 0.55);
-    anchors.push(screenToWorld(x, y, index % 2 ? -0.15 : -0.65));
-  });
-
-  return anchors;
+function getBottomAnchor(elapsed) {
+  const anchorX = window.innerWidth > 1500 ? 0.72 : 0.64;
+  const anchorY = window.innerWidth > 1500 ? 0.78 : 0.82;
+  const base = screenToWorld(window.innerWidth * anchorX, window.innerHeight * anchorY, -0.45);
+  base.x += Math.sin(elapsed * 0.34) * 0.18;
+  base.y += Math.sin(elapsed * 0.48 + 1.2) * 0.04;
+  base.z += Math.sin(elapsed * 0.27) * 0.12;
+  return base;
 }
 
 function screenToWorld(px, py, zPlane) {

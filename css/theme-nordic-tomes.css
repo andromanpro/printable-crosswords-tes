@@ -1274,7 +1274,19 @@ body.theme-skyrim .dragon-loading-screen {
   background:
     radial-gradient(ellipse 52% 34% at 58% 34%, rgba(208, 226, 230, 0.12), transparent 64%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(1, 2, 4, 0.58) 48%, rgba(0, 0, 0, 0.86)),
-    url("../assets/images/nordic-fortress-bg.png") center top / cover no-repeat;
+    url("../assets/images/dragon-intro-videoframe.png") center bottom / cover no-repeat;
+}
+body.theme-skyrim .dragon-intro-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  opacity: 0.98;
+  background: #05070a;
 }
 body.theme-skyrim .dragon-loading-screen::before,
 body.theme-skyrim .dragon-loading-screen::after {
@@ -1302,8 +1314,8 @@ body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading .dragon-loading
   visibility: visible;
 }
 body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading .dragon-cinematic-stage {
-  z-index: 9;
-  opacity: 1;
+  opacity: 0;
+  visibility: hidden;
 }
 body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading .controls,
 body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading main {
@@ -1319,6 +1331,15 @@ body.theme-skyrim .dragon-loader-copy {
   z-index: 2;
   color: #f2e0b6;
   text-shadow: 0 2px 10px rgba(0,0,0,0.82), 0 0 26px rgba(133, 175, 190, 0.26);
+}
+@media (min-aspect-ratio: 21/9) {
+  body.theme-skyrim .dragon-intro-video {
+    object-position: center top;
+  }
+  body.theme-skyrim .dragon-loader-copy {
+    left: clamp(48px, 5vw, 140px);
+    bottom: clamp(32px, 7vh, 86px);
+  }
 }
 body.theme-skyrim .dragon-loader-kicker {
   font-family: 'Constantia', 'Cambria', serif;
@@ -1418,20 +1439,30 @@ body.theme-skyrim .clues-container li b {
   color: #6c4115;
 }
 body.theme-skyrim .wax-seal {
-  width: 74px;
-  height: 74px;
-  top: -22px;
-  right: -20px;
+  position: absolute;
+  display: block;
+  width: 96px;
+  height: 96px;
+  top: 44px;
+  right: 14px;
+  z-index: 10;
   transform: rotate(10deg);
+  animation: none;
+  opacity: 1;
   border-radius: 48% 54% 47% 56%;
   clip-path: polygon(49% 0%, 62% 7%, 78% 4%, 89% 15%, 96% 30%, 100% 48%, 93% 63%, 95% 80%, 80% 91%, 63% 96%, 50% 100%, 36% 94%, 20% 96%, 8% 82%, 2% 65%, 0% 48%, 6% 32%, 4% 17%, 19% 7%, 36% 5%);
   background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='%23150503'><path d='M50 13 C43 19 40 25 42 31 C35 28 27 28 18 34 C28 34 37 38 43 45 C35 45 27 49 20 58 C32 54 42 55 48 62 C47 70 42 78 32 86 C46 83 54 76 58 66 C66 70 72 77 76 88 C80 73 76 62 66 55 C73 52 82 52 91 57 C84 47 75 42 64 42 C70 36 78 33 88 33 C78 26 68 26 58 31 C61 24 58 18 50 13 Z'/><path d='M48 34 C47 30 49 27 52 24 C54 28 55 31 53 35 L58 38 L52 41 L47 39 L42 41 L45 36 Z' fill='%23300a05'/><path d='M39 45 C31 40 23 38 13 40 L10 37 C23 32 34 35 43 42 Z'/><path d='M61 45 C70 40 79 38 90 40 L93 37 C80 32 67 35 57 42 Z'/></g><g fill='none' stroke='%23610f08' stroke-width='2' opacity='.8'><circle cx='50' cy='50' r='37'/><circle cx='50' cy='50' r='31'/></g></svg>") center / 74% 74% no-repeat,
-    radial-gradient(circle at 34% 24%, rgba(255, 155, 106, 0.7), transparent 18%),
-    radial-gradient(circle at 55% 58%, #961e16 0%, #5f100c 58%, #2b0503 100%);
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g fill='%230f0302'><rect x='26' y='18' width='14' height='45' rx='7' transform='rotate(-17 33 40)'/><rect x='44' y='9' width='15' height='55' rx='7.5' transform='rotate(-5 51 37)'/><rect x='63' y='10' width='15' height='53' rx='7.5' transform='rotate(6 70 37)'/><rect x='82' y='22' width='13' height='43' rx='6.5' transform='rotate(20 88 43)'/><path d='M34 58c10-7 28-9 42-5 14 4 23 14 26 30 3 18-9 30-30 32-17 2-31-6-38-22l-8-18c-7 6-16 9-26 7 5-11 16-20 34-24Z'/><path d='M28 68c-10 0-19 6-25 17 10 3 23 0 35-10Z'/></g></svg>") center / 82% 82% no-repeat,
+    radial-gradient(circle at 32% 24%, rgba(255, 188, 128, 0.82), transparent 18%),
+    radial-gradient(circle at 54% 58%, #d33b29 0%, #a91f16 44%, #6e0d08 72%, #2b0302 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 198, 136, 0.34),
+    inset 0 -8px 12px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(50, 2, 1, 0.55),
+    0 0 20px rgba(203, 44, 28, 0.25);
   filter:
-    drop-shadow(0 5px 8px rgba(0,0,0,0.78))
-    drop-shadow(0 0 14px rgba(174, 31, 18, 0.3));
+    drop-shadow(0 7px 10px rgba(0,0,0,0.8))
+    drop-shadow(0 0 18px rgba(205, 45, 26, 0.42));
 }
 body.theme-skyrim .wax-seal svg {
   display: none;
@@ -1455,6 +1486,15 @@ body.theme-skyrim .wax-seal::after {
   height: 18px;
   background: radial-gradient(ellipse at center, rgba(255,205,165,0.38), transparent 72%);
   transform: rotate(-16deg);
+}
+
+@media (max-width: 720px) {
+  body.theme-skyrim .wax-seal {
+    width: 72px;
+    height: 72px;
+    top: 36px;
+    right: 2px;
+  }
 }
 
 @keyframes dragon-loader-aurora {
