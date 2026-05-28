@@ -424,7 +424,11 @@ async function modelUrlExists(url) {
 function installModel(asset, source) {
   modelSocket.clear();
   modelSocket.position.set(0, 0, 0);
-  modelSocket.rotation.set(0, 0, 0);
+  modelSocket.rotation.set(
+    source.socketRotationX || 0,
+    source.socketRotationY || 0,
+    source.socketRotationZ || 0
+  );
   modelSocket.scale.setScalar(1);
   fallbackParts = {};
   mixer = null;
@@ -478,9 +482,9 @@ function installModel(asset, source) {
     clipNames = clips.map(clip => clip.name);
     const requestedClip = getRequestedClip(clips);
     const idleClip = requestedClip || pickClip(clips, [
-      new RegExp(`^${DERIVED_FLIGHT_CLIP}$`, 'i'),
       /^Dragon_Ancient_Idle_FlyTransition$/i,
       /^Dragon_Ancient_Patrol_Idle$/i,
+      new RegExp(`^${DERIVED_FLIGHT_CLIP}$`, 'i'),
       /^Dragon_Ancient_Idle$/i,
       /^Dragon_Ancient_Dialogue_Relaxed_Idle$/i,
       /patrol_idle/i,
@@ -674,7 +678,7 @@ function updateFlight(dt, elapsed) {
   tmpQuat.identity();
   dragonGroup.quaternion.slerp(tmpQuat, 0.14);
 
-  dragonGroup.scale.setScalar(0.92 + Math.sin(elapsed * 1.15) * 0.012);
+  dragonGroup.scale.setScalar(0.62 + Math.sin(elapsed * 1.15) * 0.008);
 
   if (fallbackParts.leftWing && fallbackParts.rightWing) {
     const flap = Math.sin(elapsed * 8.2) * 0.52;
@@ -691,8 +695,8 @@ function updateFlight(dt, elapsed) {
 }
 
 function getBottomAnchor(elapsed) {
-  const anchorX = window.innerWidth > 1500 ? 0.72 : 0.64;
-  const anchorY = window.innerWidth > 1500 ? 0.78 : 0.82;
+  const anchorX = window.innerWidth > 1500 ? 0.78 : 0.74;
+  const anchorY = window.innerWidth > 1500 ? 0.82 : 0.84;
   const base = screenToWorld(window.innerWidth * anchorX, window.innerHeight * anchorY, -0.45);
   base.x += Math.sin(elapsed * 0.34) * 0.18;
   base.y += Math.sin(elapsed * 0.48 + 1.2) * 0.04;

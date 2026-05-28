@@ -1441,25 +1441,15 @@ body.theme-skyrim .clues-container li b {
 body.theme-skyrim .wax-seal {
   position: absolute;
   display: block;
-  width: 96px;
-  height: 96px;
-  top: 44px;
-  right: 14px;
+  width: 88px;
+  height: 88px;
+  top: 42px;
+  right: -66px;
   z-index: 10;
   transform: rotate(10deg);
   animation: none;
   opacity: 1;
-  border-radius: 48% 54% 47% 56%;
-  clip-path: polygon(49% 0%, 62% 7%, 78% 4%, 89% 15%, 96% 30%, 100% 48%, 93% 63%, 95% 80%, 80% 91%, 63% 96%, 50% 100%, 36% 94%, 20% 96%, 8% 82%, 2% 65%, 0% 48%, 6% 32%, 4% 17%, 19% 7%, 36% 5%);
-  background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g fill='%230f0302'><rect x='26' y='18' width='14' height='45' rx='7' transform='rotate(-17 33 40)'/><rect x='44' y='9' width='15' height='55' rx='7.5' transform='rotate(-5 51 37)'/><rect x='63' y='10' width='15' height='53' rx='7.5' transform='rotate(6 70 37)'/><rect x='82' y='22' width='13' height='43' rx='6.5' transform='rotate(20 88 43)'/><path d='M34 58c10-7 28-9 42-5 14 4 23 14 26 30 3 18-9 30-30 32-17 2-31-6-38-22l-8-18c-7 6-16 9-26 7 5-11 16-20 34-24Z'/><path d='M28 68c-10 0-19 6-25 17 10 3 23 0 35-10Z'/></g></svg>") center / 82% 82% no-repeat,
-    radial-gradient(circle at 32% 24%, rgba(255, 188, 128, 0.82), transparent 18%),
-    radial-gradient(circle at 54% 58%, #d33b29 0%, #a91f16 44%, #6e0d08 72%, #2b0302 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 198, 136, 0.34),
-    inset 0 -8px 12px rgba(0, 0, 0, 0.32),
-    0 0 0 1px rgba(50, 2, 1, 0.55),
-    0 0 20px rgba(203, 44, 28, 0.25);
+  background: url("../assets/images/dark-brotherhood-hand-seal.svg?v=2") center / contain no-repeat;
   filter:
     drop-shadow(0 7px 10px rgba(0,0,0,0.8))
     drop-shadow(0 0 18px rgba(205, 45, 26, 0.42));
@@ -1469,31 +1459,16 @@ body.theme-skyrim .wax-seal svg {
 }
 body.theme-skyrim .wax-seal::before,
 body.theme-skyrim .wax-seal::after {
-  content: "";
-  position: absolute;
-  inset: 9px;
-  border-radius: 50%;
-  pointer-events: none;
-}
-body.theme-skyrim .wax-seal::before {
-  border: 1px solid rgba(20, 2, 1, 0.72);
-  box-shadow:
-    inset 0 1px 0 rgba(255,190,130,0.18),
-    inset 0 -4px 8px rgba(0,0,0,0.34);
-}
-body.theme-skyrim .wax-seal::after {
-  inset: 8px 16px auto 15px;
-  height: 18px;
-  background: radial-gradient(ellipse at center, rgba(255,205,165,0.38), transparent 72%);
-  transform: rotate(-16deg);
+  content: none;
+  display: none;
 }
 
 @media (max-width: 720px) {
   body.theme-skyrim .wax-seal {
-    width: 72px;
-    height: 72px;
-    top: 36px;
-    right: 2px;
+    width: 68px;
+    height: 68px;
+    top: 38px;
+    right: -38px;
   }
 }
 
