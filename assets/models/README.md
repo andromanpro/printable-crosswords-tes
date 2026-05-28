@@ -2,17 +2,18 @@
 
 The cinematic dragon scene looks for local models in this order:
 
-1. `alduin/source/Ps Alduin Dragon.glb`
-2. `tes-blades-ancient-dragon.glb`
-3. `tes-blades-ancient-dragon/scene.gltf`
-4. `tes-blades-shulkunaak.glb`
-5. `tes-blades-shulkunaak/scene.gltf`
-6. `skyrim-dragon.glb`
-7. `skyrim-dragon/scene.gltf`
-8. `alduin.glb`
-9. `alduin/scene.gltf`
-10. `dragon.glb`
-11. `dragon/scene.gltf`
+1. `tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx`
+2. `alduin/source/Ps Alduin Dragon.glb`
+3. `tes-blades-ancient-dragon.glb`
+4. `tes-blades-ancient-dragon/scene.gltf`
+5. `tes-blades-shulkunaak.glb`
+6. `tes-blades-shulkunaak/scene.gltf`
+7. `skyrim-dragon.glb`
+8. `skyrim-dragon/scene.gltf`
+9. `alduin.glb`
+10. `alduin/scene.gltf`
+11. `dragon.glb`
+12. `dragon/scene.gltf`
 
 Recommended animated TES-like base:
 

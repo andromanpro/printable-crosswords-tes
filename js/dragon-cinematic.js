@@ -1,9 +1,17 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/three/GLTFLoader.js';
+import { FBXLoader } from '../vendor/three/FBXLoader.js';
 
 const stage = document.getElementById('dragon-cinematic-stage');
 const MODEL_SOURCES = [
-  { url: 'assets/models/alduin/source/Ps%20Alduin%20Dragon.glb', label: 'Alduin Sketchfab GLB' },
+  {
+    url: 'assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx',
+    label: 'TES Blades Ancient Dragon FBX',
+    type: 'fbx',
+    profile: 'ancient',
+    rotationY: 0
+  },
+  { url: 'assets/models/alduin/source/Ps%20Alduin%20Dragon.glb', label: 'Alduin Sketchfab GLB', type: 'gltf', profile: 'alduin' },
   { url: 'assets/models/tes-blades-ancient-dragon.glb', label: 'TES Blades Ancient Dragon GLB' },
   { url: 'assets/models/tes-blades-ancient-dragon/scene.gltf', label: 'TES Blades Ancient Dragon glTF' },
   { url: 'assets/models/tes-blades-shulkunaak.glb', label: 'TES Blades Shulkunaak GLB' },
@@ -17,12 +25,15 @@ const MODEL_SOURCES = [
 ];
 
 const canAnimate = !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const loader = new GLTFLoader();
+const gltfLoader = new GLTFLoader();
+const fbxLoader = new FBXLoader();
 const pointer = new THREE.Vector2(0, 0);
 const target = new THREE.Vector3(1.45, 1.35, -0.35);
 const position = new THREE.Vector3(-2.7, 0.95, -0.25);
 const lastPosition = new THREE.Vector3().copy(position);
 const forwardAxis = new THREE.Vector3(1, 0, 0);
+const mouthLocal = new THREE.Vector3(1.82, 0.05, 0);
+const fireForwardLocal = new THREE.Vector3(1, 0, 0);
 const tmpForward = new THREE.Vector3();
 const tmpQuat = new THREE.Quaternion();
 const tmpVec = new THREE.Vector3();
@@ -38,13 +49,17 @@ let clock = null;
 let dragonGroup = null;
 let modelSocket = null;
 let mixer = null;
+let idleAction = null;
+let breathAction = null;
+let activeAction = null;
+let breathReturnTimer = 0;
 let fireLight = null;
 let dragonGlow = null;
-let fireOverlay = null;
 let ashPoints = null;
 let ashSeeds = [];
-let firePoints = null;
-let fireMaterial = null;
+let fireGroup = null;
+let flameTexture = null;
+let smokeTexture = null;
 let fireParticles = [];
 let fallbackParts = {};
 let targetTimer = 0;
@@ -84,11 +99,6 @@ function init() {
   renderer.toneMappingExposure = 1.14;
   renderer.domElement.setAttribute('aria-hidden', 'true');
   stage.appendChild(renderer.domElement);
-
-  fireOverlay = document.createElement('div');
-  fireOverlay.className = 'dragon-fire-burst';
-  fireOverlay.setAttribute('aria-hidden', 'true');
-  stage.appendChild(fireOverlay);
 
   scene.add(new THREE.HemisphereLight(0xd6c69c, 0x110706, 1.45));
 
@@ -157,43 +167,96 @@ function createBackdropParticles() {
 }
 
 function createFireSystem() {
-  const count = 120;
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
+  flameTexture = createFlameTexture();
+  smokeTexture = createSmokeTexture();
+  fireGroup = new THREE.Group();
+  fireParticles = [];
 
-  for (let i = 0; i < count; i++) {
-    const p = i * 3;
-    positions[p] = 999;
-    positions[p + 1] = 999;
-    positions[p + 2] = 999;
-    colors[p] = 1;
-    colors[p + 1] = 0.35;
-    colors[p + 2] = 0.05;
+  for (let i = 0; i < 72; i++) {
+    fireParticles.push(createFireSprite('flame'));
+  }
+  for (let i = 0; i < 28; i++) {
+    fireParticles.push(createFireSprite('smoke'));
   }
 
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  scene.add(fireGroup);
+}
 
-  fireMaterial = new THREE.PointsMaterial({
-    size: 0.18,
-    sizeAttenuation: true,
+function createFireSprite(kind) {
+  const isSmoke = kind === 'smoke';
+  const material = new THREE.SpriteMaterial({
+    map: isSmoke ? smokeTexture : flameTexture,
+    color: isSmoke ? 0x5a4a3d : 0xffb13b,
     transparent: true,
     opacity: 0,
-    vertexColors: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
+    blending: isSmoke ? THREE.NormalBlending : THREE.AdditiveBlending,
+    depthWrite: false,
+    depthTest: false,
+    rotation: Math.random() * Math.PI * 2
   });
+  const sprite = new THREE.Sprite(material);
+  sprite.visible = false;
+  fireGroup.add(sprite);
 
-  firePoints = new THREE.Points(geometry, fireMaterial);
-  fireParticles = Array.from({ length: count }, () => ({
+  return {
+    kind,
+    sprite,
     active: false,
     age: 0,
     life: 0,
+    size: 1,
+    spin: THREE.MathUtils.randFloat(-2.2, 2.2),
     pos: new THREE.Vector3(),
     vel: new THREE.Vector3()
-  }));
-  scene.add(firePoints);
+  };
+}
+
+function createFlameTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  const glow = ctx.createRadialGradient(56, 56, 3, 64, 64, 58);
+  glow.addColorStop(0, 'rgba(255,238,170,0.82)');
+  glow.addColorStop(0.18, 'rgba(255,188,58,0.82)');
+  glow.addColorStop(0.44, 'rgba(255,95,18,0.58)');
+  glow.addColorStop(0.72, 'rgba(142,24,10,0.18)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, 128, 128);
+
+  const core = ctx.createLinearGradient(42, 20, 78, 110);
+  core.addColorStop(0, 'rgba(255,236,150,0.72)');
+  core.addColorStop(0.42, 'rgba(255,158,34,0.62)');
+  core.addColorStop(1, 'rgba(255,72,14,0)');
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.moveTo(58, 12);
+  ctx.bezierCurveTo(91, 38, 89, 78, 62, 118);
+  ctx.bezierCurveTo(33, 82, 30, 42, 58, 12);
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function createSmokeTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 96;
+  canvas.height = 96;
+  const ctx = canvas.getContext('2d');
+  const smoke = ctx.createRadialGradient(48, 48, 4, 48, 48, 46);
+  smoke.addColorStop(0, 'rgba(120,104,88,0.38)');
+  smoke.addColorStop(0.46, 'rgba(74,62,52,0.22)');
+  smoke.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = smoke;
+  ctx.fillRect(0, 0, 96, 96);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
 }
 
 function createFallbackDragon() {
@@ -305,8 +368,10 @@ async function loadDragonModel() {
   for (const source of MODEL_SOURCES) {
     if (!await modelUrlExists(source.url)) continue;
     try {
-      const gltf = await loader.loadAsync(source.url);
-      installModel(gltf, source.label);
+      const asset = source.type === 'fbx'
+        ? await fbxLoader.loadAsync(source.url)
+        : await gltfLoader.loadAsync(source.url);
+      installModel(asset, source);
       return;
     } catch (error) {
       console.warn('[dragon-cinematic] Model failed:', source.url, error);
@@ -325,15 +390,20 @@ async function modelUrlExists(url) {
   }
 }
 
-function installModel(gltf, label) {
+function installModel(asset, source) {
   modelSocket.clear();
   modelSocket.position.set(0, 0, 0);
   modelSocket.rotation.set(0, 0, 0);
   modelSocket.scale.setScalar(1);
   fallbackParts = {};
   mixer = null;
+  idleAction = null;
+  breathAction = null;
+  activeAction = null;
+  breathReturnTimer = 0;
+  applyModelProfile(source.profile || 'default');
 
-  const model = gltf.scene;
+  const model = asset.scene || asset;
   model.traverse(obj => {
     if (!obj.isMesh) return;
     obj.frustumCulled = false;
@@ -361,25 +431,74 @@ function installModel(gltf, label) {
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  const scale = 3.45 / Math.max(size.x, size.y, size.z, 1);
+  const scale = (source.type === 'fbx' ? 3.2 : 3.45) / Math.max(size.x, size.y, size.z, 1);
 
   model.scale.setScalar(scale);
   model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
-  model.rotation.y = Math.PI / 2;
+  model.rotation.y = typeof source.rotationY === 'number' ? source.rotationY : Math.PI / 2;
   modelSocket.add(model);
 
-  const clips = gltf.animations || [];
-  const clip = clips.find(c => /fly|hover|flight|soar/i.test(c.name)) ||
-    clips.find(c => /idle|stand/i.test(c.name)) ||
-    clips[0];
-  if (clip) {
+  const clips = asset.animations || model.animations || [];
+  if (clips.length) {
     mixer = new THREE.AnimationMixer(model);
-    mixer.clipAction(clip).reset().setLoop(THREE.LoopRepeat).fadeIn(0.25).play();
+    const idleClip = clips.find(c => /idle_fly|flytransition|patrol_idle/i.test(c.name)) ||
+      clips.find(c => /idle/i.test(c.name)) ||
+      clips[0];
+    const breathClip = clips.find(c => /attack_breath|breath/i.test(c.name)) ||
+      clips.find(c => /casting_loop|attack_power/i.test(c.name));
+
+    idleAction = mixer.clipAction(idleClip);
+    idleAction.reset().setLoop(THREE.LoopRepeat, Infinity).fadeIn(0.25).play();
+    activeAction = idleAction;
+
+    if (breathClip) {
+      breathAction = mixer.clipAction(breathClip);
+      breathAction.setLoop(THREE.LoopOnce, 1);
+      breathAction.clampWhenFinished = true;
+    }
   }
 
   stage.classList.remove('is-fallback');
   stage.classList.add('has-model');
-  stage.dataset.model = label;
+  stage.dataset.model = source.label;
+  stage.dataset.animations = String(clips.length);
+}
+
+function applyModelProfile(profile) {
+  if (profile === 'alduin') {
+    mouthLocal.set(-1.72, -0.03, 0.04);
+    fireForwardLocal.set(-1, -0.04, 0).normalize();
+    return;
+  }
+
+  if (profile === 'ancient') {
+    mouthLocal.set(1.55, 0.12, 0);
+    fireForwardLocal.set(1, -0.03, 0).normalize();
+    return;
+  }
+
+  mouthLocal.set(1.82, 0.05, 0);
+  fireForwardLocal.set(1, 0, 0);
+}
+
+function playAction(action, fade = 0.2) {
+  if (!action || activeAction === action) return;
+
+  action.reset().enabled = true;
+  action.fadeIn(fade).play();
+  if (activeAction) activeAction.crossFadeTo(action, fade, false);
+  activeAction = action;
+}
+
+function playBreathAnimation() {
+  if (!breathAction) return;
+
+  breathAction.reset();
+  breathAction.enabled = true;
+  breathAction.setLoop(THREE.LoopOnce, 1);
+  breathAction.clampWhenFinished = true;
+  playAction(breathAction, 0.14);
+  breathReturnTimer = Math.min(Math.max(breathAction.getClip().duration * 0.72, 0.9), 1.8);
 }
 
 function start() {
@@ -410,7 +529,15 @@ function tick() {
   updateAsh(dt, elapsed);
   updateFire(dt);
 
-  if (mixer) mixer.update(dt);
+  if (mixer) {
+    mixer.update(dt);
+    if (breathReturnTimer > 0) {
+      breathReturnTimer -= dt;
+      if (breathReturnTimer <= 0 && idleAction && activeAction !== idleAction) {
+        playAction(idleAction, 0.28);
+      }
+    }
+  }
   renderer.render(scene, camera);
 }
 
@@ -520,11 +647,11 @@ function updateAsh(dt, elapsed) {
 }
 
 function triggerFire() {
-  if (!initialized || !dragonGroup || !firePoints) return;
+  if (!initialized || !dragonGroup || !fireGroup) return;
 
   fireTime = 1.15;
+  playBreathAnimation();
   spawnFire();
-  updateFireOverlay(1);
   stage.classList.remove('is-breathing');
   void stage.offsetWidth;
   stage.classList.add('is-breathing');
@@ -533,48 +660,45 @@ function triggerFire() {
 
 function spawnFire() {
   const mouth = getMouthWorldPosition();
-  const dir = getDragonForward();
+  const dir = getFireDirection(mouth);
   const side = new THREE.Vector3(0, 0, 1).applyQuaternion(dragonGroup.quaternion).normalize();
   const up = new THREE.Vector3(0, 1, 0);
 
   fireParticles.forEach((particle, i) => {
-    const spread = (Math.random() - 0.5) * 0.48;
-    const lift = (Math.random() - 0.34) * 0.55;
+    const isSmoke = particle.kind === 'smoke';
+    const distance = isSmoke ? THREE.MathUtils.randFloat(0.45, 1.85) : THREE.MathUtils.randFloat(0.05, 1.25);
+    const spread = (Math.random() - 0.5) * (isSmoke ? 0.72 : 0.38) * (0.45 + distance);
+    const lift = (Math.random() - (isSmoke ? 0.06 : 0.32)) * (isSmoke ? 0.8 : 0.5);
+    const push = isSmoke ? THREE.MathUtils.randFloat(1.25, 2.4) : THREE.MathUtils.randFloat(2.8, 5.2);
+
     particle.active = true;
-    particle.age = Math.random() * -0.08;
-    particle.life = THREE.MathUtils.randFloat(0.62, 1.22);
+    particle.age = Math.random() * -0.12;
+    particle.life = isSmoke ? THREE.MathUtils.randFloat(0.95, 1.75) : THREE.MathUtils.randFloat(0.42, 0.95);
+    particle.size = isSmoke ? THREE.MathUtils.randFloat(0.46, 0.96) : THREE.MathUtils.randFloat(0.18, 0.44);
     particle.pos.copy(mouth)
-      .addScaledVector(dir, Math.random() * 0.22)
+      .addScaledVector(dir, distance)
       .addScaledVector(side, spread * 0.22)
       .addScaledVector(up, lift * 0.18);
-    particle.vel.copy(dir).multiplyScalar(THREE.MathUtils.randFloat(3.3, 5.8))
+    particle.vel.copy(dir).multiplyScalar(push)
       .addScaledVector(side, spread)
       .addScaledVector(up, lift);
-
-    const p = i * 3;
-    firePoints.geometry.attributes.position.array[p] = particle.pos.x;
-    firePoints.geometry.attributes.position.array[p + 1] = particle.pos.y;
-    firePoints.geometry.attributes.position.array[p + 2] = particle.pos.z;
+    particle.sprite.position.copy(particle.pos);
+    particle.sprite.scale.setScalar(0.01);
+    particle.sprite.material.opacity = 0;
+    particle.sprite.visible = true;
   });
 }
 
 function updateFire(dt) {
-  if (!firePoints) return;
+  if (!fireGroup) return;
 
   fireTime = Math.max(0, fireTime - dt);
-
-  const posAttr = firePoints.geometry.attributes.position;
-  const colorAttr = firePoints.geometry.attributes.color;
-  const pos = posAttr.array;
-  const colors = colorAttr.array;
   let activeCount = 0;
+  let flameCount = 0;
 
-  fireParticles.forEach((particle, i) => {
-    const p = i * 3;
+  fireParticles.forEach(particle => {
     if (!particle.active) {
-      pos[p] = 999;
-      pos[p + 1] = 999;
-      pos[p + 2] = 999;
+      particle.sprite.visible = false;
       return;
     }
 
@@ -582,35 +706,36 @@ function updateFire(dt) {
     if (particle.age < 0) return;
     if (particle.age >= particle.life) {
       particle.active = false;
-      pos[p] = 999;
-      pos[p + 1] = 999;
-      pos[p + 2] = 999;
+      particle.sprite.visible = false;
+      particle.sprite.material.opacity = 0;
       return;
     }
 
     activeCount++;
+    if (particle.kind !== 'smoke') flameCount++;
     const k = particle.age / particle.life;
-    particle.vel.multiplyScalar(1 - dt * 0.24);
-    particle.vel.y += dt * 0.34;
+    const isSmoke = particle.kind === 'smoke';
+    particle.vel.multiplyScalar(1 - dt * (isSmoke ? 0.34 : 0.18));
+    particle.vel.y += dt * (isSmoke ? 0.74 : 0.16);
     particle.pos.addScaledVector(particle.vel, dt);
 
-    pos[p] = particle.pos.x;
-    pos[p + 1] = particle.pos.y;
-    pos[p + 2] = particle.pos.z;
+    const fadeIn = Math.min(1, k * 7);
+    const fadeOut = Math.pow(1 - k, isSmoke ? 1.25 : 1.8);
+    const opacity = fadeIn * fadeOut * (isSmoke ? 0.26 : 0.56);
+    const scale = particle.size * (isSmoke ? (0.9 + k * 1.6) : (0.62 + k * 1.05));
 
-    colors[p] = 1;
-    colors[p + 1] = THREE.MathUtils.lerp(0.82, 0.18, k);
-    colors[p + 2] = THREE.MathUtils.lerp(0.08, 0.015, k);
+    particle.sprite.position.copy(particle.pos);
+    particle.sprite.scale.set(scale, scale * (isSmoke ? 0.82 : 1.35), scale);
+    particle.sprite.material.opacity = opacity;
+    particle.sprite.material.rotation += particle.spin * dt;
+    if (!isSmoke && particle.sprite.material.color) {
+      particle.sprite.material.color.setHSL(THREE.MathUtils.lerp(0.1, 0.025, k), 1, THREE.MathUtils.lerp(0.58, 0.34, k));
+    }
   });
-
-  posAttr.needsUpdate = true;
-  colorAttr.needsUpdate = true;
-  fireMaterial.opacity = Math.min(0.95, activeCount / 22);
 
   const mouth = getMouthWorldPosition();
   fireLight.position.copy(mouth);
-  fireLight.intensity = Math.min(5.6, activeCount * 0.09);
-  updateFireOverlay(activeCount);
+  fireLight.intensity = Math.min(8.2, flameCount * 0.13);
 
   if (!activeCount && fireTime <= 0) {
     stage.classList.remove('is-breathing');
@@ -618,40 +743,22 @@ function updateFire(dt) {
 }
 
 function getMouthWorldPosition() {
-  tmpVec.set(1.82, 0.05, 0);
+  tmpVec.copy(mouthLocal);
   return dragonGroup.localToWorld(tmpVec.clone());
 }
 
 function getDragonForward() {
-  return new THREE.Vector3(1, 0, 0).applyQuaternion(dragonGroup.quaternion).normalize();
+  return fireForwardLocal.clone().applyQuaternion(dragonGroup.quaternion).normalize();
 }
 
-function updateFireOverlay(activeCount) {
-  if (!fireOverlay || !camera) return;
-
-  if (!activeCount) {
-    fireOverlay.style.opacity = '0';
-    return;
+function getFireDirection(mouth) {
+  if (camera) {
+    const targetWorld = screenToWorld(window.innerWidth * 0.52, window.innerHeight * 0.58, mouth.z);
+    const aimed = targetWorld.sub(mouth);
+    if (aimed.lengthSq() > 0.0001) return aimed.normalize();
   }
 
-  const mouth = getMouthWorldPosition();
-  const dir = getDragonForward();
-  const tip = mouth.clone().addScaledVector(dir, 2.4);
-  const mouthNdc = mouth.clone().project(camera);
-  const tipNdc = tip.clone().project(camera);
-  const width = stage.clientWidth || window.innerWidth || 1;
-  const height = stage.clientHeight || window.innerHeight || 1;
-  const x = (mouthNdc.x * 0.5 + 0.5) * width;
-  const y = (-mouthNdc.y * 0.5 + 0.5) * height;
-  const tipX = (tipNdc.x * 0.5 + 0.5) * width;
-  const tipY = (-tipNdc.y * 0.5 + 0.5) * height;
-  const angle = Math.atan2(tipY - y, tipX - x);
-  const power = Math.min(1, Math.max(0.22, activeCount / fireParticles.length));
-
-  fireOverlay.style.left = x + 'px';
-  fireOverlay.style.top = y + 'px';
-  fireOverlay.style.opacity = String(0.58 + power * 0.26);
-  fireOverlay.style.transform = `translate(-3%, -50%) rotate(${angle}rad) scale(${0.52 + power * 0.3}, ${0.58 + power * 0.18})`;
+  return getDragonForward();
 }
 
 function onPointerMove(event) {

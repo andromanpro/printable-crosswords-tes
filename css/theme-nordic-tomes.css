@@ -1095,32 +1095,6 @@ body.theme-skyrim .dragon-cinematic-stage.is-fallback canvas {
     drop-shadow(0 0 18px rgba(255, 132, 43, 0.22))
     drop-shadow(0 12px 22px rgba(0, 0, 0, 0.7));
 }
-body.theme-skyrim .dragon-fire-burst {
-  position: absolute;
-  z-index: 4;
-  left: -999px;
-  top: -999px;
-  width: clamp(140px, 20vw, 330px);
-  height: clamp(46px, 6vw, 92px);
-  pointer-events: none;
-  opacity: 0;
-  transform-origin: 5% 50%;
-  clip-path: polygon(0 46%, 18% 16%, 58% 0, 100% 44%, 68% 73%, 22% 88%, 0 54%);
-  background:
-    radial-gradient(ellipse at 14% 50%, #fff7be 0 5%, rgba(255, 237, 139, 0.84) 7% 13%, transparent 24%),
-    radial-gradient(ellipse at 34% 50%, rgba(255, 211, 72, 0.82) 0 16%, rgba(255, 100, 20, 0.72) 36%, transparent 72%),
-    linear-gradient(90deg, rgba(255, 238, 140, 0.82), rgba(255, 124, 26, 0.76) 28%, rgba(183, 24, 8, 0.36) 62%, transparent);
-  filter:
-    blur(0.4px)
-    drop-shadow(0 0 8px rgba(255, 224, 128, 0.85))
-    drop-shadow(0 0 24px rgba(255, 98, 18, 0.72))
-    drop-shadow(0 0 48px rgba(181, 20, 5, 0.42));
-  mix-blend-mode: screen;
-  will-change: transform, opacity;
-}
-body.theme-skyrim .dragon-cinematic-stage.is-breathing .dragon-fire-burst {
-  animation: dragon-fire-cone 1.18s ease-out both;
-}
 body.theme-skyrim.dragon-mode-cinematic .controls,
 body.theme-skyrim.dragon-mode-cinematic main,
 body.theme-skyrim.dragon-mode-cinematic .history-panel,
@@ -1132,12 +1106,6 @@ body.theme-skyrim.dragon-mode-cinematic .editor-panel {
   0% { opacity: 0; }
   12% { opacity: 1; }
   100% { opacity: 0; }
-}
-@keyframes dragon-fire-cone {
-  0% { opacity: 0; filter: blur(7px) drop-shadow(0 0 16px rgba(255, 224, 128, 0.8)); }
-  12% { opacity: 1; }
-  45% { opacity: 0.92; filter: blur(0.2px) drop-shadow(0 0 28px rgba(255, 118, 18, 0.9)); }
-  100% { opacity: 0; filter: blur(11px) drop-shadow(0 0 40px rgba(255, 70, 16, 0.65)); }
 }
 
 /* HTML/чёрный фон до загрузки, чтоб не было белых вспышек */
