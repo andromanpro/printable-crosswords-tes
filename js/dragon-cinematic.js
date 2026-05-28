@@ -53,6 +53,8 @@ let idleAction = null;
 let breathAction = null;
 let activeAction = null;
 let breathReturnTimer = 0;
+let clipActions = new Map();
+let clipNames = [];
 let fireLight = null;
 let dragonGlow = null;
 let ashPoints = null;
@@ -401,6 +403,8 @@ function installModel(asset, source) {
   breathAction = null;
   activeAction = null;
   breathReturnTimer = 0;
+  clipActions = new Map();
+  clipNames = [];
   applyModelProfile(source.profile || 'default');
 
   const model = asset.scene || asset;
@@ -441,18 +445,33 @@ function installModel(asset, source) {
   const clips = asset.animations || model.animations || [];
   if (clips.length) {
     mixer = new THREE.AnimationMixer(model);
-    const idleClip = clips.find(c => /idle_fly|flytransition|patrol_idle/i.test(c.name)) ||
-      clips.find(c => /idle/i.test(c.name)) ||
+    clipNames = clips.map(clip => clip.name);
+    const requestedClip = getRequestedClip(clips);
+    const idleClip = requestedClip || pickClip(clips, [
+      /^Dragon_Ancient_Patrol_Idle$/i,
+      /^Dragon_Ancient_Idle$/i,
+      /^Dragon_Ancient_Dialogue_Relaxed_Idle$/i,
+      /patrol_idle/i,
+      /(^|_)idle$/i
+    ]) ||
       clips[0];
-    const breathClip = clips.find(c => /attack_breath|breath/i.test(c.name)) ||
-      clips.find(c => /casting_loop|attack_power/i.test(c.name));
+    const breathClip = pickClip(clips, [
+      /attack_breath/i,
+      /breath/i,
+      /casting_loop/i,
+      /attack_power/i
+    ]);
 
-    idleAction = mixer.clipAction(idleClip);
+    clips.forEach(clip => {
+      clipActions.set(clip.name, mixer.clipAction(clip));
+    });
+
+    idleAction = clipActions.get(idleClip.name);
     idleAction.reset().setLoop(THREE.LoopRepeat, Infinity).fadeIn(0.25).play();
     activeAction = idleAction;
 
     if (breathClip) {
-      breathAction = mixer.clipAction(breathClip);
+      breathAction = clipActions.get(breathClip.name);
       breathAction.setLoop(THREE.LoopOnce, 1);
       breathAction.clampWhenFinished = true;
     }
@@ -462,6 +481,29 @@ function installModel(asset, source) {
   stage.classList.add('has-model');
   stage.dataset.model = source.label;
   stage.dataset.animations = String(clips.length);
+  stage.dataset.idleClip = idleAction ? idleAction.getClip().name : '';
+  stage.dataset.breathClip = breathAction ? breathAction.getClip().name : '';
+}
+
+function pickClip(clips, patterns) {
+  for (const pattern of patterns) {
+    const clip = clips.find(candidate => pattern.test(candidate.name));
+    if (clip) return clip;
+  }
+  return null;
+}
+
+function getRequestedClip(clips) {
+  let requested = null;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    requested = params.get('dragonClip') || params.get('dragonAnim');
+  } catch (e) { /* ignore */ }
+
+  if (!requested) return null;
+  return clips.find(clip => clip.name === requested) ||
+    clips.find(clip => clip.name.toLowerCase() === requested.toLowerCase()) ||
+    null;
 }
 
 function applyModelProfile(profile) {
@@ -488,6 +530,31 @@ function playAction(action, fade = 0.2) {
   action.fadeIn(fade).play();
   if (activeAction) activeAction.crossFadeTo(action, fade, false);
   activeAction = action;
+}
+
+function setAnimation(name, loop = true) {
+  const action = clipActions.get(name);
+  if (!action) return false;
+
+  action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+  action.clampWhenFinished = !loop;
+  playAction(action, 0.2);
+  if (loop) {
+    idleAction = action;
+    breathReturnTimer = 0;
+    stage.dataset.idleClip = name;
+  }
+  return true;
+}
+
+function getDebugInfo() {
+  return {
+    model: stage && stage.dataset.model || null,
+    animations: clipNames.length,
+    idleClip: stage && stage.dataset.idleClip || null,
+    breathClip: stage && stage.dataset.breathClip || null,
+    clips: clipNames.slice()
+  };
 }
 
 function playBreathAnimation() {
@@ -789,7 +856,7 @@ function onVisibilityChange() {
 }
 
 if (stage) {
-  window.CWDragonCinematic = { setEnabled, triggerFire };
+  window.CWDragonCinematic = { setEnabled, triggerFire, setAnimation, getDebugInfo };
   window.addEventListener('cw-dragon-mode-change', event => {
     setEnabled(event.detail && event.detail.mode === 'cinematic');
   });

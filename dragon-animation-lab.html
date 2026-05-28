@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dragon Animation Lab</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080705;
+      --panel: rgba(17, 13, 9, 0.86);
+      --line: rgba(218, 174, 84, 0.28);
+      --gold: #d9b66a;
+      --text: #f0dfb6;
+      --muted: #a98f5d;
+      --accent: #ff9c34;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
+    body { overflow: hidden; }
+    #viewport { position: fixed; inset: 0; }
+    #viewport canvas { display: block; width: 100%; height: 100%; }
+
+    .panel {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      width: min(380px, calc(100vw - 32px));
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.52);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      color: var(--gold);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .row { display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: center; margin: 9px 0; }
+    .wide { grid-template-columns: 1fr; }
+    label, .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    select, input, textarea, button {
+      width: 100%;
+      border: 1px solid rgba(218, 174, 84, 0.35);
+      background: rgba(0, 0, 0, 0.42);
+      color: var(--text);
+      font: inherit;
+    }
+    select, input { height: 34px; padding: 0 8px; }
+    input[type="range"] { padding: 0; accent-color: var(--accent); }
+    textarea { min-height: 92px; padding: 8px; resize: vertical; color: #dfc98f; font-family: Consolas, monospace; font-size: 12px; }
+    button {
+      min-height: 34px;
+      padding: 7px 10px;
+      cursor: pointer;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+    }
+    button:hover { border-color: rgba(255, 156, 52, 0.72); color: #ffd890; }
+    .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .status { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .pill { display: inline-block; margin: 3px 4px 0 0; padding: 2px 6px; border: 1px solid rgba(218, 174, 84, 0.24); color: var(--gold); font-size: 11px; }
+  </style>
+</head>
+<body>
+<div id="viewport"></div>
+
+<section class="panel">
+  <h1>Dragon Animation Lab</h1>
+
+  <div class="row wide">
+    <label for="clip-select">Clip</label>
+    <select id="clip-select"></select>
+  </div>
+
+  <div class="buttons">
+    <button id="btn-loop" type="button">Loop</button>
+    <button id="btn-once" type="button">Once</button>
+    <button id="btn-pause" type="button">Pause</button>
+  </div>
+
+  <div class="row">
+    <label for="speed">Speed</label>
+    <input id="speed" type="range" min="0" max="2" step="0.05" value="1">
+  </div>
+  <div class="row">
+    <label for="scale">Scale</label>
+    <input id="scale" type="range" min="0.3" max="3" step="0.02" value="1">
+  </div>
+  <div class="row">
+    <label for="yaw">Yaw</label>
+    <input id="yaw" type="range" min="-180" max="180" step="1" value="0">
+  </div>
+  <div class="row">
+    <label for="pitch">Pitch</label>
+    <input id="pitch" type="range" min="-90" max="90" step="1" value="0">
+  </div>
+  <div class="row">
+    <label for="roll">Roll</label>
+    <input id="roll" type="range" min="-90" max="90" step="1" value="0">
+  </div>
+  <div class="row">
+    <label for="height">Height</label>
+    <input id="height" type="range" min="-2" max="2" step="0.02" value="0">
+  </div>
+  <div class="row">
+    <label for="camera">Camera</label>
+    <input id="camera" type="range" min="2.5" max="12" step="0.1" value="6.2">
+  </div>
+
+  <div class="buttons">
+    <button id="btn-reset" type="button">Reset</button>
+    <button id="btn-copy" type="button">Copy</button>
+    <button id="btn-shot" type="button">Pose</button>
+  </div>
+
+  <div class="row wide">
+    <label for="settings">Settings</label>
+    <textarea id="settings" spellcheck="false"></textarea>
+  </div>
+
+  <div class="status" id="status">Loading FBX...</div>
+</section>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.min.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from './vendor/three/FBXLoader.js';
+
+const MODEL_URL = './assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx';
+const viewport = document.getElementById('viewport');
+const clipSelect = document.getElementById('clip-select');
+const settingsEl = document.getElementById('settings');
+const statusEl = document.getElementById('status');
+
+const controls = {
+  speed: document.getElementById('speed'),
+  scale: document.getElementById('scale'),
+  yaw: document.getElementById('yaw'),
+  pitch: document.getElementById('pitch'),
+  roll: document.getElementById('roll'),
+  height: document.getElementById('height'),
+  camera: document.getElementById('camera')
+};
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070604);
+scene.fog = new THREE.FogExp2(0x070604, 0.035);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
+camera.position.set(0, 1.1, Number(controls.camera.value));
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+viewport.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xd7c79d, 0x140806, 1.4));
+const key = new THREE.DirectionalLight(0xffdf9a, 2.2);
+key.position.set(-4, 5, 4);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x779dff, 1.0);
+rim.position.set(4, 3, -4);
+scene.add(rim);
+
+const grid = new THREE.GridHelper(7, 14, 0x6d5630, 0x2a2115);
+grid.position.y = -1.35;
+scene.add(grid);
+
+const root = new THREE.Group();
+const modelSocket = new THREE.Group();
+root.add(modelSocket);
+scene.add(root);
+
+let mixer = null;
+let currentAction = null;
+let clips = [];
+let baseScale = 1;
+let playing = true;
+let drag = null;
+let orbitYaw = 0;
+let orbitPitch = 0.08;
+const clock = new THREE.Clock();
+
+function normalizeModel(model) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  baseScale = 3.2 / Math.max(size.x, size.y, size.z, 1);
+  model.scale.setScalar(baseScale);
+  model.position.set(-center.x * baseScale, -center.y * baseScale, -center.z * baseScale);
+}
+
+function prepareMaterials(model) {
+  model.traverse(obj => {
+    if (!obj.isMesh || !obj.material) return;
+    const wasArray = Array.isArray(obj.material);
+    const materials = wasArray ? obj.material : [obj.material];
+    const clones = materials.map(material => {
+      const clone = material.clone();
+      if (clone.color) clone.color.multiplyScalar(1.18);
+      if (clone.emissive) {
+        clone.emissive.setHex(0x150805);
+        clone.emissiveIntensity = 0.18;
+      }
+      clone.side = THREE.DoubleSide;
+      clone.needsUpdate = true;
+      return clone;
+    });
+    obj.material = wasArray ? clones : clones[0];
+  });
+}
+
+function selectDefaultClip() {
+  return clips.find(clip => /^Dragon_Ancient_Idle$/i.test(clip.name)) ||
+    clips.find(clip => /^Dragon_Ancient_Patrol_Idle$/i.test(clip.name)) ||
+    clips.find(clip => /idle/i.test(clip.name)) ||
+    clips[0];
+}
+
+function playClip(name, loop = true) {
+  if (!mixer) return;
+  const clip = clips.find(candidate => candidate.name === name);
+  if (!clip) return;
+
+  const action = mixer.clipAction(clip);
+  action.reset();
+  action.enabled = true;
+  action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+  action.clampWhenFinished = !loop;
+  action.play();
+  if (currentAction && currentAction !== action) currentAction.crossFadeTo(action, 0.18, false);
+  currentAction = action;
+  playing = true;
+  document.getElementById('btn-pause').textContent = 'Pause';
+  updateSettings();
+}
+
+function updateTransform() {
+  const yaw = THREE.MathUtils.degToRad(Number(controls.yaw.value));
+  const pitch = THREE.MathUtils.degToRad(Number(controls.pitch.value));
+  const roll = THREE.MathUtils.degToRad(Number(controls.roll.value));
+  root.rotation.set(pitch, yaw, roll, 'YXZ');
+  root.scale.setScalar(Number(controls.scale.value));
+  root.position.y = Number(controls.height.value);
+  updateCamera();
+  updateSettings();
+}
+
+function updateCamera() {
+  const distance = Number(controls.camera.value);
+  camera.position.x = Math.sin(orbitYaw) * Math.cos(orbitPitch) * distance;
+  camera.position.y = 1.05 + Math.sin(orbitPitch) * distance;
+  camera.position.z = Math.cos(orbitYaw) * Math.cos(orbitPitch) * distance;
+  camera.lookAt(0, 0.1, 0);
+}
+
+function currentSettings() {
+  return {
+    clip: clipSelect.value,
+    speed: Number(controls.speed.value),
+    scale: Number(controls.scale.value),
+    yaw: Number(controls.yaw.value),
+    pitch: Number(controls.pitch.value),
+    roll: Number(controls.roll.value),
+    height: Number(controls.height.value),
+    camera: Number(controls.camera.value)
+  };
+}
+
+function updateSettings() {
+  settingsEl.value = JSON.stringify(currentSettings(), null, 2);
+}
+
+async function load() {
+  const loader = new FBXLoader();
+  const model = await loader.loadAsync(MODEL_URL);
+  prepareMaterials(model);
+  normalizeModel(model);
+  modelSocket.add(model);
+  clips = model.animations || [];
+
+  clipSelect.innerHTML = '';
+  clips.forEach(clip => {
+    const option = document.createElement('option');
+    option.value = clip.name;
+    option.textContent = `${clip.name} (${clip.duration.toFixed(2)}s)`;
+    clipSelect.appendChild(option);
+  });
+
+  mixer = new THREE.AnimationMixer(model);
+  const defaultClip = selectDefaultClip();
+  if (defaultClip) {
+    clipSelect.value = defaultClip.name;
+    playClip(defaultClip.name, true);
+  }
+
+  statusEl.innerHTML = [
+    `<span class="pill">${clips.length} clips</span>`,
+    `<span class="pill">${MODEL_URL.split('/').pop()}</span>`
+  ].join('');
+  window.dragonLab = { playClip, currentSettings, clips: () => clips.map(clip => clip.name) };
+}
+
+document.getElementById('btn-loop').addEventListener('click', () => playClip(clipSelect.value, true));
+document.getElementById('btn-once').addEventListener('click', () => playClip(clipSelect.value, false));
+document.getElementById('btn-pause').addEventListener('click', event => {
+  playing = !playing;
+  event.target.textContent = playing ? 'Pause' : 'Resume';
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  controls.speed.value = '1';
+  controls.scale.value = '1';
+  controls.yaw.value = '0';
+  controls.pitch.value = '0';
+  controls.roll.value = '0';
+  controls.height.value = '0';
+  controls.camera.value = '6.2';
+  orbitYaw = 0;
+  orbitPitch = 0.08;
+  updateTransform();
+});
+document.getElementById('btn-copy').addEventListener('click', async () => {
+  updateSettings();
+  try { await navigator.clipboard.writeText(settingsEl.value); } catch (e) { /* ignore */ }
+});
+document.getElementById('btn-shot').addEventListener('click', () => {
+  renderer.render(scene, camera);
+  const a = document.createElement('a');
+  a.href = renderer.domElement.toDataURL('image/png');
+  a.download = `${clipSelect.value || 'dragon'}-pose.png`;
+  a.click();
+});
+clipSelect.addEventListener('change', () => playClip(clipSelect.value, true));
+Object.values(controls).forEach(control => {
+  control.addEventListener('input', updateTransform);
+});
+controls.speed.addEventListener('input', updateSettings);
+
+renderer.domElement.addEventListener('pointerdown', event => {
+  drag = { x: event.clientX, y: event.clientY, yaw: orbitYaw, pitch: orbitPitch };
+  renderer.domElement.setPointerCapture(event.pointerId);
+});
+renderer.domElement.addEventListener('pointermove', event => {
+  if (!drag) return;
+  orbitYaw = drag.yaw - (event.clientX - drag.x) * 0.006;
+  orbitPitch = THREE.MathUtils.clamp(drag.pitch + (event.clientY - drag.y) * 0.004, -0.75, 0.95);
+  updateCamera();
+});
+renderer.domElement.addEventListener('pointerup', () => { drag = null; });
+renderer.domElement.addEventListener('wheel', event => {
+  event.preventDefault();
+  const next = THREE.MathUtils.clamp(Number(controls.camera.value) + event.deltaY * 0.006, 2.5, 12);
+  controls.camera.value = String(next);
+  updateTransform();
+}, { passive: false });
+
+function resize() {
+  const width = window.innerWidth || 1;
+  const height = window.innerHeight || 1;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+function tick() {
+  requestAnimationFrame(tick);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (mixer && playing) {
+    mixer.timeScale = Number(controls.speed.value);
+    mixer.update(dt);
+  }
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', resize);
+resize();
+updateTransform();
+load().catch(error => {
+  console.error(error);
+  statusEl.textContent = error.message || String(error);
+});
+tick();
+</script>
+</body>
+</html>
