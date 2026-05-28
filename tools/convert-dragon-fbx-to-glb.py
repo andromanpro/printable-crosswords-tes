@@ -27,6 +27,12 @@ VARIANTS = {
         "pose_as_rest_action": "NPC Root [Root]|Dragon_Ancient_Idle|Base Layer",
         "description": "Apply first Idle frame as armature rest pose",
     },
+    "merged-nla-prepost": {
+        "use_prepost_rot": True,
+        "automatic_bone_orientation": False,
+        "merge_nla_tracks": True,
+        "description": "Merge same-named multi-object FBX actions into glTF NLA animations",
+    },
 }
 
 
@@ -60,14 +66,14 @@ def import_fbx(path, settings):
     )
 
 
-def export_glb(path):
+def export_glb(path, animation_mode="ACTIONS"):
     bpy.ops.export_scene.gltf(
         filepath=str(path),
         export_format="GLB",
         export_yup=True,
         export_apply=False,
         export_animations=True,
-        export_animation_mode="ACTIONS",
+        export_animation_mode=animation_mode,
         export_force_sampling=True,
         export_optimize_animation_size=False,
         export_frame_range=False,
@@ -111,6 +117,40 @@ def apply_pose_as_rest(action_name):
     print(f"applied pose as rest: {action.name}")
 
 
+def action_clip_name(action_name):
+    parts = action_name.split("|")
+    if len(parts) < 3 or parts[-1] != "Base Layer":
+        return None
+    return parts[-2]
+
+
+def build_merged_nla_tracks():
+    clip_names = sorted({name for action in bpy.data.actions for name in [action_clip_name(action.name)] if name})
+    for obj in bpy.context.scene.objects:
+        obj_actions = {}
+        for action in bpy.data.actions:
+            prefix = f"{obj.name}|"
+            if not action.name.startswith(prefix):
+                continue
+            clip_name = action_clip_name(action.name)
+            if clip_name:
+                obj_actions[clip_name] = action
+        if not obj_actions:
+            continue
+        obj.animation_data_create()
+        obj.animation_data.action = None
+        for track in list(obj.animation_data.nla_tracks):
+            obj.animation_data.nla_tracks.remove(track)
+        for clip_name in clip_names:
+            action = obj_actions.get(clip_name)
+            if not action:
+                continue
+            track = obj.animation_data.nla_tracks.new()
+            track.name = clip_name
+            track.strips.new(clip_name, int(action.frame_range[0]), action)
+    print(f"merged NLA clips: {len(clip_names)}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
@@ -130,9 +170,13 @@ def main():
         import_fbx(input_path, settings)
         if settings.get("pose_as_rest_action"):
             apply_pose_as_rest(settings["pose_as_rest_action"])
+        animation_mode = "ACTIONS"
+        if settings.get("merge_nla_tracks"):
+            build_merged_nla_tracks()
+            animation_mode = "NLA_TRACKS"
         print_scene_summary(variant)
         output_path = output_dir / f"dragon-ancient-{variant}.glb"
-        export_glb(output_path)
+        export_glb(output_path, animation_mode=animation_mode)
         print(f"wrote: {output_path}")
 
 
