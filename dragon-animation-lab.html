@@ -171,16 +171,40 @@ import { GLTFLoader } from './vendor/three/GLTFLoader.js';
 
 const MODEL_SOURCES = [
   {
-    id: 'blades-fbx',
-    label: 'Blades Ancient Dragon FBX (animated)',
-    type: 'fbx',
-    url: './assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx'
-  },
-  {
     id: 'alduin-glb',
     label: 'Alduin GLB (static original)',
     type: 'gltf',
     url: './assets/models/alduin/source/Ps%20Alduin%20Dragon.glb'
+  },
+  {
+    id: 'blades-fbx',
+    label: 'Blades Ancient Dragon FBX (animated, broken)',
+    type: 'fbx',
+    url: './assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx'
+  },
+  {
+    id: 'blender-glb-no-prepost',
+    label: 'Test GLB - preserve axes, no pre/post',
+    type: 'gltf',
+    url: './assets/models/converted/dragon-ancient-preserve-no-prepost.glb'
+  },
+  {
+    id: 'blender-glb-prepost',
+    label: 'Test GLB - preserve axes, pre/post',
+    type: 'gltf',
+    url: './assets/models/converted/dragon-ancient-preserve-prepost.glb'
+  },
+  {
+    id: 'blender-glb-auto-bones',
+    label: 'Test GLB - auto bone orientation',
+    type: 'gltf',
+    url: './assets/models/converted/dragon-ancient-auto-bone-orientation.glb'
+  },
+  {
+    id: 'blender-glb-idle-rest',
+    label: 'Test GLB - Idle pose as rest',
+    type: 'gltf',
+    url: './assets/models/converted/dragon-ancient-idle-pose-as-rest-prepost.glb'
   }
 ];
 const ORIGINAL_POSE_VALUE = '__original_pose__';
@@ -304,10 +328,15 @@ function restoreOriginalPose() {
 }
 
 function selectDefaultClip() {
-  return clips.find(clip => /^Dragon_Ancient_Idle$/i.test(clip.name)) ||
-    clips.find(clip => /^Dragon_Ancient_Patrol_Idle$/i.test(clip.name)) ||
-    clips.find(clip => /idle/i.test(clip.name)) ||
+  return clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle')) ||
+    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Patrol_Idle')) ||
+    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Dialogue_Relaxed_Idle')) ||
+    clips.find(clip => /(^|[_|])idle($|[|])/i.test(clip.name)) ||
     clips[0];
+}
+
+function isNamedClip(clip, name) {
+  return clip.name === name || clip.name.includes(`|${name}|`);
 }
 
 function playClip(name, loop = true) {
