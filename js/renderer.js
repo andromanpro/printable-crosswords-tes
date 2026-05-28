@@ -93,7 +93,10 @@
       for (const p of acrossList) {
         const li = document.createElement('li');
         li.value = p.num;
-        li.textContent = pickClue(p, style);
+        const num = document.createElement('b');
+        num.textContent = p.num + '.';
+        li.appendChild(num);
+        li.appendChild(document.createTextNode(' ' + pickClue(p, style)));
         ol.appendChild(li);
       }
       sec.appendChild(ol);
@@ -108,7 +111,10 @@
       for (const p of downList) {
         const li = document.createElement('li');
         li.value = p.num;
-        li.textContent = pickClue(p, style);
+        const num = document.createElement('b');
+        num.textContent = p.num + '.';
+        li.appendChild(num);
+        li.appendChild(document.createTextNode(' ' + pickClue(p, style)));
         ol.appendChild(li);
       }
       sec.appendChild(ol);
