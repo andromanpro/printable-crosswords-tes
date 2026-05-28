@@ -1,0 +1,225 @@
+@page {
+  size: A4 portrait;
+  margin: 1.5cm;
+}
+
+@media print {
+
+  /* КРИТИЧНО: при тёмной теме экранные переменные навязывают тёмный фон.
+     Принудительно сбрасываем все цветовые переменные на светлые ровно
+     на время печати — независимо от body.theme-dark. */
+  html, body, body.theme-dark {
+    --color-bg: #ffffff !important;
+    --color-fg: #000000 !important;
+    --color-line: #000000 !important;
+    --color-block: #d8d8d8 !important;
+    --color-cell-bg: #ffffff !important;
+    --color-cell-border: #000000 !important;
+    --color-num: #000000 !important;
+    --color-panel-bg: #ffffff !important;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    font: 11pt "Times New Roman", serif !important;
+  }
+
+  .controls,
+  .ctrl-buttons,
+  .ctrl-grid,
+  .app-title,
+  .app-sub,
+  .status,
+  #btn-toggle-answers,
+  #btn-print,
+  #btn-reset-history,
+  #btn-generate {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .puzzle-title {
+    text-align: center;
+    margin: 0 0 6mm !important;
+    font: 700 13pt "Times New Roman", serif !important;
+    page-break-after: avoid;
+  }
+
+  .grid-container {
+    margin: 0 auto 6mm !important;
+    page-break-inside: avoid;
+    display: flex;
+    justify-content: center;
+  }
+
+  .grid {
+    display: grid;
+    margin: 0 auto;
+    border: 1.5pt solid #000 !important;
+    background: white !important;
+    page-break-inside: avoid;
+    grid-template-columns: repeat(var(--grid-size), var(--grid-cell-mm)) !important;
+    grid-template-rows: repeat(var(--grid-size), var(--grid-cell-mm)) !important;
+  }
+  .cell {
+    width: var(--grid-cell-mm) !important;
+    height: var(--grid-cell-mm) !important;
+  }
+
+  .cell {
+    border: 0.5pt solid #000 !important;
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+    font-family: "Times New Roman", serif !important;
+    font-weight: 700 !important;
+    font-size: var(--grid-letter-print-pt) !important;
+    line-height: 1 !important;
+    text-transform: uppercase;
+  }
+
+  .cell.block {
+    background: #d8d8d8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  .cell .num {
+    font: 400 6pt Arial, sans-serif !important;
+    color: #000 !important;
+    top: 0.3mm !important;
+    left: 0.5mm !important;
+  }
+
+  /* На основной странице ответы не показываются */
+  .grid-container .cell .ans { display: none !important; }
+
+  /* Введённые пользователем буквы не печатаются — печатаем чистую сетку
+     даже если в браузере она частично заполнена. */
+  .cell .user-letter { display: none !important; }
+
+  /* Список определений — 2 колонки под сеткой */
+  .clues-container {
+    display: block !important;
+    column-count: 2;
+    column-gap: 8mm;
+    column-rule: 1px dotted #888;
+    font-family: "Times New Roman", serif !important;
+    font-size: var(--clue-print-pt) !important;
+  }
+  .clues-container > div {
+    break-inside: avoid;
+    margin-bottom: 5mm;
+  }
+  .clues-container h3 {
+    font-family: "Times New Roman", serif !important;
+    font-weight: 700 !important;
+    font-size: var(--clue-h3-print-pt) !important;
+    margin: 0 0 3mm !important;
+    page-break-after: avoid;
+  }
+  .clues-container ol {
+    padding-left: 7mm !important;
+    margin: 0 !important;
+  }
+  .clues-container li {
+    break-inside: avoid;
+    margin-bottom: 1.5mm !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Страница с ответами — на новом листе */
+  .answer-key {
+    display: block !important;
+    page-break-before: always !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  .answer-key h3 {
+    text-align: center;
+    font-family: "Times New Roman", serif !important;
+    font-weight: 700 !important;
+    font-size: var(--clue-h3-print-pt) !important;
+    margin: 0 0 6mm !important;
+  }
+  .answer-key .cell .ans {
+    display: block !important;
+    font-family: "Times New Roman", serif !important;
+    font-weight: 700 !important;
+    font-size: var(--grid-letter-print-pt) !important;
+    text-align: center;
+    line-height: 1 !important;
+  }
+  .answer-key .cell .num { display: none !important; }
+  .answer-key .cell.block { background: #d8d8d8 !important; }
+
+  /* Режим «спрятать ответы при печати» */
+  body.no-print-answers .answer-key { display: none !important; }
+
+  /* Режим «уместить на 1 листе»: ответы на той же странице, тише поля */
+  body.fit-a4 .answer-key {
+    page-break-before: auto !important;
+    margin-top: 4mm !important;
+  }
+  body.fit-a4 .answer-key h3 {
+    font-size: 10pt !important;
+    margin: 0 0 2mm !important;
+  }
+  body.fit-a4 .clues-container > div {
+    margin-bottom: 2mm !important;
+  }
+  body.fit-a4 .clues-container li {
+    margin-bottom: 0.5mm !important;
+    line-height: 1.2 !important;
+  }
+  body.fit-a4 .puzzle-title {
+    margin: 0 0 3mm !important;
+    font-size: 11pt !important;
+  }
+  body.fit-a4 .grid-container {
+    margin-bottom: 3mm !important;
+  }
+
+  /* ===== Раздельная печать ===== */
+
+  /* Только сетка: скрываем блок вопросов и ключ ответов */
+  body.print-only-grid .clues-container,
+  body.print-only-grid .answer-key {
+    display: none !important;
+  }
+
+  /* Только вопросы: скрываем сетку и заголовок головоломки;
+     увеличиваем шрифт списка вопросов; одна колонка для ещё большего размера. */
+  body.print-only-clues .grid-container,
+  body.print-only-clues .puzzle-title,
+  body.print-only-clues .answer-key {
+    display: none !important;
+  }
+  body.print-only-clues .clues-container {
+    column-count: 1 !important;
+    font-size: 18pt !important;
+  }
+  body.print-only-clues .clues-container h3 {
+    font-size: 20pt !important;
+    margin: 0 0 4mm !important;
+    padding-top: 4mm !important;
+  }
+  body.print-only-clues .clues-container li {
+    margin-bottom: 3mm !important;
+    line-height: 1.4 !important;
+    page-break-inside: avoid;
+  }
+  body.print-only-clues .clues-container ol {
+    padding-left: 10mm !important;
+  }
+}

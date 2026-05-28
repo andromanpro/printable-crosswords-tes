@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Кроссворды по The Elder Scrolls</title>
+  <link rel="stylesheet" href="css/ui.css?v=54">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=54">
+  <link rel="stylesheet" href="css/print.css?v=54">
+</head>
+<body>
+
+<!-- Skyrim ambient: снежные хлопья (24 шт) + дракон-силуэт пролетающий через экран -->
+<div class="snow-layer" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<div class="ember-layer" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<!-- Скелетный дракон-курсор — собственный SVG (clean-room), боковой профиль с одной парой больших крыльев -->
+<svg class="skyrim-dragon-skel" viewBox="-160 -160 320 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <defs>
+    <linearGradient id="sk-bone-grad" x1="0" y1="-1" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0e3b8"/>
+      <stop offset="1" stop-color="#7a5a2c"/>
+    </linearGradient>
+    <radialGradient id="sk-eye-grad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff5b8"/>
+      <stop offset="0.4" stop-color="#ff7a18"/>
+      <stop offset="1" stop-color="#3a0900" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Голова: вытянутый крокодилий череп с двумя рогами, огненный глаз, зубы, открытая пасть -->
+    <g id="sk-dragon-head">
+      <!-- Верхняя челюсть-череп -->
+      <path d="M -28 -2 L -16 -8 L 2 -10 L 16 -8 L 24 -3 L 28 -1 L 30 1 L 26 3 L 16 4 L 2 5 L -16 5 L -28 2 Z"
+            fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1.2"/>
+      <!-- Нижняя челюсть (отстоит вниз — пасть открыта) -->
+      <path d="M -22 5 L -10 9 L 6 12 L 20 11 L 26 7 L 26 4 L 18 6 L 4 7 L -10 7 L -22 5 Z"
+            fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1.1"/>
+      <!-- Два рога загнутых назад -->
+      <path d="M 4 -10 L 8 -22 L 12 -10 Z" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1"/>
+      <path d="M -8 -10 L -4 -18 L 0 -10 Z" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1"/>
+      <!-- Шейные сочленения -->
+      <path d="M -22 -3 L -14 -3 L -22 0 Z M -22 0 L -14 3 L -22 3 Z" fill="#1a1208"/>
+      <!-- Кончик морды -->
+      <path d="M 26 -1 L 30 1 L 26 3" fill="none" stroke="#1a1208" stroke-width="0.6"/>
+      <!-- Зубы верхней челюсти (треугольники вниз) -->
+      <g fill="#1a1208" stroke="none">
+        <path d="M -2 5 L 0 9 L 2 5 Z"/>
+        <path d="M 6 5 L 8 9 L 10 5 Z"/>
+        <path d="M 14 4 L 16 8 L 18 4 Z"/>
+        <path d="M 22 3 L 23 7 L 24 3 Z"/>
+      </g>
+      <!-- Зубы нижней челюсти (треугольники вверх) -->
+      <g fill="#1a1208" stroke="none">
+        <path d="M -2 7 L 0 3 L 2 7 Z"/>
+        <path d="M 6 7 L 8 3 L 10 7 Z"/>
+        <path d="M 14 6 L 16 2 L 18 6 Z"/>
+      </g>
+      <!-- Огненный глаз -->
+      <circle cx="10" cy="-3" r="5" fill="url(#sk-eye-grad)"/>
+      <circle cx="10" cy="-3" r="1.6" fill="#fff5d0"/>
+      <!-- Носовая ноздря -->
+      <circle cx="24" cy="-1" r="1" fill="#1a1208"/>
+      <!-- Затылочная точка-шарнир -->
+      <circle cx="-26" cy="0" r="1.4" fill="#1a1208"/>
+    </g>
+
+    <!-- Шейный позвонок (компактный, между головой и телом) -->
+    <g id="sk-dragon-neck">
+      <ellipse cx="0" cy="0" rx="9" ry="7" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1"/>
+      <path d="M -3 -8 L 0 -13 L 3 -8 Z" fill="#1a1208"/>
+      <path d="M -9 0 L -13 -1 L -13 1 Z M 9 0 L 13 -1 L 13 1 Z" fill="#5a4220"/>
+    </g>
+
+    <!-- ТЕЛО ДРАКОНА — массивная грудная клетка с рёбрами + одна пара крыльев -->
+    <g id="sk-dragon-body">
+      <!-- Грудина (sternum) — длинная плоская кость -->
+      <path d="M -36 6 C -18 12, 18 12, 36 6 L 38 -2 C 18 4, -18 4, -38 -2 Z"
+            fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1.4"/>
+      <!-- 6 пар рёбер от позвоночника к грудине -->
+      <g fill="none" stroke="#1a1208" stroke-width="1.6" stroke-linecap="round">
+        <path d="M -34 -10 C -32 -4, -32 2, -36 6"/>
+        <path d="M -22 -12 C -20 -4, -20 4, -24 8"/>
+        <path d="M -10 -13 C -8 -4, -8 5, -12 9"/>
+        <path d="M 2 -13 C 4 -4, 4 5, 0 9"/>
+        <path d="M 14 -12 C 16 -4, 16 4, 12 8"/>
+        <path d="M 26 -10 C 28 -4, 28 2, 24 6"/>
+      </g>
+      <!-- Позвоночник на спине (5 позвонков) -->
+      <g fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8">
+        <ellipse cx="-30" cy="-12" rx="3.4" ry="4"/>
+        <ellipse cx="-15" cy="-14" rx="3.4" ry="4"/>
+        <ellipse cx="0" cy="-15" rx="3.4" ry="4"/>
+        <ellipse cx="15" cy="-14" rx="3.4" ry="4"/>
+        <ellipse cx="30" cy="-12" rx="3.4" ry="4"/>
+      </g>
+      <!-- Шипы на позвоночнике -->
+      <g fill="#1a1208">
+        <path d="M -32 -16 L -30 -22 L -28 -16 Z"/>
+        <path d="M -17 -18 L -15 -24 L -13 -18 Z"/>
+        <path d="M -2 -19 L 0 -25 L 2 -19 Z"/>
+        <path d="M 13 -18 L 15 -24 L 17 -18 Z"/>
+        <path d="M 28 -16 L 30 -22 L 32 -16 Z"/>
+      </g>
+
+      <!-- ВЕРХНЕЕ КРЫЛО -->
+      <!-- Плечо → локоть → запястье (тёмная подложка) -->
+      <g stroke="#1a1208" fill="none" stroke-linecap="round">
+        <line x1="0" y1="-14" x2="-20" y2="-50" stroke-width="3.6"/>
+        <line x1="-20" y1="-50" x2="-50" y2="-86" stroke-width="3.2"/>
+      </g>
+      <!-- Светлая кость поверх -->
+      <g stroke="url(#sk-bone-grad)" fill="none" stroke-linecap="round">
+        <line x1="0" y1="-14" x2="-20" y2="-50" stroke-width="2.4"/>
+        <line x1="-20" y1="-50" x2="-50" y2="-86" stroke-width="2"/>
+      </g>
+      <circle cx="-20" cy="-50" r="2.4" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <circle cx="-50" cy="-86" r="2.2" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <!-- 4 пальца-фаланги от запястья — каждая из 2 сегментов с суставом -->
+      <g stroke="#1a1208" fill="none" stroke-linecap="round">
+        <line x1="-50" y1="-86" x2="-70" y2="-100" stroke-width="2.2"/>
+        <line x1="-70" y1="-100" x2="-82" y2="-108" stroke-width="1.8"/>
+        <line x1="-50" y1="-86" x2="-50" y2="-114" stroke-width="2.2"/>
+        <line x1="-50" y1="-114" x2="-46" y2="-138" stroke-width="1.8"/>
+        <line x1="-50" y1="-86" x2="-22" y2="-108" stroke-width="2.2"/>
+        <line x1="-22" y1="-108" x2="0" y2="-128" stroke-width="1.8"/>
+        <line x1="-50" y1="-86" x2="-12" y2="-78" stroke-width="2.2"/>
+        <line x1="-12" y1="-78" x2="14" y2="-74" stroke-width="1.8"/>
+      </g>
+      <g stroke="url(#sk-bone-grad)" fill="none" stroke-linecap="round">
+        <line x1="-50" y1="-86" x2="-70" y2="-100" stroke-width="1.3"/>
+        <line x1="-70" y1="-100" x2="-82" y2="-108" stroke-width="1.1"/>
+        <line x1="-50" y1="-86" x2="-50" y2="-114" stroke-width="1.3"/>
+        <line x1="-50" y1="-114" x2="-46" y2="-138" stroke-width="1.1"/>
+        <line x1="-50" y1="-86" x2="-22" y2="-108" stroke-width="1.3"/>
+        <line x1="-22" y1="-108" x2="0" y2="-128" stroke-width="1.1"/>
+        <line x1="-50" y1="-86" x2="-12" y2="-78" stroke-width="1.3"/>
+        <line x1="-12" y1="-78" x2="14" y2="-74" stroke-width="1.1"/>
+      </g>
+      <g fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.5">
+        <circle cx="-70" cy="-100" r="1.4"/>
+        <circle cx="-50" cy="-114" r="1.4"/>
+        <circle cx="-22" cy="-108" r="1.4"/>
+        <circle cx="-12" cy="-78" r="1.4"/>
+      </g>
+      <g fill="#1a1208">
+        <path d="M -82 -108 L -88 -110 L -82 -104 Z"/>
+        <path d="M -46 -138 L -48 -144 L -42 -138 Z"/>
+        <path d="M 0 -128 L 0 -134 L 6 -126 Z"/>
+        <path d="M 14 -74 L 20 -76 L 14 -70 Z"/>
+      </g>
+
+      <!-- НИЖНЕЕ КРЫЛО — зеркально -->
+      <g stroke="#1a1208" fill="none" stroke-linecap="round">
+        <line x1="0" y1="14" x2="-20" y2="50" stroke-width="3.6"/>
+        <line x1="-20" y1="50" x2="-50" y2="86" stroke-width="3.2"/>
+      </g>
+      <g stroke="url(#sk-bone-grad)" fill="none" stroke-linecap="round">
+        <line x1="0" y1="14" x2="-20" y2="50" stroke-width="2.4"/>
+        <line x1="-20" y1="50" x2="-50" y2="86" stroke-width="2"/>
+      </g>
+      <circle cx="-20" cy="50" r="2.4" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <circle cx="-50" cy="86" r="2.2" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <g stroke="#1a1208" fill="none" stroke-linecap="round">
+        <line x1="-50" y1="86" x2="-70" y2="100" stroke-width="2.2"/>
+        <line x1="-70" y1="100" x2="-82" y2="108" stroke-width="1.8"/>
+        <line x1="-50" y1="86" x2="-50" y2="114" stroke-width="2.2"/>
+        <line x1="-50" y1="114" x2="-46" y2="138" stroke-width="1.8"/>
+        <line x1="-50" y1="86" x2="-22" y2="108" stroke-width="2.2"/>
+        <line x1="-22" y1="108" x2="0" y2="128" stroke-width="1.8"/>
+        <line x1="-50" y1="86" x2="-12" y2="78" stroke-width="2.2"/>
+        <line x1="-12" y1="78" x2="14" y2="74" stroke-width="1.8"/>
+      </g>
+      <g stroke="url(#sk-bone-grad)" fill="none" stroke-linecap="round">
+        <line x1="-50" y1="86" x2="-70" y2="100" stroke-width="1.3"/>
+        <line x1="-70" y1="100" x2="-82" y2="108" stroke-width="1.1"/>
+        <line x1="-50" y1="86" x2="-50" y2="114" stroke-width="1.3"/>
+        <line x1="-50" y1="114" x2="-46" y2="138" stroke-width="1.1"/>
+        <line x1="-50" y1="86" x2="-22" y2="108" stroke-width="1.3"/>
+        <line x1="-22" y1="108" x2="0" y2="128" stroke-width="1.1"/>
+        <line x1="-50" y1="86" x2="-12" y2="78" stroke-width="1.3"/>
+        <line x1="-12" y1="78" x2="14" y2="74" stroke-width="1.1"/>
+      </g>
+      <g fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.5">
+        <circle cx="-70" cy="100" r="1.4"/>
+        <circle cx="-50" cy="114" r="1.4"/>
+        <circle cx="-22" cy="108" r="1.4"/>
+        <circle cx="-12" cy="78" r="1.4"/>
+      </g>
+      <g fill="#1a1208">
+        <path d="M -82 108 L -88 110 L -82 104 Z"/>
+        <path d="M -46 138 L -48 144 L -42 138 Z"/>
+        <path d="M 0 128 L 0 134 L 6 126 Z"/>
+        <path d="M 14 74 L 20 76 L 14 70 Z"/>
+      </g>
+
+      <!-- ТАЗ + ДВЕ ЗАДНИЕ ЛАПЫ — у задней части корпуса (x ≈ 36..44, у позвоночника) -->
+      <!-- Тазовая кость -->
+      <path d="M 32 -8 C 40 -6, 46 -2, 48 4 C 48 8, 44 10, 38 8 L 32 4 Z"
+            fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="1.2"/>
+      <!-- Левая задняя лапа: бедро → голень → стопа с 3 когтями -->
+      <g stroke="#1a1208" fill="none" stroke-linecap="round">
+        <line x1="42" y1="2" x2="52" y2="22" stroke-width="3.4"/>
+        <line x1="52" y1="22" x2="44" y2="42" stroke-width="3"/>
+        <line x1="44" y1="42" x2="48" y2="56" stroke-width="2.4"/>
+      </g>
+      <g stroke="url(#sk-bone-grad)" fill="none" stroke-linecap="round">
+        <line x1="42" y1="2" x2="52" y2="22" stroke-width="2.2"/>
+        <line x1="52" y1="22" x2="44" y2="42" stroke-width="2"/>
+        <line x1="44" y1="42" x2="48" y2="56" stroke-width="1.5"/>
+      </g>
+      <circle cx="52" cy="22" r="2.2" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <circle cx="44" cy="42" r="2" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <!-- 3 когтя левой лапы -->
+      <g stroke="#1a1208" fill="none" stroke-width="1.8" stroke-linecap="round">
+        <line x1="48" y1="56" x2="42" y2="64"/>
+        <line x1="48" y1="56" x2="50" y2="66"/>
+        <line x1="48" y1="56" x2="56" y2="62"/>
+      </g>
+      <g fill="#1a1208">
+        <path d="M 42 64 L 39 66 L 42 60 Z"/>
+        <path d="M 50 66 L 51 70 L 53 64 Z"/>
+        <path d="M 56 62 L 60 64 L 56 58 Z"/>
+      </g>
+
+      <!-- Правая задняя лапа (зеркально по y, чуть короче для перспективы) -->
+      <g stroke="#1a1208" fill="none" stroke-linecap="round">
+        <line x1="40" y1="-2" x2="50" y2="-18" stroke-width="3.4"/>
+        <line x1="50" y1="-18" x2="44" y2="-34" stroke-width="3"/>
+        <line x1="44" y1="-34" x2="48" y2="-46" stroke-width="2.4"/>
+      </g>
+      <g stroke="url(#sk-bone-grad)" fill="none" stroke-linecap="round">
+        <line x1="40" y1="-2" x2="50" y2="-18" stroke-width="2.2"/>
+        <line x1="50" y1="-18" x2="44" y2="-34" stroke-width="2"/>
+        <line x1="44" y1="-34" x2="48" y2="-46" stroke-width="1.5"/>
+      </g>
+      <circle cx="50" cy="-18" r="2.2" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <circle cx="44" cy="-34" r="2" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <g stroke="#1a1208" fill="none" stroke-width="1.8" stroke-linecap="round">
+        <line x1="48" y1="-46" x2="42" y2="-52"/>
+        <line x1="48" y1="-46" x2="50" y2="-54"/>
+        <line x1="48" y1="-46" x2="56" y2="-50"/>
+      </g>
+      <g fill="#1a1208">
+        <path d="M 42 -52 L 39 -54 L 42 -48 Z"/>
+        <path d="M 50 -54 L 51 -58 L 53 -52 Z"/>
+        <path d="M 56 -50 L 60 -52 L 56 -46 Z"/>
+      </g>
+    </g>
+
+    <!-- Хвостовой позвонок — мелкий, заострённый -->
+    <g id="sk-dragon-tail">
+      <ellipse cx="0" cy="0" rx="6" ry="5" fill="url(#sk-bone-grad)" stroke="#1a1208" stroke-width="0.8"/>
+      <path d="M -1 -5 L 0 -9 L 1 -5 Z" fill="#1a1208"/>
+    </g>
+  </defs>
+  <g id="sk-dragon-screen"></g>
+</svg>
+<!-- Designer dragon flight (Nordic Tomes by Claude.ai) -->
+<div class="dragon-flight" aria-hidden="true">
+  <svg class="dragon-svg" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="boneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%"   stop-color="#f4e6cc"/>
+        <stop offset="55%"  stop-color="#d4c2a0"/>
+        <stop offset="100%" stop-color="#a08868"/>
+      </linearGradient>
+      <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#fff2c0"/>
+        <stop offset="35%"  stop-color="#ff7020"/>
+        <stop offset="75%"  stop-color="#a01000" stop-opacity="0.7"/>
+        <stop offset="100%" stop-color="#600800" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="boneVertGrad" cx="50%" cy="40%" r="55%">
+        <stop offset="0%"   stop-color="#fff2d0"/>
+        <stop offset="60%"  stop-color="#d4c2a0"/>
+        <stop offset="100%" stop-color="#8a7250"/>
+      </radialGradient>
+    </defs>
+
+    <!-- ═══ ЗАДНЕЕ КРЫЛО (за телом, едва намеченное) ═══ -->
+    <g class="wing wing-back" stroke="#1a1208" fill="rgba(220,200,160,0.18)" stroke-linecap="round">
+      <line x1="540" y1="200" x2="380" y2="80" stroke-width="2.8"/>
+      <line x1="380" y1="80" x2="290" y2="60"  stroke-width="2"/>
+      <line x1="380" y1="80" x2="340" y2="20"  stroke-width="2"/>
+      <line x1="380" y1="80" x2="420" y2="18"  stroke-width="2"/>
+      <line x1="380" y1="80" x2="475" y2="34"  stroke-width="2"/>
+      <path stroke="rgba(220,200,160,0.35)" stroke-width="0.6" fill="rgba(220,200,160,0.15)" d="
+        M 540 200 L 380 80 L 290 60
+        Q 320 70 340 20
+        Q 380 45 420 18
+        Q 450 35 475 34
+        Q 510 110 540 200 Z"/>
+    </g>
+
+    <!-- ═══ ХВОСТ — змеящаяся цепочка убывающих позвонков с шипом ═══ -->
+    <g class="dragon-tail" fill="url(#boneVertGrad)" stroke="#1a1208" stroke-width="1.4">
+      <ellipse cx="295" cy="222" rx="9"   ry="11"/>
+      <ellipse cx="260" cy="226" rx="8.5" ry="10.5"/>
+      <ellipse cx="226" cy="230" rx="8"   ry="10"/>
+      <ellipse cx="194" cy="234" rx="7.5" ry="9.5"/>
+      <ellipse cx="164" cy="238" rx="7"   ry="9"/>
+      <ellipse cx="136" cy="242" rx="6.5" ry="8.5"/>
+      <ellipse cx="110" cy="246" rx="6"   ry="8"/>
+      <ellipse cx="86"  cy="250" rx="5.5" ry="7.5"/>
+      <ellipse cx="64"  cy="254" rx="5"   ry="7"/>
+      <ellipse cx="44"  cy="258" rx="4.2" ry="6"/>
+      <ellipse cx="26"  cy="262" rx="3.5" ry="5"/>
+      <!-- Костяной наконечник-стрела на конце -->
+      <path fill="url(#boneGrad)" d="
+        M 16 262
+        L -2 254
+        L 8 264
+        L -4 272
+        L 16 272 Z"/>
+      <!-- Боковые шипы на нескольких позвонках -->
+      <g fill="#1a1208" stroke="none">
+        <path d="M 295 211 L 297 200 L 299 211 Z"/>
+        <path d="M 226 219 L 228 209 L 230 219 Z"/>
+        <path d="M 164 227 L 166 218 L 168 227 Z"/>
+      </g>
+    </g>
+
+    <!-- ═══ ОСНОВНОЙ СКЕЛЕТ: ЧЕРЕП + ШЕЯ + ГРУДНАЯ КЛЕТКА + ТАЗ ═══ -->
+    <g class="dragon-body-grp">
+      <!-- ШЕЙНЫЕ ПОЗВОНКИ — соединяют череп с грудиной -->
+      <g fill="url(#boneVertGrad)" stroke="#1a1208" stroke-width="1.5">
+        <ellipse cx="328" cy="220" rx="9.5" ry="12"/>
+        <ellipse cx="360" cy="218" rx="9.5" ry="12"/>
+        <ellipse cx="392" cy="215" rx="9.5" ry="12"/>
+        <ellipse cx="424" cy="210" rx="9.5" ry="12"/>
+        <ellipse cx="456" cy="202" rx="9.5" ry="12"/>
+        <ellipse cx="488" cy="190" rx="9.5" ry="12"/>
+        <ellipse cx="520" cy="175" rx="9.5" ry="12"/>
+        <ellipse cx="552" cy="160" rx="9.5" ry="11.5"/>
+        <ellipse cx="582" cy="148" rx="9"   ry="11"/>
+        <ellipse cx="610" cy="138" rx="8.5" ry="10.5"/>
+      </g>
+
+      <!-- ЧЕРЕП — массивная вытянутая голова с челюстью и зубами -->
+      <g class="dragon-head" stroke="#1a1208" stroke-width="1.6">
+        <!-- Верхняя часть черепа -->
+        <path fill="url(#boneGrad)" d="
+          M 625 130
+          C 645 116, 680 108, 720 115
+          C 750 120, 770 132, 778 142
+          L 786 148
+          L 778 154
+          C 770 152, 755 152, 738 154
+          L 720 156
+          C 700 156, 680 154, 660 150
+          C 640 146, 626 138, 625 130 Z"/>
+        <!-- Нижняя челюсть -->
+        <path fill="url(#boneGrad)" d="
+          M 635 156
+          C 650 168, 685 178, 720 180
+          L 755 182
+          L 760 188
+          L 750 192
+          C 720 192, 690 188, 660 178
+          C 645 172, 635 164, 635 156 Z"/>
+        <!-- Зубы (треугольные шипы между челюстями) -->
+        <g fill="#1a1208" stroke="none">
+          <path d="M 660 156 L 663 168 L 666 156 Z"/>
+          <path d="M 680 158 L 683 170 L 686 158 Z"/>
+          <path d="M 700 158 L 703 170 L 706 158 Z"/>
+          <path d="M 720 158 L 723 168 L 726 158 Z"/>
+          <path d="M 740 158 L 743 168 L 746 158 Z"/>
+          <!-- Нижние зубы (вверх) -->
+          <path d="M 670 178 L 673 168 L 676 178 Z"/>
+          <path d="M 690 180 L 693 170 L 696 180 Z"/>
+          <path d="M 710 180 L 713 170 L 716 180 Z"/>
+          <path d="M 730 180 L 733 170 L 736 180 Z"/>
+        </g>
+        <!-- Глазная впадина — тёмная, с огненным глазом -->
+        <ellipse cx="720" cy="130" rx="11" ry="9" fill="#0a0604" stroke="#1a1208"/>
+        <circle cx="722" cy="131" r="6" fill="url(#eyeGlow)"/>
+        <circle cx="722" cy="131" r="2"   fill="#fff8d0"/>
+        <!-- Ноздря -->
+        <ellipse cx="770" cy="140" rx="4" ry="3" fill="#1a1208"/>
+        <!-- РОГА — два больших, изогнутых назад -->
+        <path fill="url(#boneGrad)" d="
+          M 630 118 C 622 90, 615 60, 625 32
+          C 640 60, 642 90, 645 118 Z"/>
+        <path fill="url(#boneGrad)" d="
+          M 655 110 C 660 78, 680 48, 705 30
+          C 695 60, 680 90, 670 115 Z"/>
+      </g>
+
+      <!-- ГРУДИНА (стерн) — длинная плоская кость -->
+      <path fill="url(#boneGrad)" stroke="#1a1208" stroke-width="1.5" d="
+        M 320 280
+        C 360 295, 410 302, 460 296
+        C 480 293, 495 290, 502 286
+        L 510 282
+        L 505 288
+        C 495 295, 480 300, 460 304
+        C 410 312, 360 308, 320 300
+        Z"/>
+
+      <!-- РЁБРА — 7 пар изогнутых рёбер от позвоночника к грудине -->
+      <g fill="none" stroke="#1a1208" stroke-width="2" stroke-linecap="round">
+        <path d="M 328 232  C 325 250, 326 270, 332 284"/>
+        <path d="M 360 230  C 358 250, 360 275, 370 290"/>
+        <path d="M 392 227  C 390 250, 393 278, 405 294"/>
+        <path d="M 424 222  C 422 248, 425 278, 440 298"/>
+        <path d="M 456 214  C 454 244, 460 278, 472 300"/>
+        <path d="M 488 202  C 488 232, 495 270, 498 296"/>
+        <path d="M 520 187  C 522 220, 525 260, 510 290"/>
+      </g>
+
+      <!-- ТАЗОВЫЕ КОСТИ — конец позвоночника, начало хвоста -->
+      <path fill="url(#boneGrad)" stroke="#1a1208" stroke-width="1.5" d="
+        M 305 215
+        C 295 220, 290 235, 295 250
+        C 300 260, 310 265, 320 260
+        L 325 255
+        L 320 245
+        C 318 235, 312 222, 305 215 Z"/>
+
+      <!-- ЗАДНИЕ ЛАПЫ — две худые ножки с когтистыми стопами -->
+      <g fill="url(#boneGrad)" stroke="#1a1208" stroke-width="1.6" stroke-linecap="round">
+        <!-- Левая нога -->
+        <path d="M 310 270 L 290 320 L 310 360 L 305 376" fill="none" stroke-width="2.4"/>
+        <!-- Когти стопы -->
+        <path d="M 305 376 L 290 392 M 305 376 L 305 396 M 305 376 L 318 392" stroke-width="2"/>
+        <!-- Правая нога -->
+        <path d="M 348 280 L 366 326 L 348 365 L 354 380" fill="none" stroke-width="2.4"/>
+        <path d="M 354 380 L 340 396 M 354 380 L 354 400 M 354 380 L 368 395" stroke-width="2"/>
+      </g>
+
+      <!-- ПЕРЕДНИЕ ЛАПЫ — у груди, короткие с когтями -->
+      <g fill="none" stroke="#1a1208" stroke-width="2" stroke-linecap="round">
+        <path d="M 478 286 L 472 310 L 485 326" stroke-width="2.2"/>
+        <path d="M 485 326 L 478 334 M 485 326 L 488 336 M 485 326 L 494 334"/>
+        <path d="M 460 290 L 450 312 L 460 330" stroke-width="2.2"/>
+        <path d="M 460 330 L 452 338 M 460 330 L 462 340 M 460 330 L 470 338"/>
+      </g>
+    </g>
+
+    <!-- ═══ ПЕРЕДНЕЕ КРЫЛО (большое, основное — кости с тонкой полупрозрачной мембраной) ═══ -->
+    <g class="wing wing-front" stroke="#1a1208" stroke-linecap="round">
+      <!-- Полупрозрачная мембрана-призрак -->
+      <path fill="rgba(220,200,160,0.15)" stroke="rgba(220,200,160,0.4)" stroke-width="0.7" d="
+        M 535 180
+        L 350 30
+        L 250 8
+        Q 282 30 308 -20
+        Q 350 18 380 -28
+        Q 420 22 460 -20
+        Q 500 18 530 -8
+        Q 535 90 555 180 Z"/>
+      <!-- Главная кость (плечо-предплечье) -->
+      <line x1="535" y1="180" x2="350" y2="30" stroke-width="3.5" stroke="#f4e6cc"/>
+      <line x1="535" y1="180" x2="350" y2="30" stroke-width="2.5" stroke="#1a1208" stroke-dasharray="0 0"/>
+      <!-- Кости-пальцы (4 фаланги) -->
+      <g stroke-width="2.6">
+        <line x1="350" y1="30" x2="250" y2="8"   stroke="#1a1208"/>
+        <line x1="350" y1="30" x2="308" y2="-20" stroke="#1a1208"/>
+        <line x1="350" y1="30" x2="380" y2="-28" stroke="#1a1208"/>
+        <line x1="350" y1="30" x2="460" y2="-20" stroke="#1a1208"/>
+        <line x1="350" y1="30" x2="530" y2="-8"  stroke="#1a1208"/>
+      </g>
+      <!-- Фаланги наложены поверх — белые с тёмной обводкой -->
+      <g stroke="#1a1208" stroke-width="1.6">
+        <ellipse cx="350" cy="30" rx="6" ry="5" fill="url(#boneVertGrad)"/>
+      </g>
+      <!-- Когти на кончиках пальцев -->
+      <g fill="#1a1208" stroke="none">
+        <path d="M 250 8 L 244 14 L 258 14 Z"/>
+        <path d="M 308 -20 L 300 -14 L 314 -14 Z"/>
+        <path d="M 380 -28 L 372 -22 L 386 -22 Z"/>
+        <path d="M 460 -20 L 452 -14 L 466 -14 Z"/>
+        <path d="M 530 -8 L 522 -2 L 536 -2 Z"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<header class="controls">
+  <h1 class="app-title" id="app-title" data-skyrim-lines='["Кроссворды по","The Elder Scrolls"]'>Кроссворды по The Elder Scrolls</h1>
+  <p class="app-sub">Skyrim · Morrowind · Oblivion · лор и мемы серии</p>
+
+  <button id="btn-toggle-settings" type="button" class="btn-toggle-settings">
+    <span class="caret">▶</span> Настройки
+  </button>
+
+  <div class="ctrl-grid" id="ctrl-grid">
+
+    <fieldset class="ctrl-group">
+      <legend>Размер</legend>
+      <label><input type="radio" name="size" value="11"> S 11×11</label>
+      <label><input type="radio" name="size" value="13" checked> M 13×13</label>
+      <label><input type="radio" name="size" value="15"> L 15×15</label>
+      <label><input type="radio" name="size" value="21"> XL 21×21</label>
+      <label><input type="radio" name="size" value="25"> XXL 25×25</label>
+    </fieldset>
+
+    <fieldset class="ctrl-group">
+      <legend>Сложность</legend>
+      <label><input type="radio" name="difficulty" value="1"> Лёгкая</label>
+      <label><input type="radio" name="difficulty" value="2"> Средняя</label>
+      <label><input type="radio" name="difficulty" value="3"> Сложная</label>
+      <label><input type="radio" name="difficulty" value="mixed" checked> Любые (вперемешку)</label>
+    </fieldset>
+
+    <fieldset class="ctrl-group">
+      <legend>Стиль подсказок</legend>
+      <label><input type="radio" name="cluestyle" value="direct" checked> Прямые (фактические)</label>
+      <label><input type="radio" name="cluestyle" value="cryptic"> Хитрые (с намёком)</label>
+    </fieldset>
+
+    <fieldset class="ctrl-group">
+      <legend>Размер шрифта</legend>
+      <label><input type="radio" name="fontsize" value="small"> Мелкий</label>
+      <label><input type="radio" name="fontsize" value="medium" checked> Средний</label>
+      <label><input type="radio" name="fontsize" value="large"> Крупный</label>
+      <label><input type="radio" name="fontsize" value="xlarge"> Очень крупный</label>
+    </fieldset>
+
+    <!-- Тема Скайрим включена по умолчанию (скрытый radio для совместимости с app.js) -->
+    <input type="radio" name="theme-ui" value="skyrim" checked style="display:none">
+
+
+    <fieldset class="ctrl-group">
+      <legend>Дракон</legend>
+      <label><input type="radio" name="dragon" value="fly" checked> 🐉 Пролетающий</label>
+      <label><input type="radio" name="dragon" value="cursor"> 🦴 Следит за курсором</label>
+      <label><input type="radio" name="dragon" value="none"> ✕ Без дракона</label>
+    </fieldset>
+
+    <fieldset class="ctrl-group">
+      <legend>Печать</legend>
+      <label><input type="checkbox" id="fit-a4"> Уместить всё на 1 лист A4</label>
+      <label><input type="checkbox" id="hide-answers-print"> Не печатать ответы</label>
+    </fieldset>
+
+    <fieldset class="ctrl-group ctrl-packs" id="packs-fieldset">
+      <legend>Включённые паки</legend>
+      <div id="packs-list" class="packs-list">
+        <span class="status-muted">Загрузка…</span>
+      </div>
+      <div class="packs-upload">
+        <button type="button" id="btn-upload-pack" class="btn-subtle" title="Загрузить свой пак из .js-файла">
+          + Загрузить свой пак
+        </button>
+        <input type="file" id="input-upload-pack" accept=".js" hidden>
+        <span id="upload-pack-status" class="upload-pack-status"></span>
+      </div>
+    </fieldset>
+
+  </div>
+
+  <div class="ctrl-buttons">
+    <button id="btn-generate" type="button" class="btn-primary">Сгенерировать</button>
+    <button id="btn-check" type="button" title="Проверить введённые буквы (зелёные — верно, красные — нет)">Проверить</button>
+    <button id="btn-clear-input" type="button" title="Стереть всё, что ввёл">Очистить введённое</button>
+    <button id="btn-toggle-answers" type="button">Показать ответы</button>
+    <button id="btn-print" type="button">Печать всё</button>
+    <button id="btn-print-grid" type="button" title="Печать только сетки (без вопросов)">Печать сетки</button>
+    <button id="btn-print-clues" type="button" title="Печать только вопросов крупным шрифтом">Печать вопросов</button>
+    <button id="btn-reset-history" type="button" class="btn-subtle">Сбросить историю</button>
+    <button id="btn-open-editor" type="button" class="btn-subtle" title="Открыть редактор корпусов слов">✎ Редактор корпусов</button>
+  </div>
+
+  <input type="radio" name="theme" value="50_50" checked style="display:none">
+
+  <p class="status" id="status">Нажмите «Сгенерировать», чтобы создать первый кроссворд по миру TES.</p>
+</header>
+
+<main>
+  <p id="history-banner" class="history-banner"></p>
+  <h2 class="puzzle-title" id="puzzle-title"></h2>
+  <div id="grid-container" class="grid-container"></div>
+  <div id="clues-container" class="clues-container"></div>
+  <div id="answer-key" class="answer-key"></div>
+</main>
+
+<section class="editor-panel" id="editor-panel">
+  <div class="editor-toolbar">
+    <button id="btn-editor-back" type="button" class="btn-subtle">← К кроссворду</button>
+    <select id="editor-pack-select" title="Выбрать пак для просмотра/редактирования"></select>
+    <button id="btn-editor-new" type="button" class="btn-subtle">+ Новый пак</button>
+    <button id="btn-editor-clone" type="button" class="btn-subtle" title="Создать редактируемую копию текущего пака">⧉ Клонировать</button>
+    <span class="editor-toolbar-spacer"></span>
+    <span id="editor-readonly-tag" class="editor-readonly-tag" hidden>read-only (встроенный пак)</span>
+  </div>
+
+  <div class="editor-pack-meta">
+    <div>
+      <label>Название пака</label>
+      <input type="text" id="editor-pack-name" placeholder="Имя пака">
+    </div>
+    <div>
+      <label>Описание</label>
+      <input type="text" id="editor-pack-description" placeholder="Краткое описание">
+    </div>
+    <div>
+      <label>ID</label>
+      <span id="editor-pack-id" class="pack-id-readonly">—</span>
+    </div>
+  </div>
+
+  <div class="editor-stats" id="editor-stats">—</div>
+
+  <div class="editor-table-wrap">
+    <table class="editor-table">
+      <thead>
+        <tr>
+          <th class="col-word">Слово</th>
+          <th class="col-len">Дл.</th>
+          <th>Прямая подсказка</th>
+          <th>Хитрая 1</th>
+          <th>Хитрая 2</th>
+          <th>Хитрая 3</th>
+          <th class="col-theme">Тема</th>
+          <th class="col-diff">Сл.</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody id="editor-tbody"></tbody>
+    </table>
+  </div>
+
+  <button type="button" class="editor-add-row" id="btn-editor-add-row">+ Добавить слово</button>
+
+  <div class="editor-footer">
+    <button id="btn-editor-apply" type="button" class="btn-primary" title="Применить изменения и обновить корпус">✓ Применить</button>
+    <button id="btn-editor-download" type="button">⬇ Скачать .js</button>
+    <button id="btn-editor-delete-pack" type="button" class="btn-subtle" title="Удалить весь пак">🗑 Удалить пак</button>
+    <span id="editor-status" class="editor-footer-status"></span>
+  </div>
+</section>
+
+<section class="history-panel" id="history-panel">
+  <div class="history-header">
+    <h2 class="history-title">История <span id="history-count" class="history-count"></span></h2>
+    <div class="history-buttons">
+      <button id="btn-history-toggle" type="button" class="btn-subtle">Показать</button>
+      <button id="btn-history-clear" type="button" class="btn-subtle">Очистить</button>
+    </div>
+  </div>
+  <ul id="history-list" class="history-list"></ul>
+</section>
+
+<!--
+  TES-поставка: пустой базовый корпус, два пака про мир Skyrim и общий лор TES.
+  Открывайте index.html двойным кликом — работает через file:/// без сервера.
+-->
+<script>window.CW = window.CW || {}; CW.BASE_WORDS_RAW = [];</script>
+<script src="data/pack-skyrim-core.js?v=54"></script>
+<script src="data/pack-tes-deep-lore.js?v=54"></script>
+<script src="js/data-loader.js?v=54"></script>
+<script src="js/editor.js?v=54"></script>
+<script src="js/rng.js?v=54"></script>
+<script src="js/history.js?v=54"></script>
+<script src="js/puzzles.js?v=54"></script>
+<script src="js/grid.js?v=54"></script>
+<script src="js/generator-classic.js?v=54"></script>
+<script src="js/renderer.js?v=54"></script>
+<script src="js/app.js?v=54"></script>
+<script src="js/dragon-controller.js?v=54"></script>
+<script src="js/skyrim-decor.js?v=54"></script>
+<script src="js/dragon-wander.js?v=54"></script>
+<script src="js/skeleton-dragon.js?v=54"></script>
+</body>
+</html>

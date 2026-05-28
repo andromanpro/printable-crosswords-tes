@@ -1,0 +1,1143 @@
+:root {
+  --color-bg: #f7f6f2;
+  --color-fg: #1a1a1a;
+  --color-line: #2a2a2a;
+  --color-accent: #b03020;
+  --color-muted: #777;
+  --color-block: #d8d8d8;
+  --color-cell-bg: #ffffff;
+  --color-cell-border: #2a2a2a;
+  --color-num: #333;
+  --color-panel-bg: #ffffff;
+  --color-panel-border: #ddd;
+  --color-input-bg: #ffffff;
+
+  /* Размеры шрифтов: переопределяются классами body.font-* и .fit-a4 */
+  --clue-screen-px: 16px;
+  --clue-h3-screen-px: 18px;
+  --clue-print-pt: 12pt;
+  --clue-h3-print-pt: 13pt;
+  --grid-letter-print-pt: 11pt;
+  --grid-cell-mm: 12mm;
+}
+
+body.font-small  { --clue-screen-px: 13px; --clue-h3-screen-px: 15px;
+                   --clue-print-pt: 9pt;  --clue-h3-print-pt: 10.5pt;
+                   --grid-letter-print-pt: 9pt; }
+body.font-medium { /* defaults */ }
+body.font-large  { --clue-screen-px: 19px; --clue-h3-screen-px: 22px;
+                   --clue-print-pt: 14pt; --clue-h3-print-pt: 16pt;
+                   --grid-letter-print-pt: 13pt; }
+body.font-xlarge { --clue-screen-px: 22px; --clue-h3-screen-px: 26px;
+                   --clue-print-pt: 17pt; --clue-h3-print-pt: 19pt;
+                   --grid-letter-print-pt: 15pt; }
+
+/* Уместить на 1 листе: компактные размеры независимо от font-size */
+body.fit-a4      { --grid-cell-mm: 9mm;
+                   --clue-print-pt: 9pt; --clue-h3-print-pt: 10pt;
+                   --grid-letter-print-pt: 9pt; }
+
+/* Тёмная тема — только для экрана; печать всегда на светлом (см. print.css) */
+body.theme-dark {
+  --color-bg: #1a1d24;
+  --color-fg: #e8e8e8;
+  --color-line: #4a5060;
+  --color-accent: #e84a35;
+  --color-muted: #9aa0ac;
+  --color-block: #3a3f4a;
+  --color-cell-bg: #2a2f3a;
+  --color-cell-border: #4a5060;
+  --color-num: #b0b6c0;
+  --color-panel-bg: #232730;
+  --color-panel-border: #3a3f4a;
+  --color-input-bg: #2a2f3a;
+}
+
+
+/* Skyrim / Древние Свитки — тёмный фон, янтарно-золотой текст, пергаментная сетка */
+body.theme-skyrim {
+  --color-bg: #0e0c08;
+  --color-fg: #c8a560;
+  --color-line: #5a4a30;
+  --color-accent: #d4af37;
+  --color-muted: #8e7a52;
+  --color-block: #1a1612;
+  --color-cell-bg: #ede1c3;
+  --color-cell-border: #5a4a30;
+  --color-num: #6b4e1f;
+  --color-panel-bg: #18130d;
+  --color-panel-border: #5a4a30;
+  --color-input-bg: #18130d;
+
+  font-family: 'Trajan Pro', 'IM Fell English SC', 'Cinzel', 'Constantia', 'Cambria', 'Georgia', serif;
+  letter-spacing: 0.02em;
+}
+body.theme-skyrim .app-title {
+  color: #d4af37;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.35), 0 0 2px rgba(255, 220, 130, 0.5);
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-variant: small-caps;
+}
+body.theme-skyrim .app-sub {
+  color: #8e7a52;
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+body.theme-skyrim legend {
+  color: #d4af37;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+body.theme-skyrim fieldset {
+  border-color: #5a4a30;
+  background: rgba(40, 30, 18, 0.3);
+}
+body.theme-skyrim button {
+  background: linear-gradient(180deg, #2a1f15 0%, #1a1410 100%);
+  color: #c8a560;
+  border: 1px solid #5a4a30;
+  font-family: inherit;
+  letter-spacing: 0.05em;
+  text-transform: none;
+}
+body.theme-skyrim button:hover {
+  background: linear-gradient(180deg, #3a2f20 0%, #251c14 100%);
+  border-color: #d4af37;
+  color: #e8c478;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+}
+body.theme-skyrim button.btn-primary {
+  background: linear-gradient(180deg, #6b4e1f 0%, #4a3618 100%);
+  border-color: #d4af37;
+  color: #f0d68a;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+body.theme-skyrim button.btn-primary:hover {
+  background: linear-gradient(180deg, #7d5e2a 0%, #5a4220 100%);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.5);
+}
+body.theme-skyrim .cell {
+  background: var(--color-cell-bg);
+  color: #2a1f0a;
+  border: 1px solid #5a4a30;
+  font-family: 'Trajan Pro', 'Cambria', 'Georgia', serif;
+}
+body.theme-skyrim .cell.block {
+  background: #0a0805;
+  border-color: #3a2f1a;
+}
+body.theme-skyrim .cell .num {
+  color: #6b4e1f;
+  font-weight: 600;
+}
+body.theme-skyrim .puzzle-title {
+  color: #d4af37;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 6px rgba(212, 175, 55, 0.3);
+}
+body.theme-skyrim .clues-container h3 {
+  color: #d4af37;
+  border-bottom: 1px solid #5a4a30;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+}
+body.theme-skyrim .clues-container li::marker,
+body.theme-skyrim .clues-container .clue-num {
+  color: #d4af37;
+}
+body.theme-skyrim input[type=text],
+body.theme-skyrim select {
+  background: #18130d;
+  color: #c8a560;
+  border: 1px solid #5a4a30;
+}
+body.theme-skyrim .status {
+  color: #8e7a52;
+  font-style: italic;
+}
+body.theme-skyrim .history-banner {
+  background: #2a1f15;
+  border-color: #5a4a30;
+  color: #d4af37;
+}
+body.theme-skyrim .history-panel,
+body.theme-skyrim .editor-panel {
+  background: #15110b;
+  border: 1px solid #5a4a30;
+}
+body.theme-skyrim a { color: #d4af37; }
+
+/* ============ WOW-эффекты темы Скайрим (merge Codex + DeepSeek) ============ */
+
+@media screen {
+  /* 1. Драконий силуэт водяной знак + лёгкий градиент */
+  body.theme-skyrim {
+    background-color: #0e0c08;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 520'%3E%3Cg fill='none' stroke='%23d4af37' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' opacity='.16'%3E%3Cpath d='M94 338c116-94 218-108 316-43 62 41 129 45 198 10 58-30 116-32 177-7-76 13-126 43-150 89-72-35-139-37-200-7-84 42-181 25-255-44-24-22-53-21-86 2z'/%3E%3Cpath d='M381 240c-29-63-20-118 29-164 14 59 50 100 109 124-54 6-100 19-138 40z'/%3E%3Cpath d='M525 235c64-58 136-78 216-61-46 25-72 61-77 108-38-29-85-45-139-47z'/%3E%3Cpath d='M397 295c38-60 91-91 159-92-24 25-33 54-28 87-44-13-87-11-131 5z'/%3E%3Cpath d='M583 259c31-22 62-28 93-19-22 15-34 35-36 60-15-20-34-34-57-41z'/%3E%3C/g%3E%3C/svg%3E"),
+      radial-gradient(circle at 50% 18%, rgba(212, 175, 55, 0.10), transparent 40%),
+      linear-gradient(180deg, #14100a 0%, #0e0c08 48%, #070604 100%);
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: center 100px, center top, center;
+    background-size: min(74vw, 820px) auto, 100% 620px, cover;
+    background-attachment: fixed, fixed, fixed;
+  }
+
+  /* 2. Дыхание заголовка — медленное золотое свечение */
+  body.theme-skyrim .app-title {
+    animation: skyrim-title-glow 4.8s ease-in-out infinite;
+  }
+  @keyframes skyrim-title-glow {
+    0%, 100% {
+      text-shadow: 0 0 8px rgba(212, 175, 55, 0.32), 0 0 18px rgba(120, 68, 16, 0.24);
+    }
+    50% {
+      text-shadow: 0 0 13px rgba(244, 211, 111, 0.62), 0 0 34px rgba(212, 175, 55, 0.32);
+    }
+  }
+
+  /* 3. Руническая рамка сетки кроссворда с тлеющим золотом */
+  body.theme-skyrim #grid-container {
+    position: relative;
+    padding: 8px;
+    border: 2px solid #6b552c;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent 24%), rgba(16, 12, 7, 0.25);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.18),
+      inset 0 0 26px rgba(42, 26, 8, 0.42),
+      0 0 28px rgba(212, 175, 55, 0.12);
+    animation: skyrim-board-ember 6s ease-in-out infinite;
+  }
+  body.theme-skyrim #grid-container::before {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    pointer-events: none;
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    box-shadow: inset 0 0 0 1px rgba(60, 45, 22, 0.8);
+  }
+  @keyframes skyrim-board-ember {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(212, 175, 55, 0.15),
+        inset 0 0 24px rgba(42, 26, 8, 0.42),
+        0 0 22px rgba(212, 175, 55, 0.09);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(212, 175, 55, 0.28),
+        inset 0 0 30px rgba(42, 26, 8, 0.5),
+        0 0 34px rgba(212, 175, 55, 0.16);
+    }
+  }
+
+  /* 4. Пергаментная текстура клеток (пятна и волокна без картинок) */
+  body.theme-skyrim .cell:not(.block) {
+    background:
+      radial-gradient(circle at 18% 22%, rgba(121, 86, 35, 0.13) 0 2px, transparent 3px),
+      radial-gradient(circle at 78% 34%, rgba(255, 246, 210, 0.32) 0 1px, transparent 2px),
+      radial-gradient(circle at 42% 82%, rgba(93, 58, 20, 0.10) 0 2px, transparent 3px),
+      linear-gradient(135deg, #f1e5c8 0%, #e4d0a8 46%, #f3e9ce 100%);
+    color: #251a08;
+    border-color: rgba(90, 74, 48, 0.88);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -1px 0 rgba(70, 44, 17, 0.18);
+    transition: box-shadow 180ms ease, border-color 180ms ease;
+  }
+  body.theme-skyrim .cell.block {
+    background:
+      radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.08), transparent 42%),
+      linear-gradient(135deg, #15110c 0%, #080604 100%);
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.65);
+  }
+
+  /* 5. Янтарное свечение клетки при наведении / фокусе */
+  body.theme-skyrim .cell:not(.block):hover,
+  body.theme-skyrim .cell:not(.block):focus,
+  body.theme-skyrim .cell.solve-active,
+  body.theme-skyrim .cell.solve-highlight {
+    z-index: 2;
+    border-color: #d4af37;
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.55),
+      0 0 14px rgba(212, 175, 55, 0.38),
+      inset 0 0 12px rgba(255, 241, 184, 0.48);
+  }
+
+  /* 6. «Крик дракона» — золотой shimmer по primary-кнопке при hover */
+  body.theme-skyrim button.btn-primary {
+    position: relative;
+    overflow: hidden;
+    color: #f6e7b2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.65);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 235, 170, 0.24),
+      0 0 18px rgba(212, 175, 55, 0.14);
+  }
+  body.theme-skyrim button.btn-primary::after {
+    content: "";
+    position: absolute;
+    top: -40%;
+    bottom: -40%;
+    left: -70%;
+    width: 42%;
+    background: linear-gradient(90deg, transparent, rgba(255, 232, 151, 0.42), transparent);
+    transform: rotate(18deg);
+    transition: left 520ms ease;
+    pointer-events: none;
+  }
+  body.theme-skyrim button.btn-primary:hover::after {
+    left: 128%;
+  }
+  body.theme-skyrim button.btn-primary:active {
+    box-shadow:
+      inset 0 2px 8px rgba(0, 0, 0, 0.42),
+      0 0 22px rgba(212, 175, 55, 0.24);
+  }
+
+  /* 7. Cast-ring при клике (требует JS: добавить класс is-casting на 700мс) */
+  body.theme-skyrim button.btn-primary.is-casting::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border: 1px solid rgba(244, 211, 111, 0.85);
+    box-shadow: 0 0 22px rgba(212, 175, 55, 0.55);
+    animation: skyrim-cast-ring 700ms ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes skyrim-cast-ring {
+    from { opacity: 0.9; transform: scale(0.96); }
+    to   { opacity: 0;   transform: scale(1.18); }
+  }
+
+  /* 8. Стилизованный скроллбар (свиток-бронза) — DeepSeek */
+  body.theme-skyrim {
+    scrollbar-width: thin;
+    scrollbar-color: #6b4e1f #1a1612;
+  }
+  body.theme-skyrim ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  body.theme-skyrim ::-webkit-scrollbar-track {
+    background: #1a1612;
+    border-left: 1px solid #2a2218;
+  }
+  body.theme-skyrim ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #6b4e1f, #4a3618);
+    border-radius: 4px;
+    border: 1px solid #8e7a52;
+  }
+  body.theme-skyrim ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #7a5a28, #5a4220);
+    border-color: #d4af37;
+  }
+  body.theme-skyrim ::-webkit-scrollbar-corner {
+    background: #1a1612;
+  }
+
+  /* 9. Снежные хлопья — атмосфера Скайрима */
+  body.theme-skyrim .snow-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  body.theme-skyrim .snow-layer span {
+    position: absolute;
+    top: -10vh;
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(220,220,255,0.4) 50%, transparent 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.35);
+    animation: skyrim-snowfall linear infinite, skyrim-snowsway ease-in-out infinite;
+    opacity: 0.85;
+  }
+  /* 24 хлопья — раскиданы по горизонтали, разные скорости и задержки */
+  body.theme-skyrim .snow-layer span:nth-child(1)  { left:  3%; animation-duration: 14s, 3.2s; animation-delay:  0.0s, 0s; width: 5px; height: 5px; }
+  body.theme-skyrim .snow-layer span:nth-child(2)  { left:  9%; animation-duration: 11s, 2.5s; animation-delay:  1.3s, 0s; width: 4px; height: 4px; }
+  body.theme-skyrim .snow-layer span:nth-child(3)  { left: 15%; animation-duration: 17s, 4.1s; animation-delay:  3.0s, 0s; width: 7px; height: 7px; }
+  body.theme-skyrim .snow-layer span:nth-child(4)  { left: 22%; animation-duration: 13s, 3.5s; animation-delay:  5.0s, 0s; width: 3px; height: 3px; opacity: 0.6; }
+  body.theme-skyrim .snow-layer span:nth-child(5)  { left: 28%; animation-duration: 16s, 2.8s; animation-delay:  7.4s, 0s; width: 6px; height: 6px; }
+  body.theme-skyrim .snow-layer span:nth-child(6)  { left: 34%; animation-duration: 12s, 3.7s; animation-delay:  2.0s, 0s; width: 4px; height: 4px; }
+  body.theme-skyrim .snow-layer span:nth-child(7)  { left: 40%; animation-duration: 15s, 2.9s; animation-delay:  9.5s, 0s; width: 5px; height: 5px; }
+  body.theme-skyrim .snow-layer span:nth-child(8)  { left: 46%; animation-duration: 18s, 4.3s; animation-delay:  4.0s, 0s; width: 8px; height: 8px; opacity: 0.65; }
+  body.theme-skyrim .snow-layer span:nth-child(9)  { left: 52%; animation-duration: 13s, 3.1s; animation-delay:  6.8s, 0s; width: 4px; height: 4px; }
+  body.theme-skyrim .snow-layer span:nth-child(10) { left: 58%; animation-duration: 14s, 2.6s; animation-delay: 11.2s, 0s; width: 6px; height: 6px; }
+  body.theme-skyrim .snow-layer span:nth-child(11) { left: 64%; animation-duration: 16s, 3.8s; animation-delay:  0.5s, 0s; width: 5px; height: 5px; }
+  body.theme-skyrim .snow-layer span:nth-child(12) { left: 70%; animation-duration: 11s, 2.4s; animation-delay:  8.7s, 0s; width: 3px; height: 3px; opacity: 0.55; }
+  body.theme-skyrim .snow-layer span:nth-child(13) { left: 76%; animation-duration: 17s, 4.0s; animation-delay:  3.5s, 0s; width: 7px; height: 7px; }
+  body.theme-skyrim .snow-layer span:nth-child(14) { left: 82%; animation-duration: 13s, 3.4s; animation-delay: 10.0s, 0s; width: 4px; height: 4px; }
+  body.theme-skyrim .snow-layer span:nth-child(15) { left: 88%; animation-duration: 15s, 2.7s; animation-delay:  6.2s, 0s; width: 6px; height: 6px; }
+  body.theme-skyrim .snow-layer span:nth-child(16) { left: 94%; animation-duration: 19s, 4.5s; animation-delay:  1.8s, 0s; width: 5px; height: 5px; }
+  body.theme-skyrim .snow-layer span:nth-child(17) { left: 12%; animation-duration: 12s, 3.0s; animation-delay: 13.0s, 0s; width: 4px; height: 4px; }
+  body.theme-skyrim .snow-layer span:nth-child(18) { left: 37%; animation-duration: 14s, 3.6s; animation-delay: 15.2s, 0s; width: 5px; height: 5px; }
+  body.theme-skyrim .snow-layer span:nth-child(19) { left: 55%; animation-duration: 16s, 2.8s; animation-delay: 12.5s, 0s; width: 6px; height: 6px; opacity: 0.7; }
+  body.theme-skyrim .snow-layer span:nth-child(20) { left: 73%; animation-duration: 13s, 3.3s; animation-delay: 17.0s, 0s; width: 4px; height: 4px; }
+  body.theme-skyrim .snow-layer span:nth-child(21) { left: 19%; animation-duration: 15s, 4.2s; animation-delay: 18.5s, 0s; width: 5px; height: 5px; }
+  body.theme-skyrim .snow-layer span:nth-child(22) { left: 67%; animation-duration: 14s, 2.6s; animation-delay: 21.0s, 0s; width: 3px; height: 3px; opacity: 0.5; }
+  body.theme-skyrim .snow-layer span:nth-child(23) { left: 45%; animation-duration: 17s, 3.9s; animation-delay: 23.0s, 0s; width: 7px; height: 7px; }
+  body.theme-skyrim .snow-layer span:nth-child(24) { left: 80%; animation-duration: 13s, 3.1s; animation-delay: 25.0s, 0s; width: 4px; height: 4px; }
+
+  @keyframes skyrim-snowfall {
+    0%   { transform: translateY(-10vh); }
+    100% { transform: translateY(110vh); }
+  }
+  @keyframes skyrim-snowsway {
+    0%, 100% { margin-left:   0px; }
+    50%      { margin-left:  16px; }
+  }
+
+  /* 10. Скелетный дракон-курсор — DRAGON-FOLLOWS-YOU by NABORAJ SARKAR (MIT) */
+  .skyrim-dragon-skel {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 400ms ease;
+  }
+  body.theme-skyrim .skyrim-dragon-skel {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.35));
+  }
+
+  /* 11. Появление заголовка — проявляются «чернила» */
+  body.theme-skyrim .app-title {
+    animation:
+      skyrim-title-glow 4.8s ease-in-out infinite,
+      skyrim-title-appear 1.4s ease-out backwards;
+  }
+  @keyframes skyrim-title-appear {
+    0%   { opacity: 0; transform: translateY(-16px); filter: blur(8px); letter-spacing: 0.3em; }
+    60%  {                                                                   filter: blur(0);    }
+    100% { opacity: 1; transform: translateY(0);   filter: blur(0);   letter-spacing: 0.08em; }
+  }
+
+  /* 12. Появление сетки кроссворда — раскрытие свитка (scale-X) */
+  body.theme-skyrim #grid-container {
+    animation:
+      skyrim-board-ember 6s ease-in-out infinite,
+      skyrim-scroll-unroll 1.2s cubic-bezier(0.22, 1, 0.36, 1) backwards 0.4s;
+    transform-origin: center top;
+  }
+  @keyframes skyrim-scroll-unroll {
+    0%   { opacity: 0; transform: scaleX(0.08) scaleY(0.5); filter: blur(4px); }
+    40%  {             transform: scaleX(1)    scaleY(0.6);                    }
+    100% { opacity: 1; transform: scaleX(1)    scaleY(1);   filter: blur(0);    }
+  }
+
+  /* 13. Декоративная руническая полоса между заголовком и сеткой */
+  body.theme-skyrim .puzzle-title::before,
+  body.theme-skyrim .puzzle-title::after {
+    content: "❦";
+    margin: 0 0.6em;
+    color: #6b4e1f;
+    font-size: 0.7em;
+    vertical-align: middle;
+    display: inline-block;
+    animation: skyrim-title-glow 4.8s ease-in-out infinite reverse;
+  }
+}
+
+/* Skyrim — фикс белой полосы: html всегда тёмный, body растягивается на viewport */
+@media screen {
+  html { background: #0e0c08 !important; min-height: 100%; }
+  body.theme-skyrim { min-height: 100vh; background: #0e0c08 !important; }
+}
+
+/* Print-safe: в PDF никаких эффектов, белый фон */
+@media print {
+  html, body.theme-skyrim,
+  body.theme-skyrim * {
+    animation: none !important;
+    transition: none !important;
+  }
+  html, body.theme-skyrim {
+    background: #fff !important;
+  }
+  body.theme-skyrim *::before,
+  body.theme-skyrim *::after {
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+  /* Скрываем декоративные слои на печати */
+  body.theme-skyrim .snow-layer,
+  body.theme-skyrim .skyrim-dragon-flyby { display: none !important; }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.controls {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px 24px 20px;
+  background: var(--color-panel-bg);
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.app-title {
+  margin: 0 0 2px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.app-sub {
+  margin: 0 0 16px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.ctrl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ctrl-group {
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+  padding: 8px 12px 10px;
+  margin: 0;
+}
+.ctrl-group legend {
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0 6px;
+  color: var(--color-fg);
+  opacity: 0.85;
+}
+.ctrl-group label {
+  display: block;
+  padding: 3px 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Сворачиваемая группа всех настроек: кнопка-аккордеон + блок ctrl-grid */
+.btn-toggle-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--color-input-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-toggle-settings:hover { filter: brightness(1.05); }
+.btn-toggle-settings .caret {
+  display: inline-block;
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+.btn-toggle-settings.expanded .caret { transform: rotate(90deg); }
+.ctrl-grid.collapsed { display: none; }
+.ctrl-group input[type="radio"],
+.ctrl-group input[type="checkbox"] {
+  margin-right: 6px;
+  transform: scale(1.1);
+}
+
+.ctrl-packs {
+  grid-column: 1 / -1;  /* паки занимают всю ширину при необходимости */
+}
+.packs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.pack-item {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  cursor: pointer;
+  flex: 1 1 240px;
+}
+.pack-item-name {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pack-item-desc {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0 0 0 24px;
+  line-height: 1.3;
+}
+.pack-count {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-left: auto;
+}
+.pack-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.pack-delete {
+  padding: 0 6px;
+  font-size: 14px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-muted);
+  margin-left: 4px;
+  cursor: pointer;
+}
+.pack-delete:hover {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+.pack-item-user {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 6px;
+  margin-left: -8px;
+}
+.packs-upload {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-panel-border);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.upload-pack-status {
+  font-size: 12px;
+}
+.upload-pack-status.ok { color: #2a7a2a; }
+.upload-pack-status.err { color: var(--color-accent); }
+.status-muted { color: var(--color-muted); font-size: 13px; }
+
+.ctrl-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+button {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: var(--color-input-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+button:hover { filter: brightness(1.1); }
+button:active { filter: brightness(0.9); }
+
+.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-primary:hover { background: #8e2519; border-color: #8e2519; }
+
+.btn-subtle {
+  font-size: 13px;
+  opacity: 0.75;
+  border-color: var(--color-panel-border);
+}
+.btn-subtle:hover { opacity: 1; }
+
+.status {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+main {
+  max-width: 980px;
+  margin: 24px auto;
+  padding: 0 24px 60px;
+}
+
+.puzzle-title {
+  text-align: center;
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.grid-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-size, 13), var(--cell-size, 36px));
+  grid-template-rows: repeat(var(--grid-size, 13), var(--cell-size, 36px));
+  border: 2px solid var(--color-cell-border);
+  background: var(--color-cell-bg);
+}
+
+.cell {
+  position: relative;
+  width: var(--cell-size, 36px);
+  height: var(--cell-size, 36px);
+  border: 1px solid var(--color-cell-border);
+  background: var(--color-cell-bg);
+  color: var(--color-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 18px/1 "Times New Roman", serif;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+.cell.block {
+  background: var(--color-block);
+}
+.cell:not(.block) {
+  cursor: pointer;
+}
+.cell .num {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  font: 400 9px/1 system-ui, sans-serif;
+  color: var(--color-num);
+}
+.cell .ans {
+  display: none;
+  user-select: none;
+}
+.show-answers .cell .ans { display: block; }
+.show-answers .cell.block .ans { display: none; }
+
+/* Пользовательский ввод: показывается всегда (если есть userInput),
+   но при включенном «Показать ответы» уступает место правильному ответу. */
+.cell .user-letter {
+  font-weight: 700;
+  color: #1a4a8a;
+  user-select: none;
+  pointer-events: none;
+}
+.show-answers .cell .user-letter { display: none; }
+body.theme-dark .cell .user-letter { color: #6cb4ff; }
+
+/* Активная клетка (cursor) и подсветка слова */
+.cell.solve-active {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+.cell.solve-highlight {
+  background: #fff7e6;
+}
+body.theme-dark .cell.solve-highlight {
+  background: #3a3520;
+}
+
+/* Результат проверки */
+.cell.solve-error .user-letter { color: #c01010; }
+.cell.solve-correct .user-letter { color: #2a7a2a; }
+body.theme-dark .cell.solve-error .user-letter { color: #ff6060; }
+body.theme-dark .cell.solve-correct .user-letter { color: #5cd05c; }
+
+.clues-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  font-size: var(--clue-screen-px);
+}
+.clues-container h3 {
+  margin: 0 0 8px;
+  font-size: var(--clue-h3-screen-px);
+  font-weight: 700;
+}
+.clues-container ol {
+  padding-left: 26px;
+  margin: 0 0 12px;
+}
+.clues-container li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.answer-key {
+  display: none;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px dashed #999;
+}
+.answer-key h3 {
+  text-align: center;
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.answer-key.visible { display: block; }
+
+.error-msg {
+  text-align: center;
+  padding: 24px;
+  background: #fde9e6;
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  color: #6a1810;
+}
+
+/* Баннер «просмотр из истории» */
+.history-banner {
+  display: none;
+  margin: 0 0 12px;
+  padding: 8px 14px;
+  background: #fff7e6;
+  border: 1px solid #d4a23a;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #6a4a10;
+  text-align: center;
+}
+.history-banner.visible { display: block; }
+.history-banner button {
+  margin-left: 12px;
+  padding: 3px 10px;
+  font-size: 13px;
+}
+body.theme-dark .history-banner {
+  background: #2a2418;
+  border-color: #5a4a20;
+  color: #d4b86a;
+}
+
+/* Панель истории под main */
+.history-panel {
+  max-width: 980px;
+  margin: 32px auto 60px;
+  padding: 0 24px;
+}
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.history-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.history-count {
+  font-weight: normal;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+.history-buttons {
+  display: flex;
+  gap: 8px;
+}
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: none;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+.history-list.visible { display: block; }
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  background: white;
+  transition: background 0.1s;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item:hover { background: #f5f3ee; }
+.history-item.current {
+  background: #fdf3f0;
+  border-left: 3px solid var(--color-accent);
+  padding-left: 11px;
+}
+.history-item-main {
+  flex: 1;
+  min-width: 0;
+}
+.history-item-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-fg);
+}
+.history-item-meta {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+.history-item-delete {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #999;
+  padding: 3px 8px;
+  font-size: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.history-item-delete:hover {
+  background: #fde9e6;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+@media print {
+  .history-panel { display: none !important; }
+  .history-banner { display: none !important; }
+  .editor-panel { display: none !important; }
+}
+
+/* ===== Редактор корпусов (CMS режим) ===== */
+
+.editor-panel {
+  display: none;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px 60px;
+}
+body.mode-editor .editor-panel { display: block; }
+body.mode-editor .controls,
+body.mode-editor main,
+body.mode-editor .history-panel { display: none; }
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+.editor-toolbar select,
+.editor-toolbar input[type="text"] {
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-input-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+}
+.editor-toolbar .editor-toolbar-spacer { flex: 1; }
+.editor-toolbar .editor-readonly-tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  background: var(--color-block);
+  color: var(--color-fg);
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.editor-pack-meta {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 12px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+.editor-pack-meta label {
+  font-size: 12px;
+  color: var(--color-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+.editor-pack-meta input[type="text"] {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-input-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+}
+.editor-pack-meta .pack-id-readonly {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.editor-stats {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin-bottom: 8px;
+}
+.editor-stats .err { color: var(--color-accent); font-weight: 600; }
+
+.editor-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+  background: var(--color-panel-bg);
+}
+.editor-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.editor-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-panel-bg);
+  border-bottom: 2px solid var(--color-panel-border);
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 6px;
+  font-size: 12px;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.editor-table td {
+  border-bottom: 1px solid var(--color-panel-border);
+  padding: 0;
+  vertical-align: top;
+}
+.editor-table tr:hover td { background: rgba(176, 48, 32, 0.04); }
+.editor-table tr.invalid { background: rgba(176, 48, 32, 0.08); }
+.editor-table tr.invalid:hover td { background: rgba(176, 48, 32, 0.12); }
+
+.editor-table input,
+.editor-table textarea,
+.editor-table select {
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 13px;
+  resize: none;
+  display: block;
+}
+.editor-table input:focus,
+.editor-table textarea:focus,
+.editor-table select:focus {
+  outline: 2px solid var(--color-accent);
+  background: var(--color-input-bg);
+}
+.editor-table td { vertical-align: top; }
+.editor-table .col-word input { font-weight: 600; text-transform: uppercase; }
+.editor-table .col-actions { width: 36px; text-align: center; padding: 4px; vertical-align: middle; }
+.editor-table .col-diff,
+.editor-table .col-theme { width: 100px; vertical-align: middle; }
+.editor-table .col-len { width: 36px; text-align: center; padding: 8px 4px; color: var(--color-muted); font-size: 12px; vertical-align: middle; }
+.editor-table textarea {
+  min-height: 28px;
+  line-height: 1.35;
+  overflow: hidden;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+/* Современный браузер: textarea растёт по содержимому без JS. */
+@supports (field-sizing: content) {
+  .editor-table textarea { field-sizing: content; }
+}
+
+.editor-row-delete {
+  background: transparent;
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-muted);
+  font-size: 14px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.editor-row-delete:hover {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+.editor-cell-error {
+  color: var(--color-accent);
+  font-size: 11px;
+  padding: 0 8px 4px;
+  background: rgba(176, 48, 32, 0.05);
+}
+
+.editor-add-row {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: var(--color-panel-bg);
+  border: 1px dashed var(--color-panel-border);
+  border-radius: 4px;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+}
+.editor-add-row:hover {
+  background: rgba(176, 48, 32, 0.05);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.editor-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-panel-border);
+}
+.editor-footer-status {
+  font-size: 13px;
+  margin-left: 12px;
+}
+.editor-footer-status.ok { color: #2a7a2a; }
+.editor-footer-status.err { color: var(--color-accent); }
+
+.editor-readonly .editor-table input,
+.editor-readonly .editor-table textarea,
+.editor-readonly .editor-table select { pointer-events: none; opacity: 0.85; }
+.editor-readonly .editor-row-delete,
+.editor-readonly .editor-add-row,
+.editor-readonly .editor-pack-meta input { display: none; }
