@@ -1137,7 +1137,7 @@ body.theme-skyrim .scroll-paper {
 /* Заглушка-подсказка внутри пустого свитка */
 body.theme-skyrim #grid-container:not(:has(.grid)) .scroll-paper::before,
 body.theme-skyrim .scroll-paper:empty::before {
-  content: "Свиток пустеет, пока ты не призовёшь его слова";
+  content: "Свиток пуст";
   display: flex;
   align-items: center;
   justify-content: center;
