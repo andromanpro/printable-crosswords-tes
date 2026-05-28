@@ -5,6 +5,30 @@ import { FBXLoader } from '../vendor/three/FBXLoader.js';
 const stage = document.getElementById('dragon-cinematic-stage');
 const MODEL_SOURCES = [
   {
+    url: 'assets/models/the_elder_scrolls_blades_ancient_dragon.glb',
+    label: 'TES Blades Ancient Dragon Sketchfab GLB',
+    type: 'gltf',
+    profile: 'ancient',
+    rotationY: Math.PI / 2,
+    fitSize: 2.75
+  },
+  {
+    url: 'assets/models/tes-blades-ancient-dragon.glb',
+    label: 'TES Blades Ancient Dragon Sketchfab GLB',
+    type: 'gltf',
+    profile: 'ancient',
+    rotationY: Math.PI / 2,
+    fitSize: 2.75
+  },
+  {
+    url: 'assets/models/tes-blades-ancient-dragon/source/model.glb',
+    label: 'TES Blades Ancient Dragon Sketchfab GLB',
+    type: 'gltf',
+    profile: 'ancient',
+    rotationY: Math.PI / 2,
+    fitSize: 2.75
+  },
+  {
     url: 'assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx',
     label: 'TES Blades Ancient Dragon FBX',
     type: 'fbx',
@@ -12,7 +36,6 @@ const MODEL_SOURCES = [
     rotationY: 0
   },
   { url: 'assets/models/alduin/source/Ps%20Alduin%20Dragon.glb', label: 'Alduin Sketchfab GLB', type: 'gltf', profile: 'alduin' },
-  { url: 'assets/models/tes-blades-ancient-dragon.glb', label: 'TES Blades Ancient Dragon GLB' },
   { url: 'assets/models/tes-blades-ancient-dragon/scene.gltf', label: 'TES Blades Ancient Dragon glTF' },
   { url: 'assets/models/tes-blades-shulkunaak.glb', label: 'TES Blades Shulkunaak GLB' },
   { url: 'assets/models/tes-blades-shulkunaak/scene.gltf', label: 'TES Blades Shulkunaak glTF' },
@@ -28,8 +51,8 @@ const canAnimate = !window.matchMedia || !window.matchMedia('(prefers-reduced-mo
 const gltfLoader = new GLTFLoader();
 const fbxLoader = new FBXLoader();
 const pointer = new THREE.Vector2(0, 0);
-const target = new THREE.Vector3(1.45, 1.35, -0.35);
-const position = new THREE.Vector3(-2.7, 0.95, -0.25);
+const target = new THREE.Vector3(1.15, 0.58, -0.35);
+const position = new THREE.Vector3(-1.15, 0.52, -0.25);
 const lastPosition = new THREE.Vector3().copy(position);
 const forwardAxis = new THREE.Vector3(1, 0, 0);
 const mouthLocal = new THREE.Vector3(1.82, 0.05, 0);
@@ -64,7 +87,7 @@ let flameTexture = null;
 let smokeTexture = null;
 let fireParticles = [];
 let fallbackParts = {};
-let targetTimer = 0;
+let targetTimer = 4.2;
 let fireCooldown = 5.5;
 let fireTime = 0;
 
@@ -435,7 +458,8 @@ function installModel(asset, source) {
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  const scale = (source.type === 'fbx' ? 3.2 : 3.45) / Math.max(size.x, size.y, size.z, 1);
+  const fitSize = source.fitSize || (source.type === 'fbx' ? 3.2 : 3.45);
+  const scale = fitSize / Math.max(size.x, size.y, size.z, 1);
 
   model.scale.setScalar(scale);
   model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
@@ -448,6 +472,7 @@ function installModel(asset, source) {
     clipNames = clips.map(clip => clip.name);
     const requestedClip = getRequestedClip(clips);
     const idleClip = requestedClip || pickClip(clips, [
+      /^Dragon_Ancient_Idle_FlyTransition$/i,
       /^Dragon_Ancient_Patrol_Idle$/i,
       /^Dragon_Ancient_Idle$/i,
       /^Dragon_Ancient_Dialogue_Relaxed_Idle$/i,
@@ -662,13 +687,13 @@ function chooseTarget() {
 
 function collectAnchors() {
   const anchors = [
-    screenToWorld(window.innerWidth * 0.08, window.innerHeight * 0.28, -0.4),
-    screenToWorld(window.innerWidth * 0.92, window.innerHeight * 0.22, -0.8),
-    screenToWorld(window.innerWidth * 0.84, window.innerHeight * 0.78, -0.2),
-    screenToWorld(window.innerWidth * 0.16, window.innerHeight * 0.72, 0.2)
+    screenToWorld(window.innerWidth * 0.18, window.innerHeight * 0.52, -0.4),
+    screenToWorld(window.innerWidth * 0.82, window.innerHeight * 0.48, -0.8),
+    screenToWorld(window.innerWidth * 0.78, window.innerHeight * 0.78, -0.2),
+    screenToWorld(window.innerWidth * 0.22, window.innerHeight * 0.72, 0.2)
   ];
 
-  ['#grid-container', '#clues-container', '.app-title', '.controls'].forEach((selector, index) => {
+  ['#grid-container', '#clues-container'].forEach((selector, index) => {
     const el = document.querySelector(selector);
     if (!el) return;
     const rect = el.getBoundingClientRect();

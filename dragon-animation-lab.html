@@ -171,6 +171,24 @@ import { GLTFLoader } from './vendor/three/GLTFLoader.js';
 
 const MODEL_SOURCES = [
   {
+    id: 'sketchfab-blades-download-glb',
+    label: 'Sketchfab GLB download (actual file)',
+    type: 'gltf',
+    url: './assets/models/the_elder_scrolls_blades_ancient_dragon.glb'
+  },
+  {
+    id: 'sketchfab-blades-glb',
+    label: 'Sketchfab GLB download (converted)',
+    type: 'gltf',
+    url: './assets/models/tes-blades-ancient-dragon.glb'
+  },
+  {
+    id: 'sketchfab-blades-source-glb',
+    label: 'Sketchfab GLB download in source/model.glb',
+    type: 'gltf',
+    url: './assets/models/tes-blades-ancient-dragon/source/model.glb'
+  },
+  {
     id: 'alduin-glb',
     label: 'Alduin GLB (static original)',
     type: 'gltf',
@@ -214,6 +232,7 @@ const MODEL_SOURCES = [
   }
 ];
 const ORIGINAL_POSE_VALUE = '__original_pose__';
+const queryParams = new URLSearchParams(window.location.search);
 const viewport = document.getElementById('viewport');
 const modelSelect = document.getElementById('model-select');
 const clipSelect = document.getElementById('clip-select');
@@ -334,7 +353,9 @@ function restoreOriginalPose() {
 }
 
 function selectDefaultClip() {
-  return clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle')) ||
+  return getRequestedClip() ||
+    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle_FlyTransition')) ||
+    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Patrol_Idle')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Dialogue_Relaxed_Idle')) ||
     clips.find(clip => /(^|[_|])idle($|[|])/i.test(clip.name)) ||
@@ -343,6 +364,22 @@ function selectDefaultClip() {
 
 function isNamedClip(clip, name) {
   return clip.name === name || clip.name.includes(`|${name}|`);
+}
+
+function getQueryValue(...names) {
+  for (const name of names) {
+    const value = queryParams.get(name);
+    if (value) return value;
+  }
+  return null;
+}
+
+function getRequestedClip() {
+  const requested = getQueryValue('clip', 'dragonClip', 'dragonAnim');
+  if (!requested) return null;
+  return clips.find(clip => clip.name === requested) ||
+    clips.find(clip => clip.name.toLowerCase() === requested.toLowerCase()) ||
+    null;
 }
 
 function playClip(name, loop = true) {
@@ -413,7 +450,10 @@ async function load() {
     option.textContent = source.label;
     modelSelect.appendChild(option);
   });
-  await loadModel(MODEL_SOURCES[0]);
+  const requestedModel = getQueryValue('model', 'dragonModel');
+  const source = MODEL_SOURCES.find(candidate => candidate.id === requestedModel) || MODEL_SOURCES[0];
+  modelSelect.value = source.id;
+  await loadModel(source);
 }
 
 async function loadModel(source) {
@@ -438,7 +478,7 @@ async function loadModel(source) {
 
   const originalOption = document.createElement('option');
   originalOption.value = ORIGINAL_POSE_VALUE;
-  originalOption.textContent = clips.length ? 'Raw FBX rest pose, no animation' : 'Static model, no animation';
+  originalOption.textContent = clips.length ? 'Original model pose, no animation' : 'Static model, no animation';
   clipSelect.appendChild(originalOption);
 
   clips.forEach(clip => {
