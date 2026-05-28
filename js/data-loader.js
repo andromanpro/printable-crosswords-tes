@@ -88,13 +88,15 @@
   }
 
   // Возвращает pool слов под параметры генерации.
-  // theme: '70_30' | '100_sport' | '50_50' — определяет долю спорт/общее.
+  // theme: 'all' или конкретная TES-категория/tag. Старые значения
+  // '70_30' / '100_sport' / '50_50' оставлены как алиасы "всё",
+  // чтобы не ломать сохранённые пользовательские паки и старые HTML.
   // maxDifficulty: 1..3 — максимальная сложность.
   // sizeLimit: максимальная длина слова (для конкретной сетки).
   function buildPool(words, opts) {
     const maxDiff = opts.maxDifficulty || 3;
     const sizeLimit = opts.sizeLimit || 99;
-    const theme = opts.theme || '70_30';
+    const theme = opts.theme || 'all';
     const isMixed = (maxDiff === 'mixed' || maxDiff === 4 || opts.balanceDifficulty);
 
     const ok = words.filter(w =>
@@ -103,18 +105,13 @@
       w.len <= sizeLimit
     );
 
-    const wl = ok.filter(w => w.theme === 'weightlifting');
-    const sp = ok.filter(w => w.theme === 'sport');
-    const gn = ok.filter(w => w.theme === 'general');
+    const legacyAll = theme === '70_30' || theme === '100_sport' || theme === '50_50';
+    if (!theme || theme === 'all' || legacyAll) return ok;
 
-    if (theme === '100_sport') {
-      return wl.concat(sp);
-    }
-    if (theme === '50_50') {
-      return wl.concat(sp).concat(gn);
-    }
-    // 70_30: спорт+тяжёлая атлетика приоритетны, но general включён для геометрии
-    return wl.concat(sp).concat(gn);
+    return ok.filter(w =>
+      w.theme === theme ||
+      (Array.isArray(w.tags) && w.tags.includes(theme))
+    );
   }
 
   // Сортирует pool с учётом приоритета и истории.

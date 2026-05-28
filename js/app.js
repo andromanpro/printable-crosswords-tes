@@ -5,6 +5,7 @@
 
   let currentGrid = null;
   let currentPuzzleId = null;   // id записи в истории, если показываем из истории
+  let currentPuzzleFromHistory = false;
   let serial = 1;
 
   function init() {
@@ -329,6 +330,7 @@
         CW.Puzzles.remove(p.id);
         if (currentPuzzleId === p.id) {
           currentPuzzleId = null;
+          currentPuzzleFromHistory = false;
           updateBanner();
         }
         renderHistoryList();
@@ -346,6 +348,7 @@
 
     currentGrid = entry.grid;
     currentPuzzleId = id;
+    currentPuzzleFromHistory = true;
     // Сброс активной клетки и применение сохранённого прогресса перед рендером,
     // чтобы userInput'ы попали в DOM на первом же renderGrid.
     solveActiveCell = null;
@@ -378,7 +381,7 @@
 
   function updateBanner() {
     const banner = document.getElementById('history-banner');
-    if (!currentPuzzleId) {
+    if (!currentPuzzleId || !currentPuzzleFromHistory) {
       banner.classList.remove('visible');
       banner.innerHTML = '';
       return;
@@ -393,7 +396,7 @@
     banner.innerHTML = `Просмотр из истории — создан ${tm}. <button id="btn-banner-close" type="button">Скрыть из просмотра</button>`;
     banner.classList.add('visible');
     document.getElementById('btn-banner-close').addEventListener('click', () => {
-      currentPuzzleId = null;
+      currentPuzzleFromHistory = false;
       updateBanner();
       renderHistoryList();
     });
@@ -467,6 +470,7 @@
 
     currentGrid = result.grid;
     currentPuzzleId = null;
+    currentPuzzleFromHistory = false;
     const placedIds = result.grid.placements.map(p => p.wordId);
     CW.History.add(placedIds);
 

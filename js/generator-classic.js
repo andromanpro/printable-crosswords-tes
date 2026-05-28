@@ -22,18 +22,13 @@
   function scoreFn(grid) {
     const center = (grid.size - 1) / 2;
     return function (g, cand) {
-      const len = computeLen(g, cand);
-      const midR = cand.row + (cand.dir === DOWN ? len / 2 : 0);
-      const midC = cand.col + (cand.dir === ACROSS ? len / 2 : 0);
+      const len = cand.len || 0;
+      const half = len > 0 ? (len - 1) / 2 : 0;
+      const midR = cand.row + (cand.dir === DOWN ? half : 0);
+      const midC = cand.col + (cand.dir === ACROSS ? half : 0);
       const distance = Math.abs(midR - center) + Math.abs(midC - center);
       return cand.intersections * 10 - distance;
     };
-  }
-  function computeLen(grid, cand) {
-    // Длина известна вызывающему — но мы её не передаём, поэтому считаем по факту:
-    // в findCandidates всегда передаётся слово, а кандидат хранит intersections;
-    // длина не нужна для скоринга, упрощаем — distance относительный.
-    return 0;
   }
 
   // Один прогон жадного алгоритма

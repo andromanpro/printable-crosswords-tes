@@ -161,7 +161,7 @@
 
           const check = canPlace(grid, word, nr, nc, newDir);
           if (!check.ok) continue;
-          const cand = { row: nr, col: nc, dir: newDir, intersections: check.intersections };
+          const cand = { row: nr, col: nc, dir: newDir, len, intersections: check.intersections };
           cand.score = scoreFn ? scoreFn(grid, cand) : check.intersections;
           candidates.push(cand);
         }

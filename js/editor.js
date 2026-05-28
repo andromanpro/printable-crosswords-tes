@@ -18,8 +18,19 @@
 (function () {
   'use strict';
 
-  const THEMES = ['general', 'sport', 'weightlifting'];
+  const THEMES = ['general', 'skyrim', 'morrowind', 'oblivion', 'daedra', 'meme', 'lore'];
+  const THEME_LABELS = {
+    general: 'общее',
+    skyrim: 'Skyrim',
+    morrowind: 'Morrowind',
+    oblivion: 'Oblivion',
+    daedra: 'Даэдра',
+    meme: 'мемы',
+    lore: 'лор'
+  };
   const DIFFS = [1, 2, 3];
+  const EXPERT_CLUE_COUNT = 6;
+  const EXPERT_FIELDS = Array.from({ length: EXPERT_CLUE_COUNT }, (_, i) => 'exp' + (i + 1));
 
   // Транслитерация русского для генерации id
   const RU_TR = {
@@ -54,7 +65,7 @@
     name: '',
     description: '',
     isUser: false,       // true = редактируемый user-пак, false = builtin (read-only)
-    rows: []             // [{word, clue, exp1, exp2, exp3, theme, difficulty, tags, originalId}]
+    rows: []             // [{word, clue, exp1..exp6, theme, difficulty, tags, originalId}]
   };
 
   // ---- DOM helpers ----
@@ -77,6 +88,28 @@
       .replace(/\r/g, '');
   }
 
+  function themeLabel(theme) {
+    return THEME_LABELS[theme] || theme || 'общее';
+  }
+
+  function themeOptions(currentTheme) {
+    if (!currentTheme || THEMES.includes(currentTheme)) return THEMES;
+    return THEMES.concat([currentTheme]);
+  }
+
+  function emptyRow() {
+    const row = {
+      word: '',
+      clue: '',
+      theme: 'general',
+      difficulty: 1,
+      tags: '',
+      originalId: null
+    };
+    for (const field of EXPERT_FIELDS) row[field] = '';
+    return row;
+  }
+
   // ---- Импорт пака в state ----
 
   function importPackFromCW(packId) {
@@ -86,17 +119,23 @@
     state.name = pack.name || '';
     state.description = pack.description || '';
     state.isUser = !!pack.isUser;
-    state.rows = (pack.words || []).map(w => ({
-      word: w.word || '',
-      clue: w.clue || '',
-      exp1: (w.expertClues && w.expertClues[0]) || w.expertClue || '',
-      exp2: (w.expertClues && w.expertClues[1]) || '',
-      exp3: (w.expertClues && w.expertClues[2]) || '',
-      theme: w.theme || 'general',
-      difficulty: w.difficulty || 1,
-      tags: Array.isArray(w.tags) ? w.tags.join(',') : (w.tags || ''),
-      originalId: w.id || null
-    }));
+    state.rows = (pack.words || []).map(w => {
+      const expertClues = Array.isArray(w.expertClues)
+        ? w.expertClues
+        : (w.expertClue ? [w.expertClue] : []);
+      const row = {
+        word: w.word || '',
+        clue: w.clue || '',
+        theme: w.theme || 'general',
+        difficulty: w.difficulty || 1,
+        tags: Array.isArray(w.tags) ? w.tags.join(',') : (w.tags || ''),
+        originalId: w.id || null
+      };
+      EXPERT_FIELDS.forEach((field, idx) => {
+        row[field] = expertClues[idx] || '';
+      });
+      return row;
+    });
     return true;
   }
 
@@ -212,17 +251,17 @@
       return td;
     }
     tr.appendChild(makeTextarea('clue'));
-    tr.appendChild(makeTextarea('exp1'));
-    tr.appendChild(makeTextarea('exp2'));
-    tr.appendChild(makeTextarea('exp3'));
+    for (const field of EXPERT_FIELDS) {
+      tr.appendChild(makeTextarea(field));
+    }
 
     const tdTheme = document.createElement('td');
     tdTheme.className = 'col-theme';
     const selTheme = document.createElement('select');
-    for (const t of THEMES) {
+    for (const t of themeOptions(row.theme)) {
       const opt = document.createElement('option');
       opt.value = t;
-      opt.textContent = t === 'weightlifting' ? 'тяж.атл' : (t === 'sport' ? 'спорт' : 'общее');
+      opt.textContent = themeLabel(t);
       if (row.theme === t) opt.selected = true;
       selTheme.appendChild(opt);
     }
@@ -309,7 +348,7 @@
       }
     });
     const total = state.rows.length;
-    const multiCount = state.rows.filter(r => (r.exp1 || r.exp2 || r.exp3)).length;
+    const multiCount = state.rows.filter(r => EXPERT_FIELDS.some(field => r[field])).length;
     let msg = `Слов: ${total} · с хитрыми: ${multiCount}`;
     if (invalid > 0) msg += ` · <span class="err">проблем: ${invalid}</span>`;
     stats.innerHTML = msg;
@@ -337,7 +376,7 @@
       if (takenIds.has(id)) id = makeWordId(state.packId, word, takenIds);
       takenIds.add(id);
 
-      const expert = [row.exp1, row.exp2, row.exp3].map(s => (s || '').trim()).filter(Boolean);
+      const expert = EXPERT_FIELDS.map(field => (row[field] || '').trim()).filter(Boolean);
       const tags = (row.tags || '').split(',').map(s => s.trim()).filter(Boolean);
       const len = word.length;
 
@@ -499,10 +538,7 @@
       setStatus('Клонировано. Нажмите ✓ Применить чтобы сохранить копию.', 'ok');
     });
     $('btn-editor-add-row').addEventListener('click', () => {
-      state.rows.push({
-        word: '', clue: '', exp1: '', exp2: '', exp3: '',
-        theme: 'general', difficulty: 1, tags: '', originalId: null
-      });
+      state.rows.push(emptyRow());
       renderTable();
       // Фокус в новое слово
       const lastTr = $('editor-tbody').lastElementChild;

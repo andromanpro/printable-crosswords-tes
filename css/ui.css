@@ -1018,6 +1018,7 @@ body.mode-editor .history-panel { display: none; }
 }
 .editor-table {
   width: 100%;
+  min-width: 1420px;
   border-collapse: collapse;
   font-size: 13px;
 }
