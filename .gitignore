@@ -10,6 +10,14 @@ Thumbs.db
 *.log
 *.tmp
 node_modules/
+artifacts/
+
+# Local 3D model drops. Keep attribution notes in assets/models/README.md.
+assets/models/*.zip
+assets/models/*.glb
+assets/models/*.gltf
+assets/models/*.bin
+assets/models/*/
 
 # Local-only Claude config (project-specific previews)
 .claude/launch.json

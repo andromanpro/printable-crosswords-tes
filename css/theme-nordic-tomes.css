@@ -1037,6 +1037,109 @@ body.theme-skyrim .dragon-svg .dragon-body-grp {
   50%      { transform: rotate(1.2deg) translateY(-2px); }
 }
 
+/* ── CINEMATIC 3D DRAGON ───────────────────────────────────── */
+body.theme-skyrim .dragon-cinematic-stage {
+  position: fixed;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 640ms ease;
+  mix-blend-mode: normal;
+}
+body.theme-skyrim.dragon-mode-cinematic .dragon-cinematic-stage {
+  display: block;
+  opacity: 0.9;
+}
+body.theme-skyrim .dragon-cinematic-stage.is-breathing {
+  z-index: 5;
+}
+body.theme-skyrim .dragon-cinematic-stage canvas {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+body.theme-skyrim .dragon-cinematic-stage::before,
+body.theme-skyrim .dragon-cinematic-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+body.theme-skyrim .dragon-cinematic-stage::before {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 75% 22%, rgba(251, 174, 77, 0.14), transparent 24%),
+    radial-gradient(circle at 20% 70%, rgba(87, 124, 165, 0.12), transparent 30%);
+  opacity: 0.72;
+}
+body.theme-skyrim .dragon-cinematic-stage::after {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 64% 34%, rgba(255, 111, 29, 0.34), transparent 17%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 92, 20, 0.12) 55%, transparent 100%);
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+  mix-blend-mode: screen;
+}
+body.theme-skyrim .dragon-cinematic-stage.is-breathing::after {
+  opacity: 1;
+  animation: dragon-fire-flash 1.3s ease-out;
+}
+body.theme-skyrim .dragon-cinematic-stage.is-fallback canvas {
+  filter:
+    drop-shadow(0 0 18px rgba(255, 132, 43, 0.22))
+    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.7));
+}
+body.theme-skyrim .dragon-fire-burst {
+  position: absolute;
+  z-index: 4;
+  left: -999px;
+  top: -999px;
+  width: clamp(140px, 20vw, 330px);
+  height: clamp(46px, 6vw, 92px);
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: 5% 50%;
+  clip-path: polygon(0 46%, 18% 16%, 58% 0, 100% 44%, 68% 73%, 22% 88%, 0 54%);
+  background:
+    radial-gradient(ellipse at 14% 50%, #fff7be 0 5%, rgba(255, 237, 139, 0.84) 7% 13%, transparent 24%),
+    radial-gradient(ellipse at 34% 50%, rgba(255, 211, 72, 0.82) 0 16%, rgba(255, 100, 20, 0.72) 36%, transparent 72%),
+    linear-gradient(90deg, rgba(255, 238, 140, 0.82), rgba(255, 124, 26, 0.76) 28%, rgba(183, 24, 8, 0.36) 62%, transparent);
+  filter:
+    blur(0.4px)
+    drop-shadow(0 0 8px rgba(255, 224, 128, 0.85))
+    drop-shadow(0 0 24px rgba(255, 98, 18, 0.72))
+    drop-shadow(0 0 48px rgba(181, 20, 5, 0.42));
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+body.theme-skyrim .dragon-cinematic-stage.is-breathing .dragon-fire-burst {
+  animation: dragon-fire-cone 1.18s ease-out both;
+}
+body.theme-skyrim.dragon-mode-cinematic .controls,
+body.theme-skyrim.dragon-mode-cinematic main,
+body.theme-skyrim.dragon-mode-cinematic .history-panel,
+body.theme-skyrim.dragon-mode-cinematic .editor-panel {
+  position: relative;
+  z-index: 4;
+}
+@keyframes dragon-fire-flash {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes dragon-fire-cone {
+  0% { opacity: 0; filter: blur(7px) drop-shadow(0 0 16px rgba(255, 224, 128, 0.8)); }
+  12% { opacity: 1; }
+  45% { opacity: 0.92; filter: blur(0.2px) drop-shadow(0 0 28px rgba(255, 118, 18, 0.9)); }
+  100% { opacity: 0; filter: blur(11px) drop-shadow(0 0 40px rgba(255, 70, 16, 0.65)); }
+}
+
 /* HTML/чёрный фон до загрузки, чтоб не было белых вспышек */
 html { background: #050402; }
 
@@ -1088,6 +1191,8 @@ body.theme-skyrim .wax-seal svg { width: 100%; height: 100%; display: block; }
   }
   body.theme-skyrim .snow-layer,
   body.theme-skyrim .ember-layer,
+  body.theme-skyrim .dragon-cinematic-stage,
+  body.theme-skyrim .skyrim-dragon-skel,
   body.theme-skyrim .dragon-flight,
   body.theme-skyrim .wax-seal { display: none !important; }
   body.theme-skyrim .app-title {
@@ -1112,13 +1217,21 @@ body.theme-skyrim .wax-seal svg { width: 100%; height: 100%; display: block; }
 /* ============ Dragon mode gating (master switch via body class) ============ */
 body.theme-skyrim.dragon-mode-none .dragon-flight,
 body.theme-skyrim.dragon-mode-cursor .dragon-flight,
+body.theme-skyrim.dragon-mode-cinematic .dragon-flight,
 body.theme-skyrim.dragon-mode-none .skyrim-dragon-skel,
-body.theme-skyrim.dragon-mode-fly .skyrim-dragon-skel {
+body.theme-skyrim.dragon-mode-fly .skyrim-dragon-skel,
+body.theme-skyrim.dragon-mode-cinematic .skyrim-dragon-skel {
   display: none !important;
 }
 body.theme-skyrim.dragon-mode-fly .dragon-flight,
 body.theme-skyrim.dragon-mode-cursor .skyrim-dragon-skel {
   display: block !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.theme-skyrim .dragon-cinematic-stage {
+    display: none !important;
+  }
 }
 
 /* Override: больше padding чтобы клетки не залезали под scroll-rod */

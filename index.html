@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Кроссворды по The Elder Scrolls</title>
-  <link rel="stylesheet" href="css/ui.css?v=56">
-  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=56">
-  <link rel="stylesheet" href="css/print.css?v=56">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/ui.css?v=57">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=57">
+  <link rel="stylesheet" href="css/print.css?v=57">
 </head>
 <body>
 
@@ -20,6 +21,8 @@
 <div class="ember-layer" aria-hidden="true">
   <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
 </div>
+
+<div id="dragon-cinematic-stage" class="dragon-cinematic-stage" aria-hidden="true"></div>
 
 <!-- Скелетный дракон-курсор — собственный SVG (clean-room), боковой профиль с одной парой больших крыльев -->
 <svg class="skyrim-dragon-skel" viewBox="-160 -160 320 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -531,6 +534,7 @@
       <legend>Дракон</legend>
       <label><input type="radio" name="dragon" value="fly" checked> 🐉 Пролетающий</label>
       <label><input type="radio" name="dragon" value="cursor"> 🦴 Следит за курсором</label>
+      <label><input type="radio" name="dragon" value="cinematic"> 3D-сцена</label>
       <label><input type="radio" name="dragon" value="none"> ✕ Без дракона</label>
     </fieldset>
 
@@ -654,22 +658,31 @@
 <!--
   TES-поставка: пустой базовый корпус, два пака про мир Skyrim и общий лор TES.
   Открывайте index.html двойным кликом — работает через file:/// без сервера.
+  Режим 3D-сцены использует ES-модуль Three.js; для GLB-модели нужен локальный HTTP-сервер.
 -->
 <script>window.CW = window.CW || {}; CW.BASE_WORDS_RAW = [];</script>
-<script src="data/pack-skyrim-core.js?v=56"></script>
-<script src="data/pack-tes-deep-lore.js?v=56"></script>
-<script src="js/data-loader.js?v=56"></script>
-<script src="js/editor.js?v=56"></script>
-<script src="js/rng.js?v=56"></script>
-<script src="js/history.js?v=56"></script>
-<script src="js/puzzles.js?v=56"></script>
-<script src="js/grid.js?v=56"></script>
-<script src="js/generator-classic.js?v=56"></script>
-<script src="js/renderer.js?v=56"></script>
-<script src="js/app.js?v=56"></script>
-<script src="js/dragon-controller.js?v=56"></script>
-<script src="js/skyrim-decor.js?v=56"></script>
-<script src="js/dragon-wander.js?v=56"></script>
-<script src="js/skeleton-dragon.js?v=56"></script>
+<script src="data/pack-skyrim-core.js?v=57"></script>
+<script src="data/pack-tes-deep-lore.js?v=57"></script>
+<script src="js/data-loader.js?v=57"></script>
+<script src="js/editor.js?v=57"></script>
+<script src="js/rng.js?v=57"></script>
+<script src="js/history.js?v=57"></script>
+<script src="js/puzzles.js?v=57"></script>
+<script src="js/grid.js?v=57"></script>
+<script src="js/generator-classic.js?v=57"></script>
+<script src="js/renderer.js?v=57"></script>
+<script src="js/app.js?v=57"></script>
+<script src="js/dragon-controller.js?v=57"></script>
+<script src="js/skyrim-decor.js?v=57"></script>
+<script src="js/dragon-wander.js?v=57"></script>
+<script src="js/skeleton-dragon.js?v=57"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.min.js"
+  }
+}
+</script>
+<script type="module" src="js/dragon-cinematic.js?v=57"></script>
 </body>
 </html>

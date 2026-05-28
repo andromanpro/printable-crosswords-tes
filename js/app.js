@@ -485,6 +485,11 @@
     renderHistoryList();
     updateBanner();
     updateStatus(result);
+    try {
+      window.dispatchEvent(new CustomEvent('cw-puzzle-generated', {
+        detail: { title: titleText, size: opts.size, words: result.grid.placements.length }
+      }));
+    } catch (e) { /* ignore */ }
   }
 
   function makeTitle(num) {
