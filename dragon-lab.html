@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Dragon Lab — позиционирование и огонь</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #1a1612;
+    color: #e0d0a0;
+    display: grid;
+    grid-template-columns: 320px 1fr 360px;
+    gap: 0;
+    min-height: 100vh;
+  }
+
+  /* === LEFT: page schematic === */
+  .schema {
+    background: #110d08;
+    border-right: 1px solid #3a2818;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .schema h2 { font-size: 14px; margin: 0 0 12px; color: #d4af37; text-transform: uppercase; letter-spacing: 0.1em; }
+  .schema-frame {
+    position: relative;
+    background: #0a0805;
+    border: 1px solid #5a4030;
+    border-radius: 4px;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .schema-block {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    color: #8e7a52;
+    font-size: 9px;
+    padding: 4px;
+    text-align: center;
+  }
+  .schema-block.header  { top: 2%;  height: 14%; }
+  .schema-block.grid    { top: 18%; height: 50%; background: rgba(167, 131, 72, 0.12); }
+  .schema-block.clues   { top: 70%; height: 28%; }
+  /* Dragon position indicator */
+  .schema-dragon {
+    position: absolute;
+    background: rgba(255, 100, 30, 0.4);
+    border: 2px solid #ff6b1d;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    text-shadow: 0 1px 2px #000;
+  }
+  .schema dl { font-size: 11px; margin: 0; }
+  .schema dt { color: #cca767; }
+  .schema dd { margin: 2px 0 8px; padding-left: 8px; color: #e0d0a0; font-family: monospace; }
+
+  /* === CENTER: 3D scene === */
+  .stage-wrap {
+    background: #f5f0e4;        /* почти белый — fan светлый фон */
+    background-image:
+      linear-gradient(45deg, #e8e0d0 25%, transparent 25%),
+      linear-gradient(-45deg, #e8e0d0 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #e8e0d0 75%),
+      linear-gradient(-45deg, transparent 75%, #e8e0d0 75%);
+    background-size: 24px 24px;
+    background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #lab-canvas-host {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  #lab-canvas-host canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .stage-hint {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.65);
+    color: #d4af37;
+    padding: 6px 10px;
+    font-size: 11px;
+    border-radius: 4px;
+  }
+
+  /* === RIGHT: controls === */
+  .ctrl {
+    background: #14100a;
+    border-left: 1px solid #3a2818;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  .ctrl h2 {
+    font-size: 13px; margin: 0 0 8px; color: #d4af37;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border-bottom: 1px solid #3a2818; padding-bottom: 6px;
+  }
+  .ctrl section { margin-bottom: 16px; }
+  .ctrl label {
+    display: block; margin: 6px 0; font-size: 11px; color: #cca767;
+  }
+  .ctrl label span.val { color: #fff; float: right; font-family: monospace; }
+  .ctrl input[type=range] { width: 100%; }
+  .ctrl input[type=number] {
+    background: #0a0805; color: #e0d0a0; border: 1px solid #5a4030;
+    width: 100%; padding: 4px; font-family: monospace;
+  }
+  .ctrl button {
+    background: #6b4e1f; color: #f0d68a; border: 1px solid #d4af37;
+    padding: 8px 12px; cursor: pointer; font-size: 12px;
+    width: 100%; margin: 4px 0;
+  }
+  .ctrl button:hover { background: #826030; }
+  .ctrl button.secondary { background: #2a1f15; color: #cca767; border-color: #5a4030; }
+  pre.config-out {
+    background: #0a0805; border: 1px solid #5a4030; color: #cca767;
+    font-size: 10px; padding: 8px; overflow: auto; max-height: 200px;
+    white-space: pre-wrap; word-break: break-all;
+  }
+  .top-strip {
+    grid-column: 1 / -1;
+    background: #0a0604;
+    border-bottom: 1px solid #d4af37;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .top-strip h1 { margin: 0; font-size: 16px; color: #d4af37; letter-spacing: 0.06em; }
+  .top-strip .meta { color: #8e7a52; font-size: 12px; }
+  .top-strip a { color: #d4af37; text-decoration: none; margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="top-strip">
+  <h1>🐉 Dragon Lab</h1>
+  <span class="meta">положение / размер / огонь</span>
+  <a href="index.html">← к кроссворду</a>
+</div>
+
+<!-- LEFT — схема страницы -->
+<aside class="schema">
+  <h2>Схема страницы</h2>
+  <div class="schema-frame">
+    <div class="schema-block header">Header (controls)</div>
+    <div class="schema-block grid">Grid-container<br>(свиток с кроссвордом)</div>
+    <div class="schema-block clues">Clues</div>
+    <div class="schema-dragon" id="schemaDragon">🐉</div>
+  </div>
+  <dl>
+    <dt>X страницы:</dt><dd id="info-x">50%</dd>
+    <dt>Y страницы:</dt><dd id="info-y">20%</dd>
+    <dt>Размер бокса:</dt><dd id="info-size">560 × 420 px</dd>
+    <dt>Огонь offset:</dt><dd id="info-fire-pos">(0, 0, 0)</dd>
+    <dt>Огонь направление:</dt><dd id="info-fire-dir">yaw 0°, pitch 0°</dd>
+  </dl>
+</aside>
+
+<!-- CENTER — 3D scene на белом -->
+<main class="stage-wrap">
+  <div id="lab-canvas-host"></div>
+  <div class="stage-hint">drag — вращать камеру · wheel — zoom</div>
+</main>
+
+<!-- RIGHT — контролы -->
+<aside class="ctrl">
+  <h2>Положение на странице</h2>
+  <section>
+    <label>Anchor X (% viewport) <span class="val" id="v-ax">50</span>
+      <input type="range" id="ax" min="0" max="100" value="50">
+    </label>
+    <label>Anchor Y (% viewport) <span class="val" id="v-ay">20</span>
+      <input type="range" id="ay" min="0" max="100" value="20">
+    </label>
+    <label>Stage Width (px) <span class="val" id="v-sw">560</span>
+      <input type="range" id="sw" min="200" max="900" step="20" value="560">
+    </label>
+    <label>Stage Height (px) <span class="val" id="v-sh">420</span>
+      <input type="range" id="sh" min="160" max="700" step="20" value="420">
+    </label>
+    <label>FitSize (модель) <span class="val" id="v-fs">4.2</span>
+      <input type="range" id="fs" min="1" max="8" step="0.1" value="4.2">
+    </label>
+  </section>
+
+  <h2>Огонь</h2>
+  <section>
+    <label>Источник X <span class="val" id="v-fx">0</span>
+      <input type="range" id="fx" min="-2" max="2" step="0.05" value="0">
+    </label>
+    <label>Источник Y <span class="val" id="v-fy">0</span>
+      <input type="range" id="fy" min="-2" max="2" step="0.05" value="0">
+    </label>
+    <label>Источник Z <span class="val" id="v-fz">0</span>
+      <input type="range" id="fz" min="-2" max="2" step="0.05" value="0">
+    </label>
+    <label>Направление Yaw (горизонт) <span class="val" id="v-fyw">0</span>
+      <input type="range" id="fyw" min="-180" max="180" value="0">
+    </label>
+    <label>Направление Pitch (вертикаль) <span class="val" id="v-fpt">0</span>
+      <input type="range" id="fpt" min="-90" max="90" value="0">
+    </label>
+    <label>Длина струи (m) <span class="val" id="v-flen">2</span>
+      <input type="range" id="flen" min="0.3" max="5" step="0.1" value="2">
+    </label>
+    <label>Интенсивность <span class="val" id="v-fint">1</span>
+      <input type="range" id="fint" min="0" max="3" step="0.05" value="1">
+    </label>
+    <button id="btn-fire">🔥 Дыхнуть огнём</button>
+  </section>
+
+  <h2>Действия</h2>
+  <section>
+    <button id="btn-save">💾 Сохранить как дефолт для main</button>
+    <button id="btn-reset" class="secondary">↺ Сбросить к заводским</button>
+    <button id="btn-dump" class="secondary">📋 Экспорт JSON</button>
+    <pre class="config-out" id="config-out"></pre>
+  </section>
+</aside>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.min.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './vendor/three/GLTFLoader.js';
+
+const host = document.getElementById('lab-canvas-host');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf5f0e4);
+
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 80);
+camera.position.set(0, 1.2, 8);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+host.appendChild(renderer.domElement);
+
+// Lights — балансированные для светлого фона
+scene.add(new THREE.HemisphereLight(0xffffff, 0xcfbfa0, 0.9));
+const key = new THREE.DirectionalLight(0xffffff, 1.2);
+key.position.set(5, 8, 5);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xaad4ff, 0.5);
+rim.position.set(-5, 3, -4);
+scene.add(rim);
+
+// Ground plane — слабо-видимая для опоры
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(4, 32),
+  new THREE.MeshStandardMaterial({ color: 0xe0d8c4, roughness: 0.9, metalness: 0.1 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.01;
+scene.add(ground);
+
+// Dragon group
+const dragonGroup = new THREE.Group();
+scene.add(dragonGroup);
+
+let modelSize = new THREE.Vector3(2, 2, 2);
+let modelCenter = new THREE.Vector3(0, 0, 0);
+let currentFitSize = 4.2;
+let loadedModel = null;
+
+// Загрузка GLB
+const loader = new GLTFLoader();
+const MODEL_URL = 'assets/models/the_elder_scrolls_blades_ancient_dragon.glb';
+loader.load(MODEL_URL, (gltf) => {
+  const model = gltf.scene;
+  const box = new THREE.Box3().setFromObject(model);
+  modelSize = box.getSize(new THREE.Vector3());
+  modelCenter = box.getCenter(new THREE.Vector3());
+  loadedModel = model;
+  dragonGroup.add(model);
+  model.rotation.y = Math.PI / 2;
+  applyFitSize(currentFitSize);
+}, undefined, (err) => {
+  console.warn('GLB load failed, using placeholder', err);
+  // Fallback: примитивная капсула
+  const placeholder = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.6, 2.4, 8, 16),
+    new THREE.MeshStandardMaterial({ color: 0x6b4e1f, roughness: 0.7 })
+  );
+  loadedModel = placeholder;
+  dragonGroup.add(placeholder);
+  modelSize = new THREE.Vector3(1.2, 3.6, 1.2);
+  modelCenter = new THREE.Vector3(0, 0, 0);
+  applyFitSize(currentFitSize);
+});
+
+function applyFitSize(fitSize) {
+  if (!loadedModel) return;
+  const scale = fitSize / Math.max(modelSize.x, modelSize.y, modelSize.z, 1);
+  loadedModel.scale.setScalar(scale);
+  // Поднимаем чтобы лапы касались y=0
+  loadedModel.position.set(
+    -modelCenter.x * scale,
+    (modelSize.y / 2 - modelCenter.y) * scale,
+    -modelCenter.z * scale
+  );
+}
+
+// ───── Огонь — sprite particles ─────
+const fireOrigin = new THREE.Vector3(0, 1.5, 1.5);
+const fireDirection = new THREE.Vector3(0, 0, 1);
+let fireLength = 2;
+let fireIntensity = 1;
+let fireParticles = [];
+
+const flameTexture = createFlameTexture();
+const fireGroup = new THREE.Group();
+scene.add(fireGroup);
+for (let i = 0; i < 40; i++) fireParticles.push(createFireSprite());
+
+function createFlameTexture() {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const ctx = c.getContext('2d');
+  const grd = ctx.createRadialGradient(64, 64, 4, 64, 64, 60);
+  grd.addColorStop(0, 'rgba(255,255,200,1)');
+  grd.addColorStop(0.3, 'rgba(255,180,40,0.9)');
+  grd.addColorStop(0.6, 'rgba(255,80,0,0.5)');
+  grd.addColorStop(1, 'rgba(140,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+
+function createFireSprite() {
+  const mat = new THREE.SpriteMaterial({
+    map: flameTexture,
+    color: 0xffb33b,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const sprite = new THREE.Sprite(mat);
+  sprite.visible = false;
+  fireGroup.add(sprite);
+  return {
+    sprite,
+    active: false,
+    age: 0,
+    life: 0,
+    pos: new THREE.Vector3(),
+    vel: new THREE.Vector3()
+  };
+}
+
+let firing = false;
+let fireTimer = 0;
+function emitFire(dt) {
+  if (!firing) return;
+  fireTimer -= dt;
+  if (fireTimer <= 0) {
+    fireTimer = 0.05;
+    // Запустить 2-3 партикла
+    for (let n = 0; n < 3; n++) {
+      const p = fireParticles.find(p => !p.active);
+      if (!p) break;
+      p.active = true;
+      p.age = 0;
+      p.life = THREE.MathUtils.randFloat(0.4, 0.9);
+      p.pos.copy(fireOrigin);
+      // Скорость: направление + лёгкий разброс
+      const spread = 0.4;
+      p.vel.set(
+        fireDirection.x + THREE.MathUtils.randFloatSpread(spread),
+        fireDirection.y + THREE.MathUtils.randFloatSpread(spread),
+        fireDirection.z + THREE.MathUtils.randFloatSpread(spread)
+      ).normalize().multiplyScalar(fireLength * 1.5 * fireIntensity);
+      p.sprite.visible = true;
+      p.sprite.scale.setScalar(0.3 * fireIntensity);
+    }
+  }
+}
+
+function updateFire(dt) {
+  for (const p of fireParticles) {
+    if (!p.active) continue;
+    p.age += dt;
+    if (p.age > p.life) {
+      p.active = false;
+      p.sprite.visible = false;
+      p.sprite.material.opacity = 0;
+      continue;
+    }
+    const k = p.age / p.life;
+    p.pos.addScaledVector(p.vel, dt);
+    p.sprite.position.copy(p.pos);
+    p.sprite.material.opacity = (1 - k) * fireIntensity;
+    p.sprite.scale.setScalar((0.3 + k * 0.8) * fireIntensity);
+    // Цвет от жёлтого к красному
+    const t = k;
+    const r = 255;
+    const g = Math.floor(180 * (1 - t * 0.7));
+    const b = Math.floor(60 * (1 - t));
+    p.sprite.material.color.setRGB(r/255, g/255, b/255);
+  }
+}
+
+// Marker для источника огня
+const originMarker = new THREE.Mesh(
+  new THREE.SphereGeometry(0.08, 16, 16),
+  new THREE.MeshBasicMaterial({ color: 0xff3030 })
+);
+scene.add(originMarker);
+const dirArrow = new THREE.ArrowHelper(
+  new THREE.Vector3(0, 0, 1),
+  new THREE.Vector3(0, 0, 0),
+  1, 0xff5500, 0.2, 0.1
+);
+scene.add(dirArrow);
+
+function updateFireMarkers() {
+  originMarker.position.copy(fireOrigin);
+  dirArrow.position.copy(fireOrigin);
+  dirArrow.setDirection(fireDirection.clone().normalize());
+  dirArrow.setLength(fireLength, 0.2, 0.1);
+}
+
+// ───── Manual orbit ─────
+let orbitA = 0, orbitE = 0.18, orbitR = 7;
+let dragging = false, dx = 0, dy = 0;
+function applyCam() {
+  const cE = Math.cos(orbitE);
+  camera.position.set(
+    orbitR * Math.sin(orbitA) * cE,
+    1.4 + orbitR * Math.sin(orbitE),
+    orbitR * Math.cos(orbitA) * cE
+  );
+  camera.lookAt(0, 1, 0);
+}
+host.addEventListener('pointerdown', (e) => {
+  dragging = true; dx = e.clientX; dy = e.clientY; e.preventDefault();
+});
+window.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  orbitA -= (e.clientX - dx) * 0.008;
+  orbitE = Math.max(-0.4, Math.min(1.2, orbitE + (e.clientY - dy) * 0.006));
+  dx = e.clientX; dy = e.clientY;
+  applyCam();
+});
+window.addEventListener('pointerup', () => { dragging = false; });
+host.addEventListener('wheel', (e) => {
+  orbitR = Math.max(3, Math.min(15, orbitR + e.deltaY * 0.005));
+  applyCam();
+  e.preventDefault();
+}, { passive: false });
+applyCam();
+
+// ───── Resize ─────
+function onResize() {
+  const r = host.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+// ───── Анимация ─────
+const clock = new THREE.Clock();
+function tick() {
+  requestAnimationFrame(tick);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  emitFire(dt);
+  updateFire(dt);
+  renderer.render(scene, camera);
+}
+tick();
+
+// ═════ КОНТРОЛЫ ═════
+const settings = {
+  anchorX: 50, anchorY: 20,
+  stageW: 560, stageH: 420,
+  fitSize: 4.2,
+  fireX: 0, fireY: 0, fireZ: 0,
+  fireYaw: 0, firePitch: 0,
+  fireLength: 2, fireIntensity: 1
+};
+
+function bind(id, key, transform) {
+  const el = document.getElementById(id);
+  const val = document.getElementById('v-' + id);
+  el.value = settings[key];
+  if (val) val.textContent = settings[key];
+  el.addEventListener('input', () => {
+    settings[key] = parseFloat(el.value);
+    if (val) val.textContent = settings[key].toString();
+    if (transform) transform();
+    updateSchema();
+  });
+}
+
+bind('ax', 'anchorX', updateSchema);
+bind('ay', 'anchorY', updateSchema);
+bind('sw', 'stageW', updateSchema);
+bind('sh', 'stageH', updateSchema);
+bind('fs', 'fitSize', () => { currentFitSize = settings.fitSize; applyFitSize(currentFitSize); });
+bind('fx', 'fireX', updateFireFromSettings);
+bind('fy', 'fireY', updateFireFromSettings);
+bind('fz', 'fireZ', updateFireFromSettings);
+bind('fyw', 'fireYaw', updateFireFromSettings);
+bind('fpt', 'firePitch', updateFireFromSettings);
+bind('flen', 'fireLength', updateFireFromSettings);
+bind('fint', 'fireIntensity', updateFireFromSettings);
+
+function updateFireFromSettings() {
+  fireOrigin.set(settings.fireX, 1.2 + settings.fireY, 1.0 + settings.fireZ);
+  // Yaw + pitch → direction vector
+  const yaw = THREE.MathUtils.degToRad(settings.fireYaw);
+  const pitch = THREE.MathUtils.degToRad(settings.firePitch);
+  fireDirection.set(
+    Math.sin(yaw) * Math.cos(pitch),
+    Math.sin(pitch),
+    Math.cos(yaw) * Math.cos(pitch)
+  );
+  fireLength = settings.fireLength;
+  fireIntensity = settings.fireIntensity;
+  updateFireMarkers();
+}
+updateFireFromSettings();
+
+function updateSchema() {
+  const dragon = document.getElementById('schemaDragon');
+  const frame = document.querySelector('.schema-frame');
+  const fr = frame.getBoundingClientRect();
+  // pixel size of dragon-box in schema = % of viewport that stage occupies
+  // viewport: 1920x1080 approx; stage_w/1920 * fr.width = px in schema
+  const vw = 1920, vh = 1080;
+  const dragonW = (settings.stageW / vw) * fr.width;
+  const dragonH = (settings.stageH / vh) * fr.height;
+  dragon.style.width = dragonW + 'px';
+  dragon.style.height = dragonH + 'px';
+  dragon.style.left = settings.anchorX + '%';
+  dragon.style.top = settings.anchorY + '%';
+  // info-panel updates
+  document.getElementById('info-x').textContent = settings.anchorX + '%';
+  document.getElementById('info-y').textContent = settings.anchorY + '%';
+  document.getElementById('info-size').textContent = settings.stageW + ' × ' + settings.stageH + ' px';
+  document.getElementById('info-fire-pos').textContent =
+    '(' + settings.fireX.toFixed(2) + ', ' + settings.fireY.toFixed(2) + ', ' + settings.fireZ.toFixed(2) + ')';
+  document.getElementById('info-fire-dir').textContent =
+    'yaw ' + settings.fireYaw + '°, pitch ' + settings.firePitch + '°';
+}
+updateSchema();
+
+// Fire trigger
+document.getElementById('btn-fire').addEventListener('click', () => {
+  firing = true;
+  setTimeout(() => { firing = false; }, 1500);
+});
+
+// Save / reset / dump
+document.getElementById('btn-save').addEventListener('click', () => {
+  try {
+    localStorage.setItem('cw_dragon_lab_settings_v1', JSON.stringify(settings));
+    alert('Сохранено. На главной странице перезагрузи (F5) — настройки применятся.');
+  } catch (e) { alert('Ошибка сохранения: ' + e); }
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  settings.anchorX = 50; settings.anchorY = 20;
+  settings.stageW = 560; settings.stageH = 420;
+  settings.fitSize = 4.2;
+  settings.fireX = 0; settings.fireY = 0; settings.fireZ = 0;
+  settings.fireYaw = 0; settings.firePitch = 0;
+  settings.fireLength = 2; settings.fireIntensity = 1;
+  // Reapply UI
+  for (const id of ['ax','ay','sw','sh','fs','fx','fy','fz','fyw','fpt','flen','fint']) {
+    const keyMap = { ax:'anchorX', ay:'anchorY', sw:'stageW', sh:'stageH', fs:'fitSize',
+      fx:'fireX', fy:'fireY', fz:'fireZ', fyw:'fireYaw', fpt:'firePitch', flen:'fireLength', fint:'fireIntensity' };
+    const el = document.getElementById(id);
+    el.value = settings[keyMap[id]];
+    el.dispatchEvent(new Event('input'));
+  }
+});
+document.getElementById('btn-dump').addEventListener('click', () => {
+  document.getElementById('config-out').textContent = JSON.stringify(settings, null, 2);
+});
+
+// Restore from localStorage if exists
+try {
+  const saved = JSON.parse(localStorage.getItem('cw_dragon_lab_settings_v1') || 'null');
+  if (saved) {
+    Object.assign(settings, saved);
+    for (const id of ['ax','ay','sw','sh','fs','fx','fy','fz','fyw','fpt','flen','fint']) {
+      const keyMap = { ax:'anchorX', ay:'anchorY', sw:'stageW', sh:'stageH', fs:'fitSize',
+        fx:'fireX', fy:'fireY', fz:'fireZ', fyw:'fireYaw', fpt:'firePitch', flen:'fireLength', fint:'fireIntensity' };
+      const el = document.getElementById(id);
+      el.value = settings[keyMap[id]];
+      el.dispatchEvent(new Event('input'));
+    }
+  }
+} catch (e) {}
+</script>
+</body>
+</html>
