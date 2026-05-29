@@ -10,7 +10,7 @@ const MODEL_SOURCES = [
     type: 'gltf',
     profile: 'ancient',
     rotationY: Math.PI / 2,
-    fitSize: 2.75
+    fitSize: 4.2
   },
   {
     url: 'assets/models/tes-blades-ancient-dragon.glb',
@@ -18,7 +18,7 @@ const MODEL_SOURCES = [
     type: 'gltf',
     profile: 'ancient',
     rotationY: Math.PI / 2,
-    fitSize: 2.75
+    fitSize: 4.2
   },
   {
     url: 'assets/models/tes-blades-ancient-dragon/source/model.glb',
@@ -26,7 +26,7 @@ const MODEL_SOURCES = [
     type: 'gltf',
     profile: 'ancient',
     rotationY: Math.PI / 2,
-    fitSize: 2.75
+    fitSize: 4.2
   },
   {
     url: 'assets/models/converted/dragon-ancient-merged-nla-prepost.glb',
@@ -34,7 +34,7 @@ const MODEL_SOURCES = [
     type: 'gltf',
     profile: 'ancient',
     rotationY: Math.PI / 2,
-    fitSize: 2.75
+    fitSize: 4.2
   },
   {
     url: 'assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx',

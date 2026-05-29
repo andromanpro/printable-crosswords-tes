@@ -1055,8 +1055,8 @@ body.theme-skyrim .dragon-svg .dragon-body-grp {
 body.theme-skyrim .dragon-cinematic-stage {
   position: fixed;
   /* координаты top/left/width/height устанавливает JS (attachStageToScroll) */
-  width: 380px;
-  height: 280px;
+  width: 560px;
+  height: 420px;
   display: none;
   overflow: visible;
   pointer-events: none;
@@ -1275,18 +1275,56 @@ body.theme-skyrim .scroll-rod-bottom {
   border-radius: 0 !important;
   box-shadow: none !important;
 }
-/* Объёмные SVG-валики — заменили растровые PNG (плоско, артефакты).
-   Cylinder shading через вертикальный градиент: тёмная узкая полоса сверху (тень от верха цилиндра),
-   яркий блик в верхней трети, тёмное низ. Два резных деревянных наконечника по краям с золотым кольцом. */
+/* Валики свитка — версия от Claude.ai дизайнера (Nordic Tomes).
+   CSS-only multi-layer gradients: тёмные деревянные навершия-колпачки + пятна окисления
+   + волокна бумаги (repeating-linear) + продольные полосы (rolls) + охристая пергаментная палитра. */
+body.theme-skyrim .scroll-rod-top,
+body.theme-skyrim .scroll-rod-bottom {
+  background-image:
+    radial-gradient(ellipse 14px 17px at 0% 50%,   #2a1d10 0 65%, #1a1208 82%, transparent 100%),
+    radial-gradient(ellipse 14px 17px at 100% 50%, #2a1d10 0 65%, #1a1208 82%, transparent 100%),
+    radial-gradient(ellipse 6px 3px at 18% 55%, rgba(80,40,15,0.45) 0 70%, transparent 100%),
+    radial-gradient(ellipse 5px 3px at 36% 45%, rgba(90,50,18,0.38) 0 70%, transparent 100%),
+    radial-gradient(ellipse 7px 4px at 58% 60%, rgba(70,35,12,0.40) 0 70%, transparent 100%),
+    radial-gradient(ellipse 5px 3px at 78% 48%, rgba(95,55,20,0.36) 0 70%, transparent 100%),
+    repeating-linear-gradient(115deg, transparent 0 4px, rgba(80,50,20,0.10) 4px 5px),
+    linear-gradient(180deg,
+        rgba(0,0,0,0.55) 0%,
+        rgba(60,38,18,0.0) 8%,
+        rgba(220,180,120,0.18) 14%,
+        rgba(170,128,72,0.0) 24%,
+        rgba(0,0,0,0.18) 50%,
+        rgba(180,138,80,0.0) 76%,
+        rgba(40,24,10,0.55) 90%,
+        rgba(0,0,0,0.7) 100%),
+    linear-gradient(180deg,
+        #6e4d28 0%,
+        #b8956c 18%,
+        #e0c293 38%,
+        #d4b582 55%,
+        #b18856 72%,
+        #6b461f 90%,
+        #3a2510 100%) !important;
+  background-size: auto, auto, auto, auto, auto, auto, auto, 100% 100%, 100% 100% !important;
+  background-repeat: no-repeat !important;
+  border-radius: 13px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,235,180,0.35),
+    inset 0 -2px 4px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(110,77,40,0.55),
+    0 3px 6px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(30,20,10,0.8) !important;
+  height: 26px !important;
+  left: -8px !important;
+  right: -8px !important;
+}
 body.theme-skyrim .scroll-rod-top {
-  top: 18px !important;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 60' preserveAspectRatio='none'><defs><linearGradient id='r' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%231a0f06'/><stop offset='.1' stop-color='%23553a1c'/><stop offset='.3' stop-color='%23d4a567'/><stop offset='.45' stop-color='%23c8975a'/><stop offset='.65' stop-color='%23824f24'/><stop offset='.88' stop-color='%23341e0c'/><stop offset='1' stop-color='%23100806'/></linearGradient><radialGradient id='c' cx='.4' cy='.38' r='.65'><stop offset='0' stop-color='%23916a3a'/><stop offset='.55' stop-color='%233f2811'/><stop offset='1' stop-color='%23080302'/></radialGradient><linearGradient id='p' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23dcb98a'/><stop offset='1' stop-color='%238a6638'/></linearGradient></defs><rect x='28' y='6' width='744' height='48' fill='url(%23r)'/><g stroke='%231a0f06' stroke-width='.5' opacity='.32'><line x1='30' y1='13' x2='770' y2='13'/><line x1='30' y1='19' x2='770' y2='19'/><line x1='30' y1='26' x2='770' y2='26'/><line x1='30' y1='34' x2='770' y2='34'/><line x1='30' y1='42' x2='770' y2='42'/></g><rect x='28' y='9' width='744' height='2.5' fill='%23fdebc4' opacity='.55'/><rect x='28' y='49' width='744' height='1.5' fill='%23120804' opacity='.7'/><ellipse cx='28' cy='30' rx='26' ry='30' fill='url(%23c)' stroke='%23000' stroke-width='1.4'/><ellipse cx='772' cy='30' rx='26' ry='30' fill='url(%23c)' stroke='%23000' stroke-width='1.4'/><circle cx='28' cy='30' r='14' fill='none' stroke='%23d4af37' stroke-width='2' opacity='.85'/><circle cx='772' cy='30' r='14' fill='none' stroke='%23d4af37' stroke-width='2' opacity='.85'/><circle cx='28' cy='30' r='6' fill='%231a0f06'/><circle cx='772' cy='30' r='6' fill='%231a0f06'/><ellipse cx='23' cy='22' rx='4' ry='8' fill='%23eed399' opacity='.45'/><ellipse cx='767' cy='22' rx='4' ry='8' fill='%23eed399' opacity='.45'/><path d='M 30 52 Q 200 60 400 56 T 770 52 L 770 60 L 30 60 Z' fill='url(%23p)' opacity='.78'/><path d='M 30 52 Q 200 60 400 56 T 770 52' fill='none' stroke='%235a3a1c' stroke-width='.6' opacity='.6'/></svg>") !important;
-  filter: drop-shadow(0 6px 6px rgba(0,0,0,0.5)) !important;
+  top: 0 !important;
+  filter: drop-shadow(0 4px 4px rgba(0,0,0,0.55)) !important;
 }
 body.theme-skyrim .scroll-rod-bottom {
-  bottom: 18px !important;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 60' preserveAspectRatio='none'><defs><linearGradient id='r' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%231a0f06'/><stop offset='.1' stop-color='%23553a1c'/><stop offset='.3' stop-color='%23d4a567'/><stop offset='.45' stop-color='%23c8975a'/><stop offset='.65' stop-color='%23824f24'/><stop offset='.88' stop-color='%23341e0c'/><stop offset='1' stop-color='%23100806'/></linearGradient><radialGradient id='c' cx='.4' cy='.38' r='.65'><stop offset='0' stop-color='%23916a3a'/><stop offset='.55' stop-color='%233f2811'/><stop offset='1' stop-color='%23080302'/></radialGradient><linearGradient id='p' x1='0' y1='1' x2='0' y2='0'><stop offset='0' stop-color='%23dcb98a'/><stop offset='1' stop-color='%238a6638'/></linearGradient></defs><path d='M 30 8 Q 200 0 400 4 T 770 8 L 770 0 L 30 0 Z' fill='url(%23p)' opacity='.78'/><path d='M 30 8 Q 200 0 400 4 T 770 8' fill='none' stroke='%235a3a1c' stroke-width='.6' opacity='.6'/><rect x='28' y='6' width='744' height='48' fill='url(%23r)'/><g stroke='%231a0f06' stroke-width='.5' opacity='.32'><line x1='30' y1='13' x2='770' y2='13'/><line x1='30' y1='19' x2='770' y2='19'/><line x1='30' y1='26' x2='770' y2='26'/><line x1='30' y1='34' x2='770' y2='34'/><line x1='30' y1='42' x2='770' y2='42'/></g><rect x='28' y='9' width='744' height='2.5' fill='%23fdebc4' opacity='.55'/><rect x='28' y='49' width='744' height='1.5' fill='%23120804' opacity='.7'/><ellipse cx='28' cy='30' rx='26' ry='30' fill='url(%23c)' stroke='%23000' stroke-width='1.4'/><ellipse cx='772' cy='30' rx='26' ry='30' fill='url(%23c)' stroke='%23000' stroke-width='1.4'/><circle cx='28' cy='30' r='14' fill='none' stroke='%23d4af37' stroke-width='2' opacity='.85'/><circle cx='772' cy='30' r='14' fill='none' stroke='%23d4af37' stroke-width='2' opacity='.85'/><circle cx='28' cy='30' r='6' fill='%231a0f06'/><circle cx='772' cy='30' r='6' fill='%231a0f06'/><ellipse cx='23' cy='22' rx='4' ry='8' fill='%23eed399' opacity='.45'/><ellipse cx='767' cy='22' rx='4' ry='8' fill='%23eed399' opacity='.45'/></svg>") !important;
-  filter: drop-shadow(0 -6px 6px rgba(0,0,0,0.45)) !important;
+  bottom: 0 !important;
+  filter: drop-shadow(0 -3px 4px rgba(0,0,0,0.45)) !important;
 }
 
 @keyframes tome-rod-descend {

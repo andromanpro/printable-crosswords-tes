@@ -31,7 +31,12 @@
     try { saved = localStorage.getItem(KEY); } catch (e) {}
     let requested = null;
     try { requested = new URLSearchParams(window.location.search).get('dragon'); } catch (e) {}
-    const initial = VALID.includes(requested) ? requested : saved;
+    let initial = VALID.includes(requested) ? requested : saved;
+    // file:/// CORS блокирует fetch к локальным GLB-моделям. Cinematic-режим
+    // требует загрузки модели — на file:// он не работает. Downgrade на fly.
+    if (initial === 'cinematic' && window.location.protocol === 'file:') {
+      initial = 'fly';
+    }
     const radio = document.querySelector('input[name="dragon"][value="' + initial + '"]');
     if (initial && radio) {
       radio.checked = true;
