@@ -29,6 +29,14 @@ const MODEL_SOURCES = [
     fitSize: 2.75
   },
   {
+    url: 'assets/models/converted/dragon-ancient-merged-nla-prepost.glb',
+    label: 'TES Blades Ancient Dragon animated GLB',
+    type: 'gltf',
+    profile: 'ancient',
+    rotationY: Math.PI / 2,
+    fitSize: 2.75
+  },
+  {
     url: 'assets/models/tes-blades-ancient-dragon/source/Dragon_Ancient_Skeleton/Dragon_Ancient_Skeleton.fbx',
     label: 'TES Blades Ancient Dragon FBX',
     type: 'fbx',
@@ -48,17 +56,43 @@ const MODEL_SOURCES = [
 ];
 
 const DERIVED_FLIGHT_CLIP = 'Dragon_Ancient_Breath_FlightLoop';
+const BREATH_CLIP_NAME = 'Dragon_Ancient_Attack_Breath';
+const BREATH_LOOP_SECONDS = 7.07;
+const FIRE_WINDOW_START = 3;
+const FIRE_WINDOW_END = 5;
+const FIRE_BURST_INTERVAL = 0.18;
+const FIRE_ORIGIN_BACKSET = 0.72;
+const CINEMATIC_SETTINGS_KEY = 'cw_dragon_cinematic_settings_v7';
+const DEFAULT_CINEMATIC_SETTINGS = {
+  clip: BREATH_CLIP_NAME,
+  anchorX: 0.28,
+  anchorY: 0.22,
+  anchorXWide: 0.26,
+  anchorYWide: 0.2,
+  scrollAnchorX: 0.18,
+  scrollAnchorY: -0.42,
+  zPlane: -0.42,
+  offsetX: 0,
+  offsetY: 0,
+  offsetZ: 0,
+  scale: 0.54,
+  pitch: 0,
+  yaw: 0,
+  roll: 0
+};
 const INTRO_MIN_MS = 4200;
 const canAnimate = !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const gltfLoader = new GLTFLoader();
 const fbxLoader = new FBXLoader();
 const pointer = new THREE.Vector2(0, 0);
-const target = new THREE.Vector3(1.15, -0.82, -0.35);
-const position = new THREE.Vector3(1.15, -0.82, -0.35);
+const sceneSettings = readCinematicSettings();
+const target = new THREE.Vector3(0, 0, 0);
+const position = new THREE.Vector3(0, 0, 0);
 const mouthLocal = new THREE.Vector3(1.82, 0.05, 0);
 const fireForwardLocal = new THREE.Vector3(1, 0, 0);
 const tmpQuat = new THREE.Quaternion();
 const tmpVec = new THREE.Vector3();
+const tmpEuler = new THREE.Euler(0, 0, 0, 'YXZ');
 
 let initialized = false;
 let enabled = false;
@@ -86,10 +120,60 @@ let flameTexture = null;
 let smokeTexture = null;
 let fireParticles = [];
 let fallbackParts = {};
-let fireCooldown = 5.5;
+let fireBurstTimer = 0;
 let fireTime = 0;
+let lastAnchorScreenX = DEFAULT_CINEMATIC_SETTINGS.anchorX;
 let loadingStartedAt = 0;
 let loadingIntroTimer = 0;
+
+function readCinematicSettings() {
+  const settings = { ...DEFAULT_CINEMATIC_SETTINGS };
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(CINEMATIC_SETTINGS_KEY) || 'null');
+    if (saved && typeof saved === 'object') Object.assign(settings, saved);
+  } catch (e) { /* ignore */ }
+
+  let params = null;
+  try { params = new URLSearchParams(window.location.search); } catch (e) {}
+  if (params) {
+    assignNumber(settings, 'anchorX', params.get('dragonX') || params.get('dragonAnchorX'));
+    assignNumber(settings, 'anchorY', params.get('dragonY') || params.get('dragonAnchorY'));
+    assignNumber(settings, 'zPlane', params.get('dragonZ') || params.get('dragonDepth'));
+    assignNumber(settings, 'scale', params.get('dragonScale'));
+    assignNumber(settings, 'pitch', params.get('dragonPitch'));
+    assignNumber(settings, 'yaw', params.get('dragonYaw'));
+    assignNumber(settings, 'roll', params.get('dragonRoll'));
+  }
+
+  settings.anchorX = clampNumber(settings.anchorX, 0.08, 0.92, DEFAULT_CINEMATIC_SETTINGS.anchorX);
+  settings.anchorY = clampNumber(settings.anchorY, 0.12, 0.92, DEFAULT_CINEMATIC_SETTINGS.anchorY);
+  settings.anchorXWide = clampNumber(settings.anchorXWide, 0.08, 0.92, DEFAULT_CINEMATIC_SETTINGS.anchorXWide);
+  settings.anchorYWide = clampNumber(settings.anchorYWide, 0.12, 0.92, DEFAULT_CINEMATIC_SETTINGS.anchorYWide);
+  settings.scrollAnchorX = clampNumber(settings.scrollAnchorX, 0.02, 0.98, DEFAULT_CINEMATIC_SETTINGS.scrollAnchorX);
+  settings.scrollAnchorY = clampNumber(settings.scrollAnchorY, -0.58, 0.45, DEFAULT_CINEMATIC_SETTINGS.scrollAnchorY);
+  settings.zPlane = clampNumber(settings.zPlane, -3, 2, DEFAULT_CINEMATIC_SETTINGS.zPlane);
+  settings.offsetX = clampNumber(settings.offsetX, -4, 4, DEFAULT_CINEMATIC_SETTINGS.offsetX);
+  settings.offsetY = clampNumber(settings.offsetY, -3, 3, DEFAULT_CINEMATIC_SETTINGS.offsetY);
+  settings.offsetZ = clampNumber(settings.offsetZ, -3, 3, DEFAULT_CINEMATIC_SETTINGS.offsetZ);
+  settings.scale = clampNumber(settings.scale, 0.18, 1.4, DEFAULT_CINEMATIC_SETTINGS.scale);
+  settings.pitch = clampNumber(settings.pitch, -50, 50, DEFAULT_CINEMATIC_SETTINGS.pitch);
+  settings.yaw = clampNumber(settings.yaw, -180, 180, DEFAULT_CINEMATIC_SETTINGS.yaw);
+  settings.roll = clampNumber(settings.roll, -45, 45, DEFAULT_CINEMATIC_SETTINGS.roll);
+  return settings;
+}
+
+function assignNumber(targetObject, key, value) {
+  if (value === null || value === '') return;
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) targetObject[key] = parsed;
+}
+
+function clampNumber(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return THREE.MathUtils.clamp(parsed, min, max);
+}
 
 function setEnabled(next) {
   enabled = Boolean(next && stage && canAnimate);
@@ -151,14 +235,132 @@ function init() {
 
   createBackdropParticles();
   createFireSystem();
+  createPedestal();         // каменная плита-пьедестал под драконом (на крыше свитка)
   beginLoadingIntro();
   void loadDragonModel();
   onResize();
+  attachStageToScroll();    // позиционировать stage над scroll-rod-top
 
   window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('resize', attachStageToScroll, { passive: true });
+  window.addEventListener('scroll', attachStageToScroll, { passive: true });
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('cw-puzzle-generated', onPuzzleGenerated);
   document.addEventListener('visibilitychange', onVisibilityChange);
+  // Периодический re-attach — на случай если grid-container изменил размер
+  // после генерации кроссворда / wrapper'а / темы. Дешёво: getBoundingClientRect + setStyle.
+  setInterval(attachStageToScroll, 600);
+
+  // Manual orbit controls — drag для вращения камеры вокруг дракона
+  initOrbitControls();
+  restoreCameraFromStorage();
+
+  // Если режим cinematic убран — stop loop, останавливаем render для CPU
+  const modeObserver = new MutationObserver(() => {
+    const enabled = document.body.classList.contains('dragon-mode-cinematic');
+    if (enabled) { start(); }
+    else { stop(); }
+  });
+  modeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+}
+
+/* Позиционирование stage над верхним валиком свитка (привязка к grid-container). */
+function attachStageToScroll() {
+  if (!stage) return;
+  const gc = document.getElementById('grid-container');
+  if (!gc) return;
+  const rect = gc.getBoundingClientRect();
+  // Пока grid-container ещё узкий (до первой генерации) — не реагируем
+  if (rect.width < 300) return;
+  const stageW = stage.offsetWidth || 380;
+  const stageH = stage.offsetHeight || 280;
+  // Дракон сидит на верхнем валике — низ stage примерно совпадает с верхом свитка
+  stage.style.top = Math.max(8, rect.top - stageH + 70) + 'px';
+  stage.style.left = (rect.left + rect.width / 2 - stageW / 2) + 'px';
+}
+
+/* Каменный пьедестал-валик под лапами дракона */
+function createPedestal() {
+  const stonePlate = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.6, 1.8, 0.18, 32),
+    new THREE.MeshStandardMaterial({ color: 0x3a2818, roughness: 0.9, metalness: 0.15 })
+  );
+  stonePlate.position.y = -0.09;
+  stonePlate.receiveShadow = true;
+  scene.add(stonePlate);
+
+  const ringGeo = new THREE.RingGeometry(1.45, 1.62, 48);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xd4af37, transparent: true, opacity: 0.55, side: THREE.DoubleSide
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.02;
+  scene.add(ring);
+}
+
+/* Orbit controls — manual mouse drag, сохраняет ориентацию */
+let orbitAzimuth = 0, orbitElevation = 0, orbitRadius = 7.2;
+let orbitDragging = false, orbitDragX = 0, orbitDragY = 0;
+
+function initOrbitControls() {
+  if (!stage) return;
+  // Drag handlers слушаются на window (stage имеет pointer-events:none, не получит)
+  // ВРЕМЕННО включаем pointer-events для прямого захвата на stage
+  stage.style.pointerEvents = 'auto';
+
+  stage.addEventListener('pointerdown', (e) => {
+    orbitDragging = true;
+    orbitDragX = e.clientX;
+    orbitDragY = e.clientY;
+    e.preventDefault();
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!orbitDragging) return;
+    const dx = e.clientX - orbitDragX;
+    const dy = e.clientY - orbitDragY;
+    orbitDragX = e.clientX;
+    orbitDragY = e.clientY;
+    orbitAzimuth -= dx * 0.008;
+    orbitElevation = Math.max(-0.6, Math.min(1.2, orbitElevation + dy * 0.006));
+    applyOrbitCamera();
+    saveCameraToStorage();
+  });
+  window.addEventListener('pointerup', () => { orbitDragging = false; });
+  // Колесо мыши — zoom
+  stage.addEventListener('wheel', (e) => {
+    orbitRadius = Math.max(3.5, Math.min(14, orbitRadius + e.deltaY * 0.005));
+    applyOrbitCamera();
+    saveCameraToStorage();
+    e.preventDefault();
+  }, { passive: false });
+}
+function applyOrbitCamera() {
+  const cosE = Math.cos(orbitElevation);
+  camera.position.set(
+    orbitRadius * Math.sin(orbitAzimuth) * cosE,
+    1.2 + orbitRadius * Math.sin(orbitElevation),
+    orbitRadius * Math.cos(orbitAzimuth) * cosE
+  );
+  camera.lookAt(0, 0.55, 0);
+}
+function saveCameraToStorage() {
+  try {
+    localStorage.setItem('cw_dragon_orbit_v1', JSON.stringify({
+      a: orbitAzimuth, e: orbitElevation, r: orbitRadius
+    }));
+  } catch (_) {}
+}
+function restoreCameraFromStorage() {
+  try {
+    const raw = localStorage.getItem('cw_dragon_orbit_v1');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (typeof d.a === 'number') orbitAzimuth = d.a;
+    if (typeof d.e === 'number') orbitElevation = d.e;
+    if (typeof d.r === 'number') orbitRadius = d.r;
+    applyOrbitCamera();
+  } catch (_) {}
 }
 
 function createBackdropParticles() {
@@ -472,7 +674,12 @@ function installModel(asset, source) {
   const scale = fitSize / Math.max(size.x, size.y, size.z, 1);
 
   model.scale.setScalar(scale);
-  model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+  // Центрируем по X/Z, по Y поднимаем так чтобы лапы касались пола (y=0) пьедестала
+  model.position.set(
+    -center.x * scale,
+    (size.y / 2 - center.y) * scale,
+    -center.z * scale
+  );
   model.rotation.y = typeof source.rotationY === 'number' ? source.rotationY : Math.PI / 2;
   modelSocket.add(model);
 
@@ -481,7 +688,11 @@ function installModel(asset, source) {
     mixer = new THREE.AnimationMixer(model);
     clipNames = clips.map(clip => clip.name);
     const requestedClip = getRequestedClip(clips);
-    const idleClip = requestedClip || pickClip(clips, [
+    const breathClip = pickClip(clips, [
+      new RegExp(`^${BREATH_CLIP_NAME}$`, 'i'),
+      /attack_breath/i
+    ]);
+    const idleClip = requestedClip || breathClip || pickClip(clips, [
       /^Dragon_Ancient_Idle_FlyTransition$/i,
       /^Dragon_Ancient_Patrol_Idle$/i,
       new RegExp(`^${DERIVED_FLIGHT_CLIP}$`, 'i'),
@@ -491,12 +702,6 @@ function installModel(asset, source) {
       /(^|_)idle$/i
     ]) ||
       clips[0];
-    const breathClip = pickClip(clips, [
-      /attack_breath/i,
-      /breath/i,
-      /casting_loop/i,
-      /attack_power/i
-    ]);
 
     clips.forEach(clip => {
       clipActions.set(clip.name, mixer.clipAction(clip));
@@ -508,8 +713,8 @@ function installModel(asset, source) {
 
     if (breathClip) {
       breathAction = clipActions.get(breathClip.name);
-      breathAction.setLoop(THREE.LoopOnce, 1);
-      breathAction.clampWhenFinished = true;
+      breathAction.setLoop(THREE.LoopRepeat, Infinity);
+      breathAction.clampWhenFinished = false;
     }
   }
 
@@ -552,10 +757,12 @@ function getRequestedClip(clips) {
     const params = new URLSearchParams(window.location.search);
     requested = params.get('dragonClip') || params.get('dragonAnim');
   } catch (e) { /* ignore */ }
+  requested = requested || sceneSettings.clip;
 
   if (!requested) return null;
   return clips.find(clip => clip.name === requested) ||
     clips.find(clip => clip.name.toLowerCase() === requested.toLowerCase()) ||
+    clips.find(clip => clip.name.includes(`|${requested}|`)) ||
     null;
 }
 
@@ -606,6 +813,7 @@ function getDebugInfo() {
     animations: clipNames.length,
     idleClip: stage && stage.dataset.idleClip || null,
     breathClip: stage && stage.dataset.breathClip || null,
+    settings: { ...sceneSettings },
     clips: clipNames.slice()
   };
 }
@@ -615,10 +823,12 @@ function playBreathAnimation() {
 
   breathAction.reset();
   breathAction.enabled = true;
-  breathAction.setLoop(THREE.LoopOnce, 1);
-  breathAction.clampWhenFinished = true;
+  breathAction.setLoop(THREE.LoopRepeat, Infinity);
+  breathAction.clampWhenFinished = false;
   playAction(breathAction, 0.14);
-  breathReturnTimer = Math.min(Math.max(breathAction.getClip().duration * 0.72, 0.9), 1.8);
+  idleAction = breathAction;
+  breathReturnTimer = 0;
+  stage.dataset.idleClip = breathAction.getClip().name;
 }
 
 function start() {
@@ -647,23 +857,18 @@ function tick() {
   updateCamera(dt);
   updateFlight(dt, elapsed);
   updateAsh(dt, elapsed);
-  updateFire(dt);
 
   if (mixer) {
     mixer.update(dt);
-    if (breathReturnTimer > 0) {
-      breathReturnTimer -= dt;
-      if (breathReturnTimer <= 0 && idleAction && activeAction !== idleAction) {
-        playAction(idleAction, 0.28);
-      }
-    }
   }
+  updateBreathFire(dt);
+  updateFire(dt);
   renderer.render(scene, camera);
 }
 
 function updateCamera() {
-  camera.position.x += (pointer.x * 0.42 - camera.position.x) * 0.035;
-  camera.position.y += (1.22 - pointer.y * 0.28 - camera.position.y) * 0.035;
+  camera.position.x += (pointer.x * 0.16 - camera.position.x) * 0.025;
+  camera.position.y += (1.22 - pointer.y * 0.08 - camera.position.y) * 0.025;
   camera.lookAt(0, 0.55, 0);
 }
 
@@ -671,14 +876,22 @@ function updateFlight(dt, elapsed) {
   target.copy(getBottomAnchor(elapsed));
   position.lerp(target, 1 - Math.pow(0.96, dt * 60));
 
-  const bob = Math.sin(elapsed * 1.6) * 0.055 + Math.sin(elapsed * 0.72) * 0.025;
+  const bob = Math.sin(elapsed * 1.2) * 0.025;
   dragonGroup.position.copy(position);
   dragonGroup.position.y += bob;
 
-  tmpQuat.identity();
+  const cursorX = (pointer.x + 1) / 2;
+  const cursorYaw = THREE.MathUtils.clamp((cursorX - lastAnchorScreenX) * 86, -38, 38);
+  tmpEuler.set(
+    THREE.MathUtils.degToRad(sceneSettings.pitch),
+    THREE.MathUtils.degToRad(sceneSettings.yaw + cursorYaw),
+    THREE.MathUtils.degToRad(sceneSettings.roll),
+    'YXZ'
+  );
+  tmpQuat.setFromEuler(tmpEuler);
   dragonGroup.quaternion.slerp(tmpQuat, 0.14);
 
-  dragonGroup.scale.setScalar(0.62 + Math.sin(elapsed * 1.15) * 0.008);
+  dragonGroup.scale.setScalar(sceneSettings.scale + Math.sin(elapsed * 1.15) * 0.008);
 
   if (fallbackParts.leftWing && fallbackParts.rightWing) {
     const flap = Math.sin(elapsed * 8.2) * 0.52;
@@ -686,22 +899,40 @@ function updateFlight(dt, elapsed) {
     fallbackParts.rightWing.rotation.x = 0.16 - flap;
     modelSocket.rotation.z = Math.sin(elapsed * 2.1) * 0.035;
   }
-
-  fireCooldown -= dt;
-  if (fireCooldown <= 0) {
-    triggerFire();
-    fireCooldown = THREE.MathUtils.randFloat(14, 28);
-  }
 }
 
 function getBottomAnchor(elapsed) {
-  const anchorX = window.innerWidth > 1500 ? 0.78 : 0.74;
-  const anchorY = window.innerWidth > 1500 ? 0.82 : 0.84;
-  const base = screenToWorld(window.innerWidth * anchorX, window.innerHeight * anchorY, -0.45);
-  base.x += Math.sin(elapsed * 0.34) * 0.18;
-  base.y += Math.sin(elapsed * 0.48 + 1.2) * 0.04;
-  base.z += Math.sin(elapsed * 0.27) * 0.12;
+  const scrollRect = getScrollRect();
+  let px;
+  let py;
+
+  if (scrollRect) {
+    px = scrollRect.left + scrollRect.width * sceneSettings.scrollAnchorX;
+    py = scrollRect.top + scrollRect.height * sceneSettings.scrollAnchorY;
+  } else {
+    const anchorX = window.innerWidth > 1500 ? sceneSettings.anchorXWide : sceneSettings.anchorX;
+    const anchorY = window.innerWidth > 1500 ? sceneSettings.anchorYWide : sceneSettings.anchorY;
+    px = window.innerWidth * anchorX;
+    py = window.innerHeight * anchorY;
+  }
+
+  lastAnchorScreenX = px / Math.max(window.innerWidth, 1);
+  const base = screenToWorld(px, py, sceneSettings.zPlane);
+  base.x += sceneSettings.offsetX;
+  base.y += sceneSettings.offsetY;
+  base.z += sceneSettings.offsetZ;
   return base;
+}
+
+function getScrollRect() {
+  const paper = document.querySelector('#grid-container .scroll-paper');
+  const grid = document.getElementById('grid-container');
+  const el = paper || grid;
+  if (!el) return null;
+
+  const rect = el.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  return rect;
 }
 
 function screenToWorld(px, py, zPlane) {
@@ -739,33 +970,55 @@ function updateAsh(dt, elapsed) {
 function triggerFire() {
   if (!initialized || !dragonGroup || !fireGroup) return;
 
-  fireTime = 1.15;
-  playBreathAnimation();
+  fireTime = Math.max(fireTime, 0.45);
   spawnFire();
   stage.classList.remove('is-breathing');
   void stage.offsetWidth;
   stage.classList.add('is-breathing');
-  window.setTimeout(() => stage.classList.remove('is-breathing'), 1350);
+}
+
+function updateBreathFire(dt) {
+  if (!breathAction || activeAction !== breathAction) return;
+
+  const duration = breathAction.getClip().duration || BREATH_LOOP_SECONDS;
+  const loopTime = ((breathAction.time % duration) + duration) % duration;
+  const inFireWindow = loopTime >= FIRE_WINDOW_START && loopTime <= Math.min(FIRE_WINDOW_END, duration);
+  stage.dataset.breathTime = loopTime.toFixed(2);
+  stage.dataset.fireWindow = `${FIRE_WINDOW_START}-${FIRE_WINDOW_END}`;
+
+  if (!inFireWindow) {
+    fireBurstTimer = 0;
+    return;
+  }
+
+  fireTime = Math.max(fireTime, 0.28);
+  fireBurstTimer -= dt;
+  if (fireBurstTimer <= 0) {
+    spawnFire();
+    fireBurstTimer = FIRE_BURST_INTERVAL;
+  }
+  stage.classList.add('is-breathing');
 }
 
 function spawnFire() {
   const mouth = getMouthWorldPosition();
   const dir = getFireDirection(mouth);
+  const origin = mouth.clone().addScaledVector(dir, -FIRE_ORIGIN_BACKSET);
   const side = new THREE.Vector3(0, 0, 1).applyQuaternion(dragonGroup.quaternion).normalize();
   const up = new THREE.Vector3(0, 1, 0);
 
   fireParticles.forEach((particle, i) => {
     const isSmoke = particle.kind === 'smoke';
-    const distance = isSmoke ? THREE.MathUtils.randFloat(0.45, 1.85) : THREE.MathUtils.randFloat(0.05, 1.25);
-    const spread = (Math.random() - 0.5) * (isSmoke ? 0.72 : 0.38) * (0.45 + distance);
-    const lift = (Math.random() - (isSmoke ? 0.06 : 0.32)) * (isSmoke ? 0.8 : 0.5);
-    const push = isSmoke ? THREE.MathUtils.randFloat(1.25, 2.4) : THREE.MathUtils.randFloat(2.8, 5.2);
+    const distance = isSmoke ? THREE.MathUtils.randFloat(0.08, 1.05) : THREE.MathUtils.randFloat(-0.12, 0.62);
+    const spread = (Math.random() - 0.5) * (isSmoke ? 0.46 : 0.24) * (0.48 + Math.max(distance, 0));
+    const lift = (Math.random() - (isSmoke ? 0.04 : 0.26)) * (isSmoke ? 0.58 : 0.34);
+    const push = isSmoke ? THREE.MathUtils.randFloat(0.75, 1.55) : THREE.MathUtils.randFloat(1.65, 3.35);
 
     particle.active = true;
     particle.age = Math.random() * -0.12;
-    particle.life = isSmoke ? THREE.MathUtils.randFloat(0.95, 1.75) : THREE.MathUtils.randFloat(0.42, 0.95);
-    particle.size = isSmoke ? THREE.MathUtils.randFloat(0.46, 0.96) : THREE.MathUtils.randFloat(0.18, 0.44);
-    particle.pos.copy(mouth)
+    particle.life = isSmoke ? THREE.MathUtils.randFloat(0.72, 1.34) : THREE.MathUtils.randFloat(0.34, 0.78);
+    particle.size = isSmoke ? THREE.MathUtils.randFloat(0.38, 0.82) : THREE.MathUtils.randFloat(0.16, 0.38);
+    particle.pos.copy(origin)
       .addScaledVector(dir, distance)
       .addScaledVector(side, spread * 0.22)
       .addScaledVector(up, lift * 0.18);
@@ -893,7 +1146,7 @@ function onResize() {
 
 function onPuzzleGenerated() {
   if (!enabled) return;
-  window.setTimeout(triggerFire, 420);
+  window.setTimeout(playBreathAnimation, 420);
 }
 
 function onVisibilityChange() {
@@ -904,8 +1157,14 @@ function onVisibilityChange() {
   }
 }
 
+function setSettings(next) {
+  if (!next || typeof next !== 'object') return false;
+  Object.assign(sceneSettings, next);
+  return true;
+}
+
 if (stage) {
-  window.CWDragonCinematic = { setEnabled, triggerFire, setAnimation, getDebugInfo };
+  window.CWDragonCinematic = { setEnabled, triggerFire, setAnimation, setSettings, getDebugInfo };
   window.addEventListener('cw-dragon-mode-change', event => {
     setEnabled(event.detail && event.detail.mode === 'cinematic');
   });
