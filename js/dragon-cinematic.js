@@ -235,7 +235,6 @@ function init() {
 
   createBackdropParticles();
   createFireSystem();
-  createPedestal();         // каменная плита-пьедестал под драконом (на крыше свитка)
   beginLoadingIntro();
   void loadDragonModel();
   onResize();
@@ -279,37 +278,19 @@ function attachStageToScroll() {
   stage.style.left = (rect.left + rect.width / 2 - stageW / 2) + 'px';
 }
 
-/* Каменный пьедестал-валик под лапами дракона */
-function createPedestal() {
-  const stonePlate = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.6, 1.8, 0.18, 32),
-    new THREE.MeshStandardMaterial({ color: 0x3a2818, roughness: 0.9, metalness: 0.15 })
-  );
-  stonePlate.position.y = -0.09;
-  stonePlate.receiveShadow = true;
-  scene.add(stonePlate);
-
-  const ringGeo = new THREE.RingGeometry(1.45, 1.62, 48);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: 0xd4af37, transparent: true, opacity: 0.55, side: THREE.DoubleSide
-  });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  ring.rotation.x = -Math.PI / 2;
-  ring.position.y = 0.02;
-  scene.add(ring);
-}
-
 /* Orbit controls — manual mouse drag, сохраняет ориентацию */
 let orbitAzimuth = 0, orbitElevation = 0, orbitRadius = 7.2;
 let orbitDragging = false, orbitDragX = 0, orbitDragY = 0;
 
 function initOrbitControls() {
   if (!stage) return;
-  // Drag handlers слушаются на window (stage имеет pointer-events:none, не получит)
-  // ВРЕМЕННО включаем pointer-events для прямого захвата на stage
-  stage.style.pointerEvents = 'auto';
+  // Stage: pointer-events: none для прохода кликов сквозь дракона к UI.
+  // Orbit-drag навешен на canvas (внутри stage) с pointer-events: auto только на canvas.
+  const canvas = stage.querySelector('canvas');
+  const dragTarget = canvas || stage;
+  if (canvas) canvas.style.pointerEvents = 'auto';
 
-  stage.addEventListener('pointerdown', (e) => {
+  dragTarget.addEventListener('pointerdown', (e) => {
     orbitDragging = true;
     orbitDragX = e.clientX;
     orbitDragY = e.clientY;
@@ -327,8 +308,8 @@ function initOrbitControls() {
     saveCameraToStorage();
   });
   window.addEventListener('pointerup', () => { orbitDragging = false; });
-  // Колесо мыши — zoom
-  stage.addEventListener('wheel', (e) => {
+  // Колесо мыши — zoom (только над canvas, не блокирует scroll вне дракона)
+  dragTarget.addEventListener('wheel', (e) => {
     orbitRadius = Math.max(3.5, Math.min(14, orbitRadius + e.deltaY * 0.005));
     applyOrbitCamera();
     saveCameraToStorage();

@@ -1060,7 +1060,7 @@ body.theme-skyrim .dragon-cinematic-stage {
   display: none;
   overflow: visible;
   pointer-events: none;
-  z-index: 4;
+  z-index: 50;                 /* передний слой — дракон поверх всего UI */
   opacity: 0;
   transition: opacity 640ms ease;
   mix-blend-mode: normal;
