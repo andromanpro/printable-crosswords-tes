@@ -31,6 +31,9 @@ window.CW_DRAGON_DEFAULTS = {
   pedestalScale: 0.34,
   runeBeltOffset: 0.36,
 
+  // — адаптив размера по ширине экрана (0 = выкл, 1 = полная кривая) —
+  responsiveStrength: 1,
+
   // — освещение —
   lightIntensity: 0.1,
   platformLight: 0.1,

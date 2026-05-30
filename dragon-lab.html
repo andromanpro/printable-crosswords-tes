@@ -408,6 +408,9 @@
     <label>Размер платформы <span class="val" id="v-lab-ped-scale">0.62</span>
       <input type="range" id="lab-ped-scale" min="0.2" max="2" step="0.02" value="0.62">
     </label>
+    <label>Адаптив размера (по ширине экрана) <span class="val" id="v-lab-resp-strength">1</span>
+      <input type="range" id="lab-resp-strength" min="0" max="2" step="0.05" value="1">
+    </label>
   </section>
   <h2>💡 Освещение</h2>
   <section>
@@ -827,6 +830,7 @@ const settings = {
   // ─── Scene (платформа / свет / для main bridge) ───
   showPedestal: true,
   pedestalScale: 0.62,
+  responsiveStrength: 1,
   lightIntensity: 1,
   platformLight: 0.6,
   // modelSourceId — id источника модели, под которую тюнили bone-attach.
@@ -932,6 +936,7 @@ bind('fwe', 'fireWindowEnd',   updateTimelineVisualization);
 
 // ─── Scene-вкладка: платформа / освещение / камера ───
 bind('lab-ped-scale', 'pedestalScale', () => applyPedestalScaleLab(settings.pedestalScale));
+bind('lab-resp-strength', 'responsiveStrength', updateSchema);
 bind('lab-light',     'lightIntensity', () => applyLabLights(settings.lightIntensity));
 bind('lab-plight',    'platformLight',  () => applyPlatformLight(settings.platformLight));
 (function bindShowPedestalLab() {
@@ -1199,7 +1204,8 @@ const ID_KEY_MAP = {
   fx:'fireX', fy:'fireY', fz:'fireZ', fyw:'fireYaw', fpt:'firePitch',
   flen:'fireLength', fint:'fireIntensity',
   fws:'fireWindowStart', fwe:'fireWindowEnd',
-  'lab-ped-scale':'pedestalScale', 'lab-light':'lightIntensity', 'lab-plight':'platformLight'
+  'lab-ped-scale':'pedestalScale', 'lab-resp-strength':'responsiveStrength',
+  'lab-light':'lightIntensity', 'lab-plight':'platformLight'
 };
 document.getElementById('btn-reset').addEventListener('click', () => {
   settings.anchorX = 50; settings.anchorY = 20;
@@ -1213,6 +1219,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
   settings.dragonYaw = 0; settings.dragonPitch = 0; settings.dragonRoll = 0;
   settings.dragonOffsetX = 0; settings.dragonOffsetY = 0; settings.dragonOffsetZ = 0;
   settings.dragonScale = 0.54;
+  settings.responsiveStrength = 1;
   settings.fireX = 0.5; settings.fireY = 0.1; settings.fireZ = 0;
   settings.fireYaw = 0; settings.firePitch = 0;
   settings.fireLength = 2; settings.fireIntensity = 1;

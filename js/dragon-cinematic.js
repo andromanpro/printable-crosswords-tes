@@ -138,6 +138,8 @@ let pedestalRuneBaseY = 0;         // базовая Y пояса (offset доб
 let platformLight = null;          // отдельный свет на платформу (контрол в панели)
 let platformBlob = null;           // мягкая blob-тень под драконом (НЕ зависит от света)
 let labPedestalScale = 0.62;       // размер платформы (отдельно от dragonScale)
+let labResponsiveStrength = 1;     // сила адаптива размера по ширине экрана (0=выкл, 1=полная)
+const RESP_REF_WIDTH = 1440;       // ширина вьюпорта, где адаптив-фактор = 1 (база «как настроено»)
 let labRuneBeltOffset = 0;         // вертикальный сдвиг пояса рун (slider)
 let labPlatformLight = 0.6;        // интенсивность света платформы (slider)
 // Освещение — базовые интенсивности (снижены чтобы дракон не пересвечивался)
@@ -246,6 +248,7 @@ function applyLabOverrides() {
 
   // ─── Pedestal scale — размер платформы отдельно от дракона
   if (Number.isFinite(lab.pedestalScale)) labPedestalScale = THREE.MathUtils.clamp(lab.pedestalScale, 0.2, 2.0);
+  if (Number.isFinite(lab.responsiveStrength)) labResponsiveStrength = THREE.MathUtils.clamp(lab.responsiveStrength, 0, 2);
 
   // ─── Light intensity master multiplier
   labLightIntensity = Number.isFinite(lab.lightIntensity) ? THREE.MathUtils.clamp(lab.lightIntensity, 0, 3) : 1.0;
@@ -1439,8 +1442,10 @@ function updateFlight(dt, elapsed) {
     // = 2.6*scale). Плоскость blob'а 2 ед. шириной → scale 1.25 даёт ширину 2.5*scale,
     // чуть меньше верхушки, мягкий край гаснет у самого канта → тень НЕ вылезает на
     // страницу. (Раньше было *2.3 ⇒ ширина 4.6*scale, вдвое шире платформы.)
-    platformBlob.scale.setScalar(labPedestalScale * 1.25);
+    platformBlob.scale.setScalar(labPedestalScale * 1.25 * responsiveFactor());
   }
+  // Подставка тоже адаптивна по ширине (тот же фактор, что у дракона/тени).
+  if (pedestalGroup) pedestalGroup.scale.setScalar(labPedestalScale * responsiveFactor());
 
   // Dragon — base + offset (offsetX/Y/Z позиционируют дракона ОТНОСИТЕЛЬНО
   // платформы: offsetY поднимает над верхушкой, offsetX/Z двигают по ней) + bob
@@ -1466,7 +1471,7 @@ function updateFlight(dt, elapsed) {
   tmpQuat.setFromEuler(tmpEuler);
   dragonGroup.quaternion.slerp(tmpQuat, 0.14);
 
-  dragonGroup.scale.setScalar(sceneSettings.scale + Math.sin(elapsed * 1.15) * 0.008);
+  dragonGroup.scale.setScalar((sceneSettings.scale + Math.sin(elapsed * 1.15) * 0.008) * responsiveFactor());
 
   if (fallbackParts.leftWing && fallbackParts.rightWing) {
     const flap = Math.sin(elapsed * 8.2) * 0.52;
@@ -1474,6 +1479,17 @@ function updateFlight(dt, elapsed) {
     fallbackParts.rightWing.rotation.x = 0.16 - flap;
     modelSocket.rotation.z = Math.sin(elapsed * 2.1) * 0.035;
   }
+}
+
+// Адаптив размера: дракон и подставка масштабируются по ШИРИНЕ вьюпорта — узкий
+// экран (телефон) → мельче (не закрывает кроссворд), ультраширокий → крупнее
+// (позиция уже в боковом поле через anchorX%). Сублинейная кривая, клампится.
+// labResponsiveStrength (0..2) — «сила» (0 = адаптив выкл, 1 = полная кривая).
+function responsiveFactor() {
+  const w = window.innerWidth || RESP_REF_WIDTH;
+  let raw = Math.pow(w / RESP_REF_WIDTH, 0.6);
+  raw = Math.max(0.5, Math.min(1.7, raw));
+  return 1 + (raw - 1) * labResponsiveStrength;
 }
 
 function getBottomAnchor(elapsed) {
