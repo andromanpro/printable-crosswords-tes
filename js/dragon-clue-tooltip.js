@@ -13,6 +13,14 @@
   let clueMap = null;   // { num: [{dir, text}] }
   let hideTimer = 0;
 
+  // Не показываем подсказку, пока идёт заставка загрузки сцены или горение:
+  // оверлей заставки (pointer-events:none, z-8) пропускает наведение на сетку
+  // под ним, а тултип (fixed, z-80) рисуется ПОВЕРХ заставки → «просвечивает».
+  function sceneBusy() {
+    return document.body.classList.contains('dragon-cinematic-loading') ||
+           window.__cwBurnActive === true;
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"]/g, ch => (
       { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]
@@ -94,6 +102,7 @@
   function init() {
     // Делегирование — ячейки пересоздаются при каждой генерации
     document.addEventListener('mouseover', (e) => {
+      if (sceneBusy()) return;               // не показывать поверх заставки/горения
       const t = e.target;
       if (!t || !t.closest) return;
       const cell = t.closest('.cell');

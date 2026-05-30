@@ -18,6 +18,13 @@
     'ᛇ', 'ᛈ', 'ᛉ', 'ᛊ', 'ᛏ', 'ᛒ', 'ᛖ', 'ᛗ', 'ᛚ', 'ᛜ', 'ᛞ', 'ᛟ'
   ];
 
+  // Пока идёт заставка загрузки сцены или горение — руны не показываем
+  // (заставка pointer-events:none пропускает наведение на сетку под ней).
+  function sceneBusy() {
+    return document.body.classList.contains('dragon-cinematic-loading') ||
+           window.__cwBurnActive === true;
+  }
+
   function isFillableEmpty(cell) {
     if (!cell || cell.classList.contains('block')) return false;
     const ul = cell.querySelector('.user-letter');
@@ -55,6 +62,7 @@
 
   function init() {
     document.addEventListener('mouseover', (e) => {
+      if (sceneBusy()) return;               // не показывать поверх заставки/горения
       const t = e.target;
       if (!t || !t.closest) return;
       const cell = t.closest('.cell');
