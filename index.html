@@ -63,6 +63,28 @@
   <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
 </div>
 
+<script>
+/* Заставка-first: если включится 3D-режим — показываем loading-оверлей СРАЗУ,
+   до отрисовки кроссворда (раньше класс вешал dragon-cinematic.js уже после
+   первого кадра → кроссворд мелькал, потом заставка). dragon-cinematic.js
+   снимет класс, когда модель готова (finishLoadingIntro). Safety-таймаут —
+   на случай если модуль не загрузится (нет WebGL / ошибка). */
+(function () {
+  try {
+    var VALID = ['fly', 'cursor', 'cinematic', 'none'];
+    var q = null;
+    try { q = new URLSearchParams(location.search).get('dragon'); } catch (e) {}
+    var saved = null;
+    try { saved = localStorage.getItem('cw_dragon_mode_v2'); } catch (e) {}
+    var mode = VALID.indexOf(q) >= 0 ? q : (VALID.indexOf(saved) >= 0 ? saved : 'cinematic');
+    if (mode === 'cinematic' && location.protocol === 'file:') mode = 'fly';
+    if (mode === 'cinematic') {
+      document.body.classList.add('dragon-mode-cinematic', 'dragon-cinematic-loading');
+      setTimeout(function () { document.body.classList.remove('dragon-cinematic-loading'); }, 12000);
+    }
+  } catch (e) {}
+})();
+</script>
 <div id="dragon-cinematic-stage" class="dragon-cinematic-stage" aria-hidden="true"></div>
 <div id="dragon-loading-screen" class="dragon-loading-screen" aria-hidden="true">
   <video class="dragon-intro-video" autoplay muted loop playsinline preload="auto" poster="assets/images/dragon-intro-videoframe.png">
