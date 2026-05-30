@@ -17,7 +17,7 @@ window.CW_DRAGON_DEFAULTS = {
   // Боковая композиция: дракон стоит слева от свитка и дышит в его сторону.
   // Не привязываем к самому scrollRect, иначе на широких экранах он уезжает
   // в центр и закрывает сетку.
-  anchorX: 12.9, anchorY: 78,
+  anchorX: 13.5, anchorY: 76.5,
   followScroll: false,
   trackCursor: true,
 
@@ -35,8 +35,8 @@ window.CW_DRAGON_DEFAULTS = {
   responsiveStrength: 1,
 
   // — освещение —
-  lightIntensity: 0.1,
-  platformLight: 0.1,
+  lightIntensity: 0.65,
+  platformLight: 0,
 
   // — огонь (bone-local координаты пасти) —
   mouthBone: 'NPC_Head_046',
