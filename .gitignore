@@ -18,6 +18,10 @@ assets/models/*.glb
 assets/models/*.gltf
 assets/models/*.bin
 assets/models/*/
+# Exception: the shipped cinematic dragon is redistributable (CC BY 4.0,
+# see assets/models/ATTRIBUTION.md) — keep it tracked so the scene works on
+# a clone / GitHub Pages. Other model drops stay local.
+!assets/models/the_elder_scrolls_blades_ancient_dragon.glb
 
 # Local-only Claude config (project-specific previews)
 .claude/launch.json
