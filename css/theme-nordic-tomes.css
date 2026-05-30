@@ -2111,21 +2111,12 @@ body.theme-skyrim .grid-container .scroll-paper {
     0 18px 34px rgba(0,0,0,0.42),
     0 0 0 1px rgba(112, 71, 24, 0.12) !important;
 }
+/* Красная ленточка-закладка у печати убрана совсем (по просьбе). Сам ::before
+   оставляем выключенным здесь — заглушка «Свиток пуст» рисуется через свой
+   селектор выше по специфичности (#grid-container:not(:has(.grid)) …). */
 body.theme-skyrim .grid-container .scroll-paper::before {
-  content: "";
-  position: absolute;
-  right: 88px;
-  bottom: 0;
-  width: 34px;
-  height: 100px;
-  z-index: 4;
-  pointer-events: none;
-  border-radius: 2px 2px 0 0;
-  clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 67%, 0 80%);
-  background:
-    linear-gradient(90deg, rgba(42, 5, 3, 0.7), rgba(147, 31, 18, 0.95) 42%, rgba(77, 8, 5, 0.96)),
-    repeating-linear-gradient(0deg, transparent 0 8px, rgba(255, 186, 128, 0.12) 8px 9px);
-  filter: drop-shadow(0 3px 3px rgba(0,0,0,0.42));
+  content: none;
+  display: none;
 }
 body.theme-skyrim #grid-container .scroll-paper {
   /* clip-path убран отсюда — он с !important замораживал intro-разворачивание
