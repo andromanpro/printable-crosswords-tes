@@ -170,7 +170,7 @@
     const resetBtn = document.getElementById('dp-reset');
     if (resetBtn) resetBtn.addEventListener('click', () => {
       try { localStorage.removeItem(KEY); } catch (_) {}
-      alert('Настройки сброшены к baked-defaults. F5 для применения.');
+      alert('Настройки сброшены к значениям по умолчанию. F5 для применения.');
     });
     // Export для бейка — показывает полный JSON текущих настроек (defaults+baked+localStorage)
     const exportBtn = document.getElementById('dp-export');
