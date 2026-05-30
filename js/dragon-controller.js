@@ -9,14 +9,20 @@
 (function () {
   'use strict';
 
-  const KEY = 'cw_dragon_mode_v1';
+  // v2: дефолт сменён на cinematic (3D). Бамп ключа — чтобы старое авто-сохранённое
+  // значение v1 ('fly') не перебивало новый дефолт у тех, кто уже открывал страницу.
+  const KEY = 'cw_dragon_mode_v2';
   const VALID = ['fly', 'cursor', 'cinematic', 'none'];
+  const DEFAULT_MODE = 'cinematic';
 
-  function apply(mode) {
-    if (!VALID.includes(mode)) mode = 'fly';
+  function apply(mode, persist) {
+    if (!VALID.includes(mode)) mode = DEFAULT_MODE;
     document.body.classList.remove('dragon-mode-fly', 'dragon-mode-cursor', 'dragon-mode-cinematic', 'dragon-mode-none');
     document.body.classList.add('dragon-mode-' + mode);
-    try { localStorage.setItem(KEY, mode); } catch (e) { /* ignore */ }
+    // Сохраняем ТОЛЬКО явный выбор пользователя. Дефолт и file://-даунгрейд не
+    // персистим — иначе открытие через file:// «зашьёт» fly и cinematic больше
+    // не станет дефолтом на сервере.
+    if (persist) { try { localStorage.setItem(KEY, mode); } catch (e) { /* ignore */ } }
 
     if (window.CWDragonCinematic && typeof window.CWDragonCinematic.setEnabled === 'function') {
       window.CWDragonCinematic.setEnabled(mode === 'cinematic');
@@ -31,21 +37,23 @@
     try { saved = localStorage.getItem(KEY); } catch (e) {}
     let requested = null;
     try { requested = new URLSearchParams(window.location.search).get('dragon'); } catch (e) {}
-    let initial = VALID.includes(requested) ? requested : saved;
-    // file:/// CORS блокирует fetch к локальным GLB-моделям. Cinematic-режим
-    // требует загрузки модели — на file:// он не работает. Downgrade на fly.
+    // Приоритет: ?dragon= (явный) → сохранённый выбор → ДЕФОЛТ (cinematic, 3D).
+    let initial = VALID.includes(requested) ? requested
+                : VALID.includes(saved) ? saved
+                : DEFAULT_MODE;
+    let userChoice = VALID.includes(requested) || VALID.includes(saved);
+    // file:// CORS блокирует fetch к локальным GLB. Cinematic там не грузится —
+    // откатываем на fly (но НЕ персистим даунгрейд).
     if (initial === 'cinematic' && window.location.protocol === 'file:') {
       initial = 'fly';
+      userChoice = false;
     }
     const radio = document.querySelector('input[name="dragon"][value="' + initial + '"]');
-    if (initial && radio) {
-      radio.checked = true;
-    }
-    const checked = document.querySelector('input[name="dragon"]:checked');
-    apply(checked ? checked.value : 'fly');
+    if (radio) radio.checked = true;
+    apply(initial, userChoice);   // персистим только если это явный выбор пользователя
 
     document.querySelectorAll('input[name="dragon"]').forEach(r => {
-      r.addEventListener('change', e => apply(e.target.value));
+      r.addEventListener('change', e => apply(e.target.value, true));
     });
   }
 
