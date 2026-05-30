@@ -20,9 +20,9 @@ echo ║                                                                  ║
 echo ╚══════════════════════════════════════════════════════════════════╝
 echo.
 
-rem Открыть основную страницу в браузере по умолчанию через 1.5 сек
-rem (timeout, чтобы сервер успел подняться)
-start "" /b cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:8767/dragon-lab.html"
+rem Открыть основную страницу в браузере по умолчанию через 2 сек
+rem (timeout, чтобы сервер успел подняться). Лаборатория — по ссылке из баннера выше.
+start "" /b cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:8767/"
 
 rem Запустить Python http.server (3.14 как в launch.json; если нет — fallback 3)
 py -3.14 -m http.server 8767 --bind 127.0.0.1 2>nul
