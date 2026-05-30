@@ -14,10 +14,28 @@
     }
   </style>
   <link rel="stylesheet" href="css/ui.css?v=62">
-  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=81">
-  <link rel="stylesheet" href="css/print.css?v=66">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=96">
+  <link rel="stylesheet" href="css/print.css?v=67">
 </head>
 <body class="font-medium theme-skyrim">
+<!-- SVG filter defs для burn-эффекта свитка (feTurbulence + displacement
+     искажают край маски → рваный фронт горения вместо геометрического круга) -->
+<svg aria-hidden="true" focusable="false" width="0" height="0"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="skyrim-burn-displace" x="-18%" y="-18%" width="136%" height="136%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.055" numOctaves="4" seed="19" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="skyrim-ember-waver" x="-28%" y="-28%" width="156%" height="156%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency="0.032 0.11" numOctaves="3" seed="31" result="emberNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="emberNoise" scale="34" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="0.35"/>
+    </filter>
+  </defs>
+</svg>
 <script>
   (function () {
     const valid = ['fly', 'cursor', 'cinematic', 'none'];
@@ -570,6 +588,118 @@
       <label><input type="radio" name="dragon" value="cursor"> 🦴 Следит за курсором</label>
       <label><input type="radio" name="dragon" value="cinematic"> 3D-сцена</label>
       <label><input type="radio" name="dragon" value="none"> ✕ Без дракона</label>
+      <label style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(212,175,55,0.2); display: block;">
+        <input type="checkbox" id="dragon-edit-pos"> 🎯 Перетащить дракона мышью
+      </label>
+      <a href="dragon-lab.html" target="_blank" style="font-size: 11px; color: #d4af37; display: inline-block; margin-top: 4px; text-decoration: none;">🧪 Открыть Dragon Lab →</a>
+    </fieldset>
+
+    <!-- Тонкая настройка дракона: видна только в cinematic-режиме (CSS) -->
+    <fieldset class="ctrl-group dragon-tune-panel">
+      <legend>⚙ Тонкая настройка дракона</legend>
+
+      <details open class="dp-section">
+        <summary>📍 Положение на странице</summary>
+        <label class="dp-cb">
+          <input type="checkbox" id="dp-follow-scroll"> 🪢 Привязать к свитку
+        </label>
+        <label class="dp-cb">
+          <input type="checkbox" id="dp-show-pedestal" checked> 🗿 Подставка под драконом
+        </label>
+        <label class="dp-cb">
+          <input type="checkbox" id="dp-burn-on-generate" checked> 🔥 Сжигать страницу при «Сгенерировать»
+        </label>
+        <label>X (% viewport) <span class="dp-val" id="dp-anchor-x-val">50%</span>
+          <input type="range" id="dp-anchor-x" min="0" max="100" step="0.5">
+        </label>
+        <label>Y (% viewport) <span class="dp-val" id="dp-anchor-y-val">30%</span>
+          <input type="range" id="dp-anchor-y" min="0" max="100" step="0.5">
+        </label>
+        <label>Размер дракона <span class="dp-val" id="dp-scale-val">0.54</span>
+          <input type="range" id="dp-scale" min="0.2" max="1.4" step="0.01">
+        </label>
+        <label>Размер платформы <span class="dp-val" id="dp-pedestal-scale-val">0.62</span>
+          <input type="range" id="dp-pedestal-scale" min="0.2" max="2.0" step="0.02">
+        </label>
+        <label>💡 Яркость освещения <span class="dp-val" id="dp-light-val">1.00</span>
+          <input type="range" id="dp-light" min="0" max="3" step="0.05">
+        </label>
+        <label>🔦 Свет платформы <span class="dp-val" id="dp-platform-light-val">0.60</span>
+          <input type="range" id="dp-platform-light" min="0" max="3" step="0.05">
+        </label>
+        <label>᛬ Высота пояса рун <span class="dp-val" id="dp-rune-offset-val">0.00</span>
+          <input type="range" id="dp-rune-offset" min="-1.5" max="1.5" step="0.02">
+        </label>
+      </details>
+
+      <details class="dp-section">
+        <summary>🐉 Дракон на платформе</summary>
+        <label>Сдвиг X (вбок) <span class="dp-val" id="dp-offset-x-val">0</span>
+          <input type="range" id="dp-offset-x" min="-4" max="4" step="0.02">
+        </label>
+        <label>Сдвиг Y (высота над платформой) <span class="dp-val" id="dp-offset-y-val">0</span>
+          <input type="range" id="dp-offset-y" min="-3" max="3" step="0.02">
+        </label>
+        <label>Сдвиг Z (вперёд/назад) <span class="dp-val" id="dp-offset-z-val">0</span>
+          <input type="range" id="dp-offset-z" min="-3" max="3" step="0.02">
+        </label>
+      </details>
+
+      <details class="dp-section">
+        <summary>🔄 Поворот дракона</summary>
+        <label>Yaw (горизонтально) <span class="dp-val" id="dp-yaw-val">0°</span>
+          <input type="range" id="dp-yaw" min="-180" max="180" step="1">
+        </label>
+        <label>Pitch (наклон) <span class="dp-val" id="dp-pitch-val">0°</span>
+          <input type="range" id="dp-pitch" min="-50" max="50" step="1">
+        </label>
+        <label>Roll (крен) <span class="dp-val" id="dp-roll-val">0°</span>
+          <input type="range" id="dp-roll" min="-45" max="45" step="1">
+        </label>
+        <label class="dp-cb">
+          <input type="checkbox" id="dp-track-cursor"> 🖱 Голова за курсором (±38°)
+        </label>
+      </details>
+
+      <details class="dp-section">
+        <summary>🔥 Огонь (координаты)</summary>
+        <label>🦴 Прицепить пасть к кости:</label>
+        <select id="dp-bone">
+          <option value="">— model root (rest pose) —</option>
+        </select>
+        <label>Mouth X <span class="dp-val" id="dp-mouth-x-val">0.5</span>
+          <input type="range" id="dp-mouth-x" min="-3" max="3" step="0.05">
+        </label>
+        <label>Mouth Y <span class="dp-val" id="dp-mouth-y-val">0.1</span>
+          <input type="range" id="dp-mouth-y" min="-3" max="3" step="0.05">
+        </label>
+        <label>Mouth Z <span class="dp-val" id="dp-mouth-z-val">0</span>
+          <input type="range" id="dp-mouth-z" min="-3" max="3" step="0.05">
+        </label>
+        <label>Yaw огня <span class="dp-val" id="dp-fire-yaw-val">0°</span>
+          <input type="range" id="dp-fire-yaw" min="-180" max="180" step="1">
+        </label>
+        <label>Pitch огня <span class="dp-val" id="dp-fire-pitch-val">0°</span>
+          <input type="range" id="dp-fire-pitch" min="-90" max="90" step="1">
+        </label>
+        <label>Интенсивность <span class="dp-val" id="dp-fire-intensity-val">1.00</span>
+          <input type="range" id="dp-fire-intensity" min="0" max="3" step="0.05">
+        </label>
+      </details>
+
+      <details class="dp-section">
+        <summary>🎞 Окно огня в breath-клипе</summary>
+        <label>Start (с) <span class="dp-val" id="dp-fw-start-val">3.00s</span>
+          <input type="range" id="dp-fw-start" min="0" max="10" step="0.05">
+        </label>
+        <label>End (с) <span class="dp-val" id="dp-fw-end-val">5.00s</span>
+          <input type="range" id="dp-fw-end" min="0" max="10" step="0.05">
+        </label>
+      </details>
+
+      <button type="button" id="dp-reset" class="dp-reset-btn">↺ Сбросить к baked-defaults</button>
+      <button type="button" id="dp-export" class="dp-reset-btn">📋 Скопировать настройки для бейка</button>
+      <textarea id="dp-export-out" readonly style="display:none; width:100%; height:120px; margin-top:6px; font-family:monospace; font-size:9px; background:#0a0805; color:#cca767; border:1px solid #5a4030;"></textarea>
     </fieldset>
 
     <fieldset class="ctrl-group">
@@ -707,7 +837,7 @@
 <script src="js/renderer.js?v=62"></script>
 <script src="js/app.js?v=62"></script>
 <script src="js/dragon-controller.js?v=63"></script>
-<script src="js/skyrim-decor.js?v=62"></script>
+<script src="js/skyrim-decor.js?v=68"></script>
 <script src="js/dragon-wander.js?v=62"></script>
 <script src="js/skeleton-dragon.js?v=62"></script>
 <script type="importmap">
@@ -717,6 +847,14 @@
   }
 }
 </script>
-<script type="module" src="js/dragon-cinematic.js?v=74"></script>
+<script src="js/dragon-defaults.js?v=7"></script>
+<script src="js/scroll-fx-particles.js?v=2"></script>
+<script src="js/dragon-scroll-fire.js?v=12"></script>
+<script src="js/dragon-clue-tooltip.js?v=1"></script>
+<script src="js/dragon-rune-hint.js?v=4"></script>
+<script src="js/dragon-position-editor.js?v=3"></script>
+<script src="js/dragon-control-panel.js?v=7"></script>
+<script src="js/dragon-burn-overlay.js?v=9"></script>
+<script type="module" src="js/dragon-cinematic.js?v=99"></script>
 </body>
 </html>

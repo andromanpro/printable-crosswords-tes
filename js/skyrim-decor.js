@@ -12,6 +12,8 @@
 (function () {
   'use strict';
 
+  let firstWrapDone = false;   // intro-play только при ПЕРВОМ раскрытии
+
   const WAX_SEAL_SVG = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
     '<defs>' +
       '<radialGradient id="waxFill" cx="38%" cy="30%" r="68%">' +
@@ -96,16 +98,19 @@
     h.setAttribute('data-skyrim-decorated', '1');
   }
 
-  // Обёртываем содержимое #grid-container — каждый раз когда оно меняется
+  // Обёртываем содержимое #grid-container — каждый раз когда оно меняется.
+  // Возвращает true, если проиграна анимация первого разворота (is-revealing),
+  // чтобы ensureWrapped не добавлял поверх неё regen-active.
   function wrapScrollWhenReady() {
     const gc = document.getElementById('grid-container');
-    if (!gc) return;
+    if (!gc) return false;
     // Если уже обёрнуто — не трогаем
-    if (gc.querySelector(':scope > .scroll-paper')) return;
+    if (gc.querySelector(':scope > .scroll-paper')) return false;
     // Берём всё текущее содержимое
     const inner = document.createElement('div');
     inner.className = 'scroll-paper';
-    while (gc.firstChild) inner.appendChild(gc.firstChild);
+    let movedCount = 0;
+    while (gc.firstChild) { inner.appendChild(gc.firstChild); movedCount++; }
     const rodTop = document.createElement('div');
     rodTop.className = 'scroll-rod-top';
     rodTop.setAttribute('aria-hidden', 'true');
@@ -115,14 +120,45 @@
     const seal = document.createElement('div');
     seal.className = 'wax-seal';
     seal.setAttribute('aria-hidden', 'true');
+    inner.appendChild(seal);
     gc.appendChild(rodTop);
     gc.appendChild(inner);
     gc.appendChild(rodBot);
-    gc.appendChild(seal);
 
-    // Intro-play на первом раскрытии
-    requestAnimationFrame(() => gc.classList.add('intro-play'));
-    setTimeout(() => gc.classList.remove('intro-play'), 3000);
+    // Высота листа в CSS-переменную (синхронно, до старта анимации) —
+    // для translateY нижнего рулона при сворачивании/разворачивании.
+    const paperH = inner.offsetHeight || 320;
+    gc.style.setProperty('--scroll-h', paperH + 'px');
+
+    // Анимацию первого разворота играем ТОЛЬКО когда в свиток реально попал
+    // контент кроссворда (movedCount>0). Пустой враппер из init() не считается —
+    // иначе firstWrapDone сгорит вхолостую и настоящий разворот не проиграет.
+    const hasRealContent = movedCount > 0;
+
+    if (!hasRealContent) {
+      gc.classList.add('is-empty-scroll', 'is-rolled');
+      gc.style.setProperty('--scroll-h', '0px');
+      return false;
+    }
+
+    gc.classList.remove('is-empty-scroll', 'is-rolled');
+
+    // При ПЕРВОЙ загрузке свиток должен быть свёрнут, а затем развернуться.
+    // is-revealing добавляем СИНХРОННО (в том же task, что и вставка контента):
+    //  • keyframe 0% у scroll-unroll == свёрнутый свиток (clip inset 100%),
+    //    а animation-fill-mode:both держит этот стартовый кадр → нет вспышки
+    //    развёрнутого листа между вставкой и первой отрисовкой;
+    //  • без requestAnimationFrame — в фоновой вкладке rAF засыпает и разворот
+    //    бы залипал; синхронный путь от этого не зависит.
+    // Не во время burn-сценария (он сам управляет разворотом).
+    if (!firstWrapDone && hasRealContent && !window.__cwBurnActive) {
+      gc.classList.add('is-revealing');
+      setTimeout(() => gc.classList.remove('is-revealing'), 900);
+      firstWrapDone = true;
+      return true;
+    }
+    firstWrapDone = true;
+    return false;
   }
 
   function ensureWrapped() {
@@ -132,12 +168,32 @@
     if (!hasContent) return;
     // Если рендерер только что переписал innerHTML — wrapper исчез, переоборачиваем
     if (!gc.querySelector(':scope > .scroll-paper')) {
-      wrapScrollWhenReady();
-      // Эффект regen — короткая анимация раскрытия
-      gc.classList.remove('regen-active');
-      requestAnimationFrame(() => gc.classList.add('regen-active'));
-      setTimeout(() => gc.classList.remove('regen-active'), 1400);
+      const didFirstReveal = wrapScrollWhenReady();
+      // Эффект regen — короткая анимация раскрытия.
+      // НО если идёт burn-сценарий (dragon-burn-overlay сам разворачивает свиток
+      // через is-revealing) ИЛИ только что отыграл первый разворот (is-revealing) —
+      // НЕ дублируем, иначе двойная анимация разворота.
+      if (!window.__cwBurnActive && !didFirstReveal) {
+        gc.classList.remove('regen-active');
+        requestAnimationFrame(() => gc.classList.add('regen-active'));
+        setTimeout(() => gc.classList.remove('regen-active'), 1400);
+      }
     }
+  }
+
+  // Свечной антураж (Древние свитки): тёплые световые пятна + виньетка позади
+  // сцены. Стили — .skyrim-ambiance в theme-nordic-tomes.css.
+  function injectAmbiance() {
+    if (document.querySelector('.skyrim-ambiance')) return;
+    const amb = document.createElement('div');
+    amb.className = 'skyrim-ambiance';
+    amb.setAttribute('aria-hidden', 'true');
+    amb.innerHTML =
+      '<span class="candle l"></span>' +
+      '<span class="candle r"></span>' +
+      '<span class="candle c"></span>' +
+      '<span class="vignette"></span>';
+    document.body.insertBefore(amb, document.body.firstChild);
   }
 
   function init() {
@@ -146,6 +202,7 @@
       const obs = new MutationObserver(() => {
         if (document.body.classList.contains('theme-skyrim')) {
           obs.disconnect();
+          injectAmbiance();
           buildTitle();
           wrapScrollWhenReady();
           watchGrid();
@@ -154,6 +211,7 @@
       obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
       return;
     }
+    injectAmbiance();
     buildTitle();
     wrapScrollWhenReady();
     watchGrid();

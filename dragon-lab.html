@@ -21,7 +21,7 @@
     background: #110d08;
     border-right: 1px solid #3a2818;
     padding: 16px;
-    overflow-y: auto;
+    /* overflow убран: вкладки делают .ctrl коротким, body — единственный scroll */
   }
   .schema h2 { font-size: 14px; margin: 0 0 12px; color: #d4af37; text-transform: uppercase; letter-spacing: 0.1em; }
   .schema-frame {
@@ -30,8 +30,9 @@
     border: 1px solid #5a4030;
     border-radius: 4px;
     aspect-ratio: 9 / 16;
+    max-height: 400px;          /* не растягивать на 9/16 от 320px = 569px */
+    margin: 0 auto 12px;
     overflow: hidden;
-    margin-bottom: 12px;
   }
   .schema-block {
     position: absolute;
@@ -107,8 +108,7 @@
     background: #14100a;
     border-left: 1px solid #3a2818;
     padding: 16px;
-    overflow-y: auto;
-    max-height: 100vh;
+    /* overflow убран: с tab'ами каждая вкладка помещается в viewport */
   }
   .ctrl h2 {
     font-size: 13px; margin: 0 0 8px; color: #d4af37;
@@ -137,6 +137,48 @@
     font-size: 10px; padding: 8px; overflow: auto; max-height: 200px;
     white-space: pre-wrap; word-break: break-all;
   }
+  .ctrl select {
+    width: 100%; background: #0a0805; color: #e0d0a0;
+    border: 1px solid #5a4030; padding: 6px; font-family: monospace;
+    font-size: 11px;
+  }
+  .timeline-vis {
+    height: 14px; background: #1a1612; border: 1px solid #3a2818;
+    position: relative; margin-top: 6px;
+  }
+  .timeline-vis .fw-stripe {
+    position: absolute; top: 0; bottom: 0;
+    background: rgba(255, 100, 30, 0.55); pointer-events: none;
+  }
+  .timeline-vis .ct-marker {
+    position: absolute; top: -2px; bottom: -2px;
+    width: 2px; background: #d4af37; pointer-events: none;
+  }
+  .anim-box {
+    margin-top: 10px; padding: 8px;
+    background: #0a0805; border: 1px solid #5a4030;
+  }
+  .anim-box .lbl { font-size: 11px; color: #cca767; margin-bottom: 4px; }
+  .ctrl .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .ctrl .pair button { width: auto; }
+  /* === Tabs в правой панели === */
+  .tabs-nav {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    margin: -16px -16px 12px;             /* full-bleed */
+    border-bottom: 1px solid #3a2818;
+    background: #0a0805;
+  }
+  .tab-btn {
+    background: transparent; color: #8e7a52;
+    border: none; padding: 10px 4px; cursor: pointer;
+    font-size: 11px; font-family: inherit;
+    border-bottom: 2px solid transparent;
+    transition: color 100ms, border-color 100ms;
+    width: 100%;
+  }
+  .tab-btn:hover { color: #cca767; background: #14100a; }
+  .tab-btn.active { color: #d4af37; border-bottom-color: #d4af37; background: #14100a; }
+  .tab-content[hidden] { display: none; }
   .top-strip {
     grid-column: 1 / -1;
     background: #0a0604;
@@ -172,8 +214,11 @@
     <dt>X страницы:</dt><dd id="info-x">50%</dd>
     <dt>Y страницы:</dt><dd id="info-y">20%</dd>
     <dt>Размер бокса:</dt><dd id="info-size">560 × 420 px</dd>
-    <dt>Огонь offset:</dt><dd id="info-fire-pos">(0, 0, 0)</dd>
-    <dt>Огонь направление:</dt><dd id="info-fire-dir">yaw 0°, pitch 0°</dd>
+    <dt>Поворот дракона:</dt><dd id="info-dragon-rot">yaw 0° pitch 0° roll 0°</dd>
+    <dt>Сдвиг дракона:</dt><dd id="info-dragon-off">(0, 0, 0)  scale 0.54</dd>
+    <dt>Пасть (model-local):</dt><dd id="info-fire-pos">(0.5, 0.1, 0)</dd>
+    <dt>Направление огня:</dt><dd id="info-fire-dir">yaw 0°, pitch 0°</dd>
+    <dt>Idle / Breath:</dt><dd id="info-clips">— / —</dd>
   </dl>
 </aside>
 
@@ -185,8 +230,26 @@
 
 <!-- RIGHT — контролы -->
 <aside class="ctrl">
+  <nav class="tabs-nav" style="grid-template-columns: repeat(5, 1fr);">
+    <button type="button" class="tab-btn active" data-tab="pos">📍 Pos</button>
+    <button type="button" class="tab-btn"        data-tab="fire">🔥 Fire</button>
+    <button type="button" class="tab-btn"        data-tab="anim">🎞 Anim</button>
+    <button type="button" class="tab-btn"        data-tab="scene">🎬 Scene</button>
+    <button type="button" class="tab-btn"        data-tab="act">💾 Act</button>
+  </nav>
+
+  <!-- Tab: Position (anchor + dragon transform) -->
+  <div class="tab-content" data-tab="pos">
   <h2>Положение на странице</h2>
   <section>
+    <label style="cursor: pointer; padding: 6px 8px; background: #0a0805; border: 1px solid #5a4030; display: flex; align-items: center; gap: 8px; margin: 4px 0 10px;">
+      <input type="checkbox" id="followScroll" style="margin: 0; cursor: pointer;">
+      <span style="color: #d4af37; font-size: 11px;">🪢 Привязать к свитку (follow scroll)</span>
+    </label>
+    <p style="font-size: 10px; color: #8e7a52; margin: -4px 0 8px;">
+      ✓ — дракон над <code>#grid-container</code>, anchor X/Y игнорируются.<br>
+      ☐ — дракон в фикс-позиции viewport (anchor X/Y в %).
+    </p>
     <label>Anchor X (% viewport) <span class="val" id="v-ax">50</span>
       <input type="range" id="ax" min="0" max="100" value="50">
     </label>
@@ -204,21 +267,73 @@
     </label>
   </section>
 
-  <h2>Огонь</h2>
+  <h2>Поворот и положение дракона</h2>
+  <p style="font-size: 10px; color: #8e7a52; margin: -4px 0 8px;">
+    Углы дракона + смещение в world. Save → main пишет в sceneSettings.{yaw,pitch,roll,offsetX/Y/Z,scale}.
+  </p>
   <section>
-    <label>Источник X <span class="val" id="v-fx">0</span>
-      <input type="range" id="fx" min="-2" max="2" step="0.05" value="0">
+    <label style="cursor: pointer; padding: 6px 8px; background: #0a0805; border: 1px solid #5a4030; display: flex; align-items: center; gap: 8px; margin: 4px 0 10px;">
+      <input type="checkbox" id="trackCursor" style="margin: 0; cursor: pointer;">
+      <span style="color: #d4af37; font-size: 11px;">🖱 Поворот головы за курсором (main only, ±38°)</span>
     </label>
-    <label>Источник Y <span class="val" id="v-fy">0</span>
-      <input type="range" id="fy" min="-2" max="2" step="0.05" value="0">
+    <p style="font-size: 10px; color: #8e7a52; margin: -4px 0 8px;">
+      ✓ — main крутит дракона в сторону курсора (живо, но огонь не там где в лабе).<br>
+      ☐ — main использует ровно ту ориентацию что в лабе (огонь летит точно куда настроил).
+    </p>
+    <label>Yaw (вокруг Y, °) <span class="val" id="v-dyw">0</span>
+      <input type="range" id="dyw" min="-180" max="180" value="0">
     </label>
-    <label>Источник Z <span class="val" id="v-fz">0</span>
-      <input type="range" id="fz" min="-2" max="2" step="0.05" value="0">
+    <label>Pitch (вокруг X, °) <span class="val" id="v-dpt">0</span>
+      <input type="range" id="dpt" min="-50" max="50" value="0">
     </label>
-    <label>Направление Yaw (горизонт) <span class="val" id="v-fyw">0</span>
+    <label>Roll (вокруг Z, °) <span class="val" id="v-drl">0</span>
+      <input type="range" id="drl" min="-45" max="45" value="0">
+    </label>
+    <label>Offset X (world) <span class="val" id="v-dox">0</span>
+      <input type="range" id="dox" min="-3" max="3" step="0.05" value="0">
+    </label>
+    <label>Offset Y (world) <span class="val" id="v-doy">0</span>
+      <input type="range" id="doy" min="-2" max="2" step="0.05" value="0">
+    </label>
+    <label>Offset Z (world) <span class="val" id="v-doz">0</span>
+      <input type="range" id="doz" min="-2" max="2" step="0.05" value="0">
+    </label>
+    <label>Scale (общая) <span class="val" id="v-dsc">0.54</span>
+      <input type="range" id="dsc" min="0.2" max="1.4" step="0.01" value="0.54">
+    </label>
+  </section>
+
+  </div><!-- /tab Position -->
+
+  <!-- Tab: Fire -->
+  <div class="tab-content" data-tab="fire" hidden>
+  <h2>Огонь (координаты модели)</h2>
+  <p style="font-size: 10px; color: #8e7a52; margin: -4px 0 8px;">
+    Mouth X/Y/Z — позиция пасти. X+ = вперёд (нос). Если прицепишь к кости — координаты считаются от bone.
+  </p>
+  <section>
+    <label class="lbl" style="margin: 6px 0 4px;">🦴 Прицепить пасть к кости (следить за анимацией):</label>
+    <select id="mouthBoneSelect">
+      <option value="">— model root (rest pose только) —</option>
+    </select>
+    <div style="font-size: 10px; color: #8e7a52; margin-top: 4px;">
+      Если выбрано — fire-origin двигается за головой при breath-анимации в main.
+    </div>
+  </section>
+  <section>
+    <label>Mouth X (вперёд) <span class="val" id="v-fx">0.5</span>
+      <input type="range" id="fx" min="-1" max="3" step="0.05" value="0.5">
+    </label>
+    <label>Mouth Y (вверх) <span class="val" id="v-fy">0.1</span>
+      <input type="range" id="fy" min="-1" max="2" step="0.05" value="0.1">
+    </label>
+    <label>Mouth Z (вбок) <span class="val" id="v-fz">0</span>
+      <input type="range" id="fz" min="-1" max="1" step="0.05" value="0">
+    </label>
+    <label>Направление Yaw (вокруг Y) <span class="val" id="v-fyw">0</span>
       <input type="range" id="fyw" min="-180" max="180" value="0">
     </label>
-    <label>Направление Pitch (вертикаль) <span class="val" id="v-fpt">0</span>
+    <label>Направление Pitch (вокруг X) <span class="val" id="v-fpt">0</span>
       <input type="range" id="fpt" min="-90" max="90" value="0">
     </label>
     <label>Длина струи (m) <span class="val" id="v-flen">2</span>
@@ -230,6 +345,97 @@
     <button id="btn-fire">🔥 Дыхнуть огнём</button>
   </section>
 
+  </div><!-- /tab Fire -->
+
+  <!-- Tab: Animation -->
+  <div class="tab-content" data-tab="anim" hidden>
+  <h2>Анимация (клипы + fire window)</h2>
+  <p style="font-size: 10px; color: #8e7a52; margin: -4px 0 8px;">
+    Выбери клип → нажми Play → найди кадр где пасть раскрыта → mark fire window start/end.
+    Save → main использует idleClip / breathClip и (FIRE_WINDOW_START, FIRE_WINDOW_END).
+  </p>
+  <section>
+    <label class="lbl" style="margin: 6px 0 4px;">Клип:</label>
+    <select id="clipSelect">
+      <option value="">— модель не загружена —</option>
+    </select>
+    <div class="pair" style="margin-top: 6px;">
+      <button id="btn-play-pause">▶ Play</button>
+      <button id="btn-rewind" class="secondary">⏮ Rewind</button>
+    </div>
+
+    <label style="margin-top: 8px;">Текущее время (s) <span class="val" id="v-ct">0.00</span>
+      <input type="range" id="ct" min="0" max="10" step="0.01" value="0">
+    </label>
+
+    <div class="anim-box">
+      <div class="lbl">Окно огня (когда модель «выпускает» пламя):</div>
+      <label>Start (s) <span class="val" id="v-fws">3.00</span>
+        <input type="range" id="fws" min="0" max="10" step="0.05" value="3">
+      </label>
+      <label>End (s) <span class="val" id="v-fwe">5.00</span>
+        <input type="range" id="fwe" min="0" max="10" step="0.05" value="5">
+      </label>
+      <div class="timeline-vis" id="timelineVis">
+        <div class="fw-stripe" id="fwStripe"></div>
+        <div class="ct-marker" id="ctMarker"></div>
+      </div>
+      <div style="font-size: 10px; color: #8e7a52; margin-top: 4px;">
+        Длина клипа: <span id="clip-dur">—</span> · в окне сейчас:
+        <span id="in-window" style="color:#ff6b1d;">—</span>
+      </div>
+    </div>
+
+    <div class="pair" style="margin-top: 8px;">
+      <button id="btn-set-idle" class="secondary">⛓ Mark Idle</button>
+      <button id="btn-set-breath" class="secondary">🔥 Mark Breath</button>
+    </div>
+    <div style="font-size: 10px; color: #8e7a52; margin-top: 4px;">
+      Idle clip: <span id="cur-idle">—</span><br>
+      Breath clip: <span id="cur-breath">—</span>
+    </div>
+  </section>
+
+  </div><!-- /tab Animation -->
+
+  <!-- Tab: Scene (платформа, освещение, камера) -->
+  <div class="tab-content" data-tab="scene" hidden>
+  <h2>🗿 Платформа</h2>
+  <section>
+    <label class="dp-cb" style="display:flex;gap:6px;align-items:center;padding:4px 6px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.18);">
+      <input type="checkbox" id="lab-show-pedestal" checked> Показывать платформу
+    </label>
+    <label>Размер платформы <span class="val" id="v-lab-ped-scale">0.62</span>
+      <input type="range" id="lab-ped-scale" min="0.2" max="2" step="0.02" value="0.62">
+    </label>
+  </section>
+  <h2>💡 Освещение</h2>
+  <section>
+    <label>Общая яркость <span class="val" id="v-lab-light">1</span>
+      <input type="range" id="lab-light" min="0" max="3" step="0.05" value="1">
+    </label>
+    <label>Свет платформы <span class="val" id="v-lab-plight">0.6</span>
+      <input type="range" id="lab-plight" min="0" max="3" step="0.05" value="0.6">
+    </label>
+  </section>
+  <h2>🎥 Камера</h2>
+  <p style="font-size:10px;color:#8e7a52;margin:-4px 0 8px;">drag — вращать · колесо — zoom. Слайдеры — точная настройка.</p>
+  <section>
+    <label>Дистанция <span class="val" id="v-lab-cam-dist">7</span>
+      <input type="range" id="lab-cam-dist" min="3" max="15" step="0.1" value="7">
+    </label>
+    <label>Высота (угол) <span class="val" id="v-lab-cam-elev">0.18</span>
+      <input type="range" id="lab-cam-elev" min="-0.4" max="1.2" step="0.02" value="0.18">
+    </label>
+    <label>FOV <span class="val" id="v-lab-cam-fov">38</span>
+      <input type="range" id="lab-cam-fov" min="20" max="70" step="1" value="38">
+    </label>
+    <button id="lab-cam-reset" class="secondary">↺ Сброс камеры</button>
+  </section>
+  </div><!-- /tab Scene -->
+
+  <!-- Tab: Actions -->
+  <div class="tab-content" data-tab="act" hidden>
   <h2>Действия</h2>
   <section>
     <button id="btn-save">💾 Сохранить как дефолт для main</button>
@@ -237,6 +443,7 @@
     <button id="btn-dump" class="secondary">📋 Экспорт JSON</button>
     <pre class="config-out" id="config-out"></pre>
   </section>
+  </div><!-- /tab Actions -->
 </aside>
 
 <script type="importmap">
@@ -263,14 +470,17 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 host.appendChild(renderer.domElement);
 
-// Lights — балансированные для светлого фона
-scene.add(new THREE.HemisphereLight(0xffffff, 0xcfbfa0, 0.9));
-const key = new THREE.DirectionalLight(0xffffff, 1.2);
+// Lights — именованные, управляются слайдерами (master множитель)
+const BASE_HEMI = 0.9, BASE_KEY = 1.2, BASE_RIM = 0.5;
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcfbfa0, BASE_HEMI);
+scene.add(hemiLight);
+const key = new THREE.DirectionalLight(0xffffff, BASE_KEY);
 key.position.set(5, 8, 5);
 scene.add(key);
-const rim = new THREE.DirectionalLight(0xaad4ff, 0.5);
+const rim = new THREE.DirectionalLight(0xaad4ff, BASE_RIM);
 rim.position.set(-5, 3, -4);
 scene.add(rim);
+let platformLightLab = null;   // отдельный свет на платформу
 
 // Ground plane — слабо-видимая для опоры
 const ground = new THREE.Mesh(
@@ -281,6 +491,47 @@ ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.01;
 scene.add(ground);
 
+// ── Платформа (упрощённая копия из dragon-cinematic createPedestal) ──
+let pedestalGroupLab = null;
+function buildLabPedestal() {
+  const PH = 3.2, PTOP = 1.3, PCOL = 0.85, PBASE = 1.45, SEG = 32;
+  pedestalGroupLab = new THREE.Group();
+  function stone(base) {
+    return new THREE.MeshStandardMaterial({ color: base, roughness: 0.9, metalness: 0.08 });
+  }
+  const topH = 0.32;
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(PTOP, PCOL * 1.05, topH, SEG), stone(0x4a4540));
+  top.position.y = -topH / 2; pedestalGroupLab.add(top);
+  const colH = PH - topH - 0.4;
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(PCOL, PCOL * 1.08, colH, SEG), stone(0x5a5550));
+  col.position.y = -(topH + colH / 2); pedestalGroupLab.add(col);
+  const baseH = 0.35;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(PBASE, PBASE * 1.04, baseH, SEG), stone(0x3a3530));
+  base.position.y = -PH + baseH / 2; pedestalGroupLab.add(base);
+  // светящийся рунический пояс (простая голубая полоса)
+  const beltMat = new THREE.MeshBasicMaterial({ color: 0x4faaff, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(PCOL * 1.16, PCOL * 1.16, 0.5, SEG, 1, true), beltMat);
+  belt.position.y = -(topH + colH * 0.3); pedestalGroupLab.add(belt);
+  pedestalGroupLab.position.y = 0;
+  pedestalGroupLab.scale.setScalar(0.62);
+  scene.add(pedestalGroupLab);
+  // Отдельный свет на платформу
+  platformLightLab = new THREE.PointLight(0xffd9a0, 0.6, 4, 2);
+  platformLightLab.position.set(0, 1.2, 0.6);
+  pedestalGroupLab.add(platformLightLab);
+}
+buildLabPedestal();
+
+// ── Scene-контролы: освещение / платформа / камера ──
+function applyLabLights(master) {
+  hemiLight.intensity = BASE_HEMI * master;
+  key.intensity = BASE_KEY * master;
+  rim.intensity = BASE_RIM * master;
+}
+function applyPlatformLight(v) { if (platformLightLab) platformLightLab.intensity = v; }
+function applyPedestalScaleLab(v) { if (pedestalGroupLab) pedestalGroupLab.scale.setScalar(v); }
+function setLabPedestalVisible(v) { if (pedestalGroupLab) pedestalGroupLab.visible = !!v; }
+
 // Dragon group
 const dragonGroup = new THREE.Group();
 scene.add(dragonGroup);
@@ -289,6 +540,15 @@ let modelSize = new THREE.Vector3(2, 2, 2);
 let modelCenter = new THREE.Vector3(0, 0, 0);
 let currentFitSize = 4.2;
 let loadedModel = null;
+
+// Animation mixer (для timeline-проигрывания клипов из GLB)
+let mixer = null;
+let availableClips = [];
+let selectedClip = null;
+let currentAction = null;
+let isPlaying = false;
+let scrubTime = 0;
+let autoFireGap = 0;          // anti-spam между авто-emit в окне огня
 
 // Загрузка GLB
 const loader = new GLTFLoader();
@@ -302,6 +562,23 @@ loader.load(MODEL_URL, (gltf) => {
   dragonGroup.add(model);
   model.rotation.y = Math.PI / 2;
   applyFitSize(currentFitSize);
+  applyDragonTransform();
+  // Анимации: mixer + populate dropdown
+  availableClips = gltf.animations || [];
+  if (availableClips.length > 0) {
+    mixer = new THREE.AnimationMixer(model);
+    populateClipDropdown();
+  } else {
+    const sel = document.getElementById('clipSelect');
+    sel.innerHTML = '<option value="">— в GLB нет клипов —</option>';
+  }
+  // Bones из скелета
+  availableBones = [];
+  model.traverse(o => { if (o.isBone || o.type === 'Bone') availableBones.push(o); });
+  availableBones.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  populateBoneDropdown();
+  // После загрузки — пересчитать огонь в world через model/bone localToWorld
+  updateFireFromSettings();
 }, undefined, (err) => {
   console.warn('GLB load failed, using placeholder', err);
   // Fallback: примитивная капсула
@@ -311,9 +588,14 @@ loader.load(MODEL_URL, (gltf) => {
   );
   loadedModel = placeholder;
   dragonGroup.add(placeholder);
+  placeholder.rotation.y = Math.PI / 2;   // та же ориентация, что и GLB
   modelSize = new THREE.Vector3(1.2, 3.6, 1.2);
   modelCenter = new THREE.Vector3(0, 0, 0);
   applyFitSize(currentFitSize);
+  applyDragonTransform();
+  document.getElementById('clipSelect').innerHTML =
+    '<option value="">— GLB не загружен, placeholder —</option>';
+  updateFireFromSettings();
 });
 
 function applyFitSize(fitSize) {
@@ -326,6 +608,17 @@ function applyFitSize(fitSize) {
     (modelSize.y / 2 - modelCenter.y) * scale,
     -modelCenter.z * scale
   );
+}
+
+// ─── Dragon transform (применяется к dragonGroup) ───
+function applyDragonTransform() {
+  const yaw = THREE.MathUtils.degToRad(settings.dragonYaw);
+  const pitch = THREE.MathUtils.degToRad(settings.dragonPitch);
+  const roll = THREE.MathUtils.degToRad(settings.dragonRoll);
+  // YXZ — тот же порядок что в main (updateFlight: tmpEuler 'YXZ')
+  dragonGroup.rotation.set(pitch, yaw, roll, 'YXZ');
+  dragonGroup.position.set(settings.dragonOffsetX, settings.dragonOffsetY, settings.dragonOffsetZ);
+  dragonGroup.scale.setScalar(settings.dragonScale);
 }
 
 // ───── Огонь — sprite particles ─────
@@ -493,8 +786,12 @@ const clock = new THREE.Clock();
 function tick() {
   requestAnimationFrame(tick);
   const dt = Math.min(clock.getDelta(), 0.05);
+  updateAnimationTimeline(dt);   // mixer + auto-fire в fire-window
   emitFire(dt);
   updateFire(dt);
+  // Огонь идёт из пасти → пересчитать mouth-world КАЖДЫЙ кадр
+  // (модель двигается из-за анимации, рот меняет world-позицию)
+  if (loadedModel && isPlaying) updateFireFromSettings();
   renderer.render(scene, camera);
 }
 tick();
@@ -502,12 +799,69 @@ tick();
 // ═════ КОНТРОЛЫ ═════
 const settings = {
   anchorX: 50, anchorY: 20,
+  // followScroll=true → main привязывает stage к свитку (как было до lab).
+  // false → main ставит stage в anchorX/anchorY% от viewport (viewport-anchor mode).
+  // Дефолт = false: пользователь открыл лабу чтобы вручную позиционировать.
+  followScroll: false,
+  // trackCursor=true → main добавляет ±38° yaw в зависимости от позиции курсора.
+  // false → main использует ровно sceneSettings.yaw (lab-настройка), без курсор-эффекта.
+  // Дефолт = false: чтобы фокус лабы совпал с поведением main.
+  trackCursor: false,
   stageW: 560, stageH: 420,
   fitSize: 4.2,
-  fireX: 0, fireY: 0, fireZ: 0,
+  // ─── Dragon transform (применяется к dragonGroup в lab; main → sceneSettings) ───
+  dragonYaw: 0, dragonPitch: 0, dragonRoll: 0,
+  dragonOffsetX: 0, dragonOffsetY: 0, dragonOffsetZ: 0,
+  dragonScale: 0.54,
+  // ─── Mouth position in MODEL-local coords (после Y=π/2 rotation). X+ = model forward.
+  fireX: 0.5, fireY: 0.1, fireZ: 0,
+  // ─── Direction yaw/pitch in MODEL-local coords. yaw=0,pitch=0 = model X+ forward.
   fireYaw: 0, firePitch: 0,
-  fireLength: 2, fireIntensity: 1
+  fireLength: 2, fireIntensity: 1,
+  // ─── Animation ───
+  idleClip: null,           // имя клипа idle (для main: getRequestedClip)
+  breathClip: null,         // имя клипа для огня
+  fireWindowStart: 3,       // секунд от начала breath-клипа — start
+  fireWindowEnd: 5,         // ...end (main: FIRE_WINDOW_START/END override)
+  mouthBone: null,          // имя bone к которому привязан fire-origin (null=model root)
+  // ─── Scene (платформа / свет / для main bridge) ───
+  showPedestal: true,
+  pedestalScale: 0.62,
+  lightIntensity: 1,
+  platformLight: 0.6,
+  // modelSourceId — id источника модели, под которую тюнили bone-attach.
+  // Lab грузит модель по MODEL_URL='assets/models/the_elder_scrolls...' —
+  // его id в main MODEL_SOURCES = 'ancient-toplevel'.
+  modelSourceId: 'ancient-toplevel'
 };
+
+// Список Bones модели — заполняется после загрузки GLB
+let availableBones = [];
+let mouthBoneRef = null;    // прямая ссылка на выбранный bone
+
+function populateBoneDropdown() {
+  const sel = document.getElementById('mouthBoneSelect');
+  // Очистить старые опции (кроме «model root»)
+  while (sel.children.length > 1) sel.removeChild(sel.lastChild);
+  availableBones.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.name;
+    opt.textContent = b.name;
+    sel.appendChild(opt);
+  });
+  if (settings.mouthBone) {
+    sel.value = settings.mouthBone;
+    resolveMouthBone();
+  }
+}
+
+function resolveMouthBone() {
+  mouthBoneRef = null;
+  if (!settings.mouthBone || !loadedModel) return;
+  loadedModel.traverse(o => {
+    if (o.name === settings.mouthBone && !mouthBoneRef) mouthBoneRef = o;
+  });
+}
 
 function bind(id, key, transform) {
   const el = document.getElementById(id);
@@ -526,7 +880,45 @@ bind('ax', 'anchorX', updateSchema);
 bind('ay', 'anchorY', updateSchema);
 bind('sw', 'stageW', updateSchema);
 bind('sh', 'stageH', updateSchema);
+// Checkbox followScroll — отдельная обработка (boolean, не range)
+(function bindFollowScroll() {
+  const cb = document.getElementById('followScroll');
+  cb.checked = !!settings.followScroll;
+  applyFollowScrollUiState();
+  cb.addEventListener('change', () => {
+    settings.followScroll = cb.checked;
+    applyFollowScrollUiState();
+    updateSchema();
+  });
+})();
+// Checkbox trackCursor — boolean, в main кладёт настройку cursor-yaw ±38°
+(function bindTrackCursor() {
+  const cb = document.getElementById('trackCursor');
+  cb.checked = !!settings.trackCursor;
+  cb.addEventListener('change', () => {
+    settings.trackCursor = cb.checked;
+  });
+})();
+function applyFollowScrollUiState() {
+  // Когда привязка к свитку активна — disable anchor-слайдеры и сделать их полупрозрачными
+  const disabled = !!settings.followScroll;
+  ['ax', 'ay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = disabled;
+      el.parentElement.style.opacity = disabled ? '0.4' : '1';
+    }
+  });
+}
 bind('fs', 'fitSize', () => { currentFitSize = settings.fitSize; applyFitSize(currentFitSize); });
+// Dragon transform — слайдеры применяются к dragonGroup сразу
+bind('dyw', 'dragonYaw',    () => { applyDragonTransform(); updateFireFromSettings(); });
+bind('dpt', 'dragonPitch',  () => { applyDragonTransform(); updateFireFromSettings(); });
+bind('drl', 'dragonRoll',   () => { applyDragonTransform(); updateFireFromSettings(); });
+bind('dox', 'dragonOffsetX',() => { applyDragonTransform(); updateFireFromSettings(); });
+bind('doy', 'dragonOffsetY',() => { applyDragonTransform(); updateFireFromSettings(); });
+bind('doz', 'dragonOffsetZ',() => { applyDragonTransform(); updateFireFromSettings(); });
+bind('dsc', 'dragonScale',  () => { applyDragonTransform(); updateFireFromSettings(); });
 bind('fx', 'fireX', updateFireFromSettings);
 bind('fy', 'fireY', updateFireFromSettings);
 bind('fz', 'fireZ', updateFireFromSettings);
@@ -534,22 +926,226 @@ bind('fyw', 'fireYaw', updateFireFromSettings);
 bind('fpt', 'firePitch', updateFireFromSettings);
 bind('flen', 'fireLength', updateFireFromSettings);
 bind('fint', 'fireIntensity', updateFireFromSettings);
+// Fire window — слайдеры пишут в settings + обновляют визуализацию timeline
+bind('fws', 'fireWindowStart', updateTimelineVisualization);
+bind('fwe', 'fireWindowEnd',   updateTimelineVisualization);
+
+// ─── Scene-вкладка: платформа / освещение / камера ───
+bind('lab-ped-scale', 'pedestalScale', () => applyPedestalScaleLab(settings.pedestalScale));
+bind('lab-light',     'lightIntensity', () => applyLabLights(settings.lightIntensity));
+bind('lab-plight',    'platformLight',  () => applyPlatformLight(settings.platformLight));
+(function bindShowPedestalLab() {
+  const cb = document.getElementById('lab-show-pedestal');
+  if (!cb) return;
+  cb.checked = !!settings.showPedestal;
+  setLabPedestalVisible(settings.showPedestal);
+  cb.addEventListener('change', () => {
+    settings.showPedestal = cb.checked;
+    setLabPedestalVisible(cb.checked);
+  });
+})();
+// Камера — слайдеры дистанция/угол/FOV (управляют orbit-переменными)
+(function bindCameraLab() {
+  const dist = document.getElementById('lab-cam-dist');
+  const elev = document.getElementById('lab-cam-elev');
+  const fov  = document.getElementById('lab-cam-fov');
+  const vd = document.getElementById('v-lab-cam-dist');
+  const ve = document.getElementById('v-lab-cam-elev');
+  const vf = document.getElementById('v-lab-cam-fov');
+  if (dist) dist.addEventListener('input', () => { orbitR = parseFloat(dist.value); if (vd) vd.textContent = dist.value; applyCam(); });
+  if (elev) elev.addEventListener('input', () => { orbitE = parseFloat(elev.value); if (ve) ve.textContent = elev.value; applyCam(); });
+  if (fov)  fov.addEventListener('input',  () => { camera.fov = parseFloat(fov.value); if (vf) vf.textContent = fov.value; camera.updateProjectionMatrix(); });
+  const reset = document.getElementById('lab-cam-reset');
+  if (reset) reset.addEventListener('click', () => {
+    orbitA = 0; orbitE = 0.18; orbitR = 7; camera.fov = 38;
+    if (dist) dist.value = 7; if (vd) vd.textContent = '7';
+    if (elev) elev.value = 0.18; if (ve) ve.textContent = '0.18';
+    if (fov) fov.value = 38; if (vf) vf.textContent = '38';
+    camera.updateProjectionMatrix(); applyCam();
+  });
+})();
+// Применить начальные scene-настройки
+applyPedestalScaleLab(settings.pedestalScale);
+applyLabLights(settings.lightIntensity);
+applyPlatformLight(settings.platformLight);
 
 function updateFireFromSettings() {
-  fireOrigin.set(settings.fireX, 1.2 + settings.fireY, 1.0 + settings.fireZ);
-  // Yaw + pitch → direction vector
+  // Mouth = model-local (settings.fireX, fireY, fireZ).
+  // Перевод в мировые: model.localToWorld() учитывает rotation.y = π/2.
+  const localMouth = new THREE.Vector3(settings.fireX, settings.fireY, settings.fireZ);
+  // Direction в model-local через yaw (Y) и pitch (X):
+  //   yaw=0, pitch=0  →  (1, 0, 0)  =  model forward (X+)
   const yaw = THREE.MathUtils.degToRad(settings.fireYaw);
   const pitch = THREE.MathUtils.degToRad(settings.firePitch);
-  fireDirection.set(
-    Math.sin(yaw) * Math.cos(pitch),
+  const localDir = new THREE.Vector3(
+    Math.cos(yaw) * Math.cos(pitch),  // X = forward when yaw=0,pitch=0
     Math.sin(pitch),
-    Math.cos(yaw) * Math.cos(pitch)
+    -Math.sin(yaw) * Math.cos(pitch)  // Z = lateral, отрицательный когда yaw>0 (вправо)
   );
+  if (loadedModel) {
+    // Если выбрана кость — pivot = bone (огонь следит за анимированной головой).
+    // Иначе — модель целиком (статичная привязка к rest-pose).
+    const pivot = mouthBoneRef || loadedModel;
+    // Без updateMatrixWorld localToWorld может вернуть stale координаты,
+    // если матрица модели не успела пересчитаться после applyFitSize.
+    loadedModel.updateMatrixWorld(true);
+    fireOrigin.copy(pivot.localToWorld(localMouth.clone()));
+    const localAhead = localMouth.clone().add(localDir);
+    const worldAhead = pivot.localToWorld(localAhead);
+    fireDirection.copy(worldAhead.sub(fireOrigin).normalize());
+  } else {
+    // Fallback: модель ещё не загружена → world ≈ local
+    fireOrigin.copy(localMouth);
+    fireDirection.copy(localDir);
+  }
   fireLength = settings.fireLength;
   fireIntensity = settings.fireIntensity;
   updateFireMarkers();
 }
 updateFireFromSettings();
+
+// ─── Animation timeline ─────────────────────────────────────────
+function populateClipDropdown() {
+  const sel = document.getElementById('clipSelect');
+  sel.innerHTML = '';
+  availableClips.forEach((clip, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = clip.name + '  (' + clip.duration.toFixed(2) + 's)';
+    sel.appendChild(opt);
+  });
+  // Если в settings уже сохранён breathClip — выбрать его, иначе первый
+  let pickIdx = 0;
+  if (settings.breathClip) {
+    const found = availableClips.findIndex(c => c.name === settings.breathClip);
+    if (found >= 0) pickIdx = found;
+  } else if (settings.idleClip) {
+    const found = availableClips.findIndex(c => c.name === settings.idleClip);
+    if (found >= 0) pickIdx = found;
+  }
+  sel.value = String(pickIdx);
+  selectClip(pickIdx);
+  // Текущие markers в UI
+  document.getElementById('cur-idle').textContent = settings.idleClip || '—';
+  document.getElementById('cur-breath').textContent = settings.breathClip || '—';
+}
+
+function selectClip(idx) {
+  if (currentAction) { currentAction.stop(); currentAction = null; }
+  selectedClip = availableClips[idx];
+  if (!selectedClip || !mixer) return;
+  currentAction = mixer.clipAction(selectedClip);
+  currentAction.setLoop(THREE.LoopRepeat, Infinity);
+  currentAction.play();
+  if (!isPlaying) currentAction.paused = true;
+  // Подогнать диапазон scrubber + fire-window под длительность клипа
+  const dur = selectedClip.duration;
+  const ct = document.getElementById('ct');
+  ct.max = dur.toFixed(2); ct.value = '0';
+  document.getElementById('fws').max = dur.toFixed(2);
+  document.getElementById('fwe').max = dur.toFixed(2);
+  // Clamp settings, если выходят за длительность
+  settings.fireWindowStart = Math.min(settings.fireWindowStart, dur);
+  settings.fireWindowEnd   = Math.min(settings.fireWindowEnd,   dur);
+  document.getElementById('fws').value = settings.fireWindowStart;
+  document.getElementById('fwe').value = settings.fireWindowEnd;
+  document.getElementById('v-fws').textContent = settings.fireWindowStart.toFixed(2);
+  document.getElementById('v-fwe').textContent = settings.fireWindowEnd.toFixed(2);
+  document.getElementById('clip-dur').textContent = dur.toFixed(2) + 's';
+  scrubTime = 0;
+  currentAction.time = 0;
+  mixer.update(0);
+  updateTimelineVisualization();
+}
+
+function updateTimelineVisualization() {
+  if (!selectedClip) return;
+  const dur = selectedClip.duration;
+  const fwStripe = document.getElementById('fwStripe');
+  const ctMarker = document.getElementById('ctMarker');
+  const startPct = Math.max(0, Math.min(100, (settings.fireWindowStart / dur) * 100));
+  const endPct   = Math.max(0, Math.min(100, (settings.fireWindowEnd   / dur) * 100));
+  fwStripe.style.left  = startPct + '%';
+  fwStripe.style.width = Math.max(0, endPct - startPct) + '%';
+  const ctPct = Math.max(0, Math.min(100, (scrubTime / dur) * 100));
+  ctMarker.style.left = ctPct + '%';
+  // Индикатор «в окне»
+  const inWin = scrubTime >= settings.fireWindowStart && scrubTime <= settings.fireWindowEnd;
+  const span = document.getElementById('in-window');
+  if (span) span.textContent = inWin ? '🔥 ДА' : 'нет';
+}
+
+function updateAnimationTimeline(dt) {
+  if (!mixer || !currentAction || !selectedClip) return;
+  if (isPlaying) {
+    mixer.update(dt);
+    // Получить current time клипа (loop-обёрнутое значение)
+    const dur = selectedClip.duration;
+    scrubTime = ((currentAction.time % dur) + dur) % dur;
+    // Обновить scrubber UI (без триггера input-обработчика)
+    document.getElementById('ct').value = scrubTime.toFixed(2);
+    document.getElementById('v-ct').textContent = scrubTime.toFixed(2);
+    // Авто-emit огня в fire window
+    const inWindow = scrubTime >= settings.fireWindowStart && scrubTime <= settings.fireWindowEnd;
+    if (inWindow) {
+      autoFireGap -= dt;
+      if (autoFireGap <= 0) {
+        firing = true;
+        fireTimer = 0;     // мгновенный спавн
+        autoFireGap = 0.18; // FIRE_BURST_INTERVAL из main
+      }
+    } else {
+      firing = false;
+    }
+    updateTimelineVisualization();
+  }
+}
+
+// ─── Animation UI events ───
+document.getElementById('clipSelect').addEventListener('change', (e) => {
+  const idx = parseInt(e.target.value);
+  if (!isNaN(idx)) selectClip(idx);
+});
+document.getElementById('mouthBoneSelect').addEventListener('change', (e) => {
+  settings.mouthBone = e.target.value || null;
+  resolveMouthBone();
+  updateFireFromSettings();
+});
+document.getElementById('btn-play-pause').addEventListener('click', () => {
+  isPlaying = !isPlaying;
+  if (currentAction) currentAction.paused = !isPlaying;
+  document.getElementById('btn-play-pause').textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+  if (!isPlaying) firing = false;
+});
+document.getElementById('btn-rewind').addEventListener('click', () => {
+  if (!currentAction) return;
+  scrubTime = 0;
+  currentAction.time = 0;
+  mixer.update(0);
+  document.getElementById('ct').value = '0';
+  document.getElementById('v-ct').textContent = '0.00';
+  updateTimelineVisualization();
+});
+document.getElementById('ct').addEventListener('input', (e) => {
+  if (!currentAction) return;
+  scrubTime = parseFloat(e.target.value);
+  currentAction.time = scrubTime;
+  mixer.update(0);
+  document.getElementById('v-ct').textContent = scrubTime.toFixed(2);
+  updateTimelineVisualization();
+  // Если рот прицеплен к bone — обновим маркер пасти под текущий кадр
+  if (mouthBoneRef) updateFireFromSettings();
+});
+document.getElementById('btn-set-idle').addEventListener('click', () => {
+  if (!selectedClip) return;
+  settings.idleClip = selectedClip.name;
+  document.getElementById('cur-idle').textContent = selectedClip.name;
+});
+document.getElementById('btn-set-breath').addEventListener('click', () => {
+  if (!selectedClip) return;
+  settings.breathClip = selectedClip.name;
+  document.getElementById('cur-breath').textContent = selectedClip.name;
+});
 
 function updateSchema() {
   const dragon = document.getElementById('schemaDragon');
@@ -572,6 +1168,13 @@ function updateSchema() {
     '(' + settings.fireX.toFixed(2) + ', ' + settings.fireY.toFixed(2) + ', ' + settings.fireZ.toFixed(2) + ')';
   document.getElementById('info-fire-dir').textContent =
     'yaw ' + settings.fireYaw + '°, pitch ' + settings.firePitch + '°';
+  document.getElementById('info-dragon-rot').textContent =
+    'yaw ' + settings.dragonYaw + '° pitch ' + settings.dragonPitch + '° roll ' + settings.dragonRoll + '°';
+  document.getElementById('info-dragon-off').textContent =
+    '(' + settings.dragonOffsetX.toFixed(2) + ', ' + settings.dragonOffsetY.toFixed(2) + ', ' +
+    settings.dragonOffsetZ.toFixed(2) + ')  scale ' + settings.dragonScale.toFixed(2);
+  document.getElementById('info-clips').textContent =
+    (settings.idleClip || '—') + ' / ' + (settings.breathClip || '—');
 }
 updateSchema();
 
@@ -588,21 +1191,46 @@ document.getElementById('btn-save').addEventListener('click', () => {
     alert('Сохранено. На главной странице перезагрузи (F5) — настройки применятся.');
   } catch (e) { alert('Ошибка сохранения: ' + e); }
 });
+// Соответствие slider-id → settings-key (для restore/reset)
+const ID_KEY_MAP = {
+  ax:'anchorX', ay:'anchorY', sw:'stageW', sh:'stageH', fs:'fitSize',
+  dyw:'dragonYaw', dpt:'dragonPitch', drl:'dragonRoll',
+  dox:'dragonOffsetX', doy:'dragonOffsetY', doz:'dragonOffsetZ', dsc:'dragonScale',
+  fx:'fireX', fy:'fireY', fz:'fireZ', fyw:'fireYaw', fpt:'firePitch',
+  flen:'fireLength', fint:'fireIntensity',
+  fws:'fireWindowStart', fwe:'fireWindowEnd',
+  'lab-ped-scale':'pedestalScale', 'lab-light':'lightIntensity', 'lab-plight':'platformLight'
+};
 document.getElementById('btn-reset').addEventListener('click', () => {
   settings.anchorX = 50; settings.anchorY = 20;
+  settings.followScroll = false;
+  document.getElementById('followScroll').checked = false;
+  applyFollowScrollUiState();
+  settings.trackCursor = false;
+  document.getElementById('trackCursor').checked = false;
   settings.stageW = 560; settings.stageH = 420;
   settings.fitSize = 4.2;
-  settings.fireX = 0; settings.fireY = 0; settings.fireZ = 0;
+  settings.dragonYaw = 0; settings.dragonPitch = 0; settings.dragonRoll = 0;
+  settings.dragonOffsetX = 0; settings.dragonOffsetY = 0; settings.dragonOffsetZ = 0;
+  settings.dragonScale = 0.54;
+  settings.fireX = 0.5; settings.fireY = 0.1; settings.fireZ = 0;
   settings.fireYaw = 0; settings.firePitch = 0;
   settings.fireLength = 2; settings.fireIntensity = 1;
+  settings.idleClip = null; settings.breathClip = null;
+  settings.fireWindowStart = 3; settings.fireWindowEnd = 5;
+  settings.mouthBone = null;
+  document.getElementById('cur-idle').textContent = '—';
+  document.getElementById('cur-breath').textContent = '—';
+  const boneSel = document.getElementById('mouthBoneSelect');
+  if (boneSel) { boneSel.value = ''; mouthBoneRef = null; }
   // Reapply UI
-  for (const id of ['ax','ay','sw','sh','fs','fx','fy','fz','fyw','fpt','flen','fint']) {
-    const keyMap = { ax:'anchorX', ay:'anchorY', sw:'stageW', sh:'stageH', fs:'fitSize',
-      fx:'fireX', fy:'fireY', fz:'fireZ', fyw:'fireYaw', fpt:'firePitch', flen:'fireLength', fint:'fireIntensity' };
+  for (const id of Object.keys(ID_KEY_MAP)) {
     const el = document.getElementById(id);
-    el.value = settings[keyMap[id]];
+    if (!el) continue;
+    el.value = settings[ID_KEY_MAP[id]];
     el.dispatchEvent(new Event('input'));
   }
+  applyDragonTransform();
 });
 document.getElementById('btn-dump').addEventListener('click', () => {
   document.getElementById('config-out').textContent = JSON.stringify(settings, null, 2);
@@ -613,15 +1241,51 @@ try {
   const saved = JSON.parse(localStorage.getItem('cw_dragon_lab_settings_v1') || 'null');
   if (saved) {
     Object.assign(settings, saved);
-    for (const id of ['ax','ay','sw','sh','fs','fx','fy','fz','fyw','fpt','flen','fint']) {
-      const keyMap = { ax:'anchorX', ay:'anchorY', sw:'stageW', sh:'stageH', fs:'fitSize',
-        fx:'fireX', fy:'fireY', fz:'fireZ', fyw:'fireYaw', fpt:'firePitch', flen:'fireLength', fint:'fireIntensity' };
+    for (const id of Object.keys(ID_KEY_MAP)) {
       const el = document.getElementById(id);
-      el.value = settings[keyMap[id]];
+      if (!el) continue;
+      el.value = settings[ID_KEY_MAP[id]];
       el.dispatchEvent(new Event('input'));
     }
+    // Восстановить checkbox-ы отдельно (не slider)
+    const cb = document.getElementById('followScroll');
+    cb.checked = !!settings.followScroll;
+    applyFollowScrollUiState();
+    const cb2 = document.getElementById('trackCursor');
+    cb2.checked = !!settings.trackCursor;
+    // Scene: чекбокс платформы + применить свет/масштаб
+    const cbP = document.getElementById('lab-show-pedestal');
+    if (cbP) { cbP.checked = settings.showPedestal !== false; setLabPedestalVisible(cbP.checked); }
+    applyPedestalScaleLab(settings.pedestalScale != null ? settings.pedestalScale : 0.62);
+    applyLabLights(settings.lightIntensity != null ? settings.lightIntensity : 1);
+    applyPlatformLight(settings.platformLight != null ? settings.platformLight : 0.6);
+    document.getElementById('cur-idle').textContent = settings.idleClip || '—';
+    document.getElementById('cur-breath').textContent = settings.breathClip || '—';
+    applyDragonTransform();
   }
 } catch (e) {}
+
+// ─── Tabs ─────────────────────────────────────────────────────────
+// Каждая секция (Position / Fire / Animation / Actions) — отдельная вкладка.
+// Скрытие через hidden-атрибут, переключение через клик по .tab-btn.
+// State (active) хранится в sessionStorage чтобы сохранить вкладку при F5.
+(function initTabs() {
+  const TAB_KEY = 'cw_dragon_lab_active_tab';
+  const btns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-content');
+  function activate(tab) {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    panels.forEach(p => { p.hidden = p.dataset.tab !== tab; });
+    try { sessionStorage.setItem(TAB_KEY, tab); } catch (_) {}
+  }
+  btns.forEach(b => b.addEventListener('click', () => activate(b.dataset.tab)));
+  // Restore last active tab
+  let last = null;
+  try { last = sessionStorage.getItem(TAB_KEY); } catch (_) {}
+  if (last && document.querySelector('.tab-content[data-tab="' + last + '"]')) {
+    activate(last);
+  }
+})();
 </script>
 </body>
 </html>

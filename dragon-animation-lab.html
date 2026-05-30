@@ -85,7 +85,7 @@
       font-size: 12px;
     }
     button:hover { border-color: rgba(200, 109, 22, 0.72); color: #8c4f0f; }
-    .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
     .status { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.45; }
     .pill { display: inline-block; margin: 3px 4px 0 0; padding: 2px 6px; border: 1px solid rgba(92, 74, 45, 0.24); color: var(--gold); font-size: 11px; }
   </style>
@@ -105,6 +105,16 @@
   <div class="row wide">
     <label for="clip-select">Clip</label>
     <select id="clip-select"></select>
+  </div>
+
+  <div class="row wide">
+    <label for="preset-select">Preset</label>
+    <select id="preset-select">
+      <option value="main">Main page, right side</option>
+      <option value="front">Front wing check</option>
+      <option value="profile">Side profile</option>
+      <option value="high">High, smaller</option>
+    </select>
   </div>
 
   <div class="buttons">
@@ -134,17 +144,37 @@
     <input id="roll" type="range" min="-90" max="90" step="1" value="0">
   </div>
   <div class="row">
-    <label for="height">Height</label>
-    <input id="height" type="range" min="-2" max="2" step="0.02" value="0">
+    <label for="x">X</label>
+    <input id="x" type="range" min="-3" max="3" step="0.02" value="0.3">
+  </div>
+  <div class="row">
+    <label for="height">Y</label>
+    <input id="height" type="range" min="-2" max="2" step="0.02" value="-0.1">
+  </div>
+  <div class="row">
+    <label for="z">Z</label>
+    <input id="z" type="range" min="-3" max="3" step="0.02" value="0">
   </div>
   <div class="row">
     <label for="camera">Camera</label>
     <input id="camera" type="range" min="2.5" max="12" step="0.1" value="6.2">
   </div>
+  <div class="row">
+    <label for="view-yaw">View yaw</label>
+    <input id="view-yaw" type="range" min="-180" max="180" step="1" value="-8">
+  </div>
+  <div class="row">
+    <label for="view-pitch">View pitch</label>
+    <input id="view-pitch" type="range" min="-45" max="55" step="1" value="5">
+  </div>
 
   <div class="buttons">
     <button id="btn-reset" type="button">Reset</button>
+    <button id="btn-apply" type="button">Apply</button>
     <button id="btn-copy" type="button">Copy</button>
+  </div>
+  <div class="buttons">
+    <button id="btn-save-main" type="button">Save main</button>
     <button id="btn-shot" type="button">Pose</button>
   </div>
 
@@ -233,10 +263,13 @@ const MODEL_SOURCES = [
 ];
 const ORIGINAL_POSE_VALUE = '__original_pose__';
 const DERIVED_FLIGHT_CLIP = 'Dragon_Ancient_Breath_FlightLoop';
+const LAB_SETTINGS_KEY = 'cw_dragon_lab_settings_v1';
+const MAIN_CINEMATIC_SETTINGS_KEY = 'cw_dragon_cinematic_settings_v7';
 const queryParams = new URLSearchParams(window.location.search);
 const viewport = document.getElementById('viewport');
 const modelSelect = document.getElementById('model-select');
 const clipSelect = document.getElementById('clip-select');
+const presetSelect = document.getElementById('preset-select');
 const settingsEl = document.getElementById('settings');
 const statusEl = document.getElementById('status');
 
@@ -246,8 +279,71 @@ const controls = {
   yaw: document.getElementById('yaw'),
   pitch: document.getElementById('pitch'),
   roll: document.getElementById('roll'),
+  x: document.getElementById('x'),
   height: document.getElementById('height'),
-  camera: document.getElementById('camera')
+  z: document.getElementById('z'),
+  camera: document.getElementById('camera'),
+  viewYaw: document.getElementById('view-yaw'),
+  viewPitch: document.getElementById('view-pitch')
+};
+
+const PRESETS = {
+  main: {
+    speed: 1,
+    scale: 1,
+    yaw: 0,
+    pitch: 0,
+    roll: 0,
+    x: 0.3,
+    height: -0.1,
+    z: 0,
+    camera: 6.2,
+    viewYaw: -8,
+    viewPitch: 5,
+    clip: 'Dragon_Ancient_Attack_Breath'
+  },
+  front: {
+    speed: 0.85,
+    scale: 1.08,
+    yaw: 0,
+    pitch: 0,
+    roll: 0,
+    x: 0,
+    height: 0,
+    z: 0,
+    camera: 5.6,
+    viewYaw: 0,
+    viewPitch: 5,
+    clip: 'Dragon_Ancient_Idle_FlyTransition'
+  },
+  profile: {
+    speed: 1,
+    scale: 1,
+    yaw: 88,
+    pitch: 0,
+    roll: 0,
+    x: 0,
+    height: 0,
+    z: 0,
+    camera: 6,
+    viewYaw: -18,
+    viewPitch: 6,
+    clip: 'Dragon_Ancient_Patrol_Idle'
+  },
+  high: {
+    speed: 0.9,
+    scale: 0.76,
+    yaw: -10,
+    pitch: -4,
+    roll: 0,
+    x: 0.15,
+    height: 0.74,
+    z: -0.25,
+    camera: 7.2,
+    viewYaw: -6,
+    viewPitch: 12,
+    clip: 'Dragon_Ancient_Idle_FlyTransition'
+  }
 };
 
 const scene = new THREE.Scene();
@@ -287,8 +383,9 @@ let clips = [];
 let baseScale = 1;
 let playing = true;
 let drag = null;
-let orbitYaw = 0;
-let orbitPitch = 0.08;
+let orbitYaw = THREE.MathUtils.degToRad(Number(controls.viewYaw.value));
+let orbitPitch = THREE.MathUtils.degToRad(Number(controls.viewPitch.value));
+let pendingSettings = readInitialSettings();
 const clock = new THREE.Clock();
 
 function fitModelInSocket(model) {
@@ -303,6 +400,24 @@ function fitModelInSocket(model) {
   baseScale = 3.2 / Math.max(size.x, size.y, size.z, 1);
   modelSocket.scale.setScalar(baseScale);
   modelSocket.position.set(-center.x * baseScale, -center.y * baseScale, -center.z * baseScale);
+}
+
+function readInitialSettings() {
+  let result = null;
+  try {
+    result = JSON.parse(localStorage.getItem(LAB_SETTINGS_KEY) || 'null');
+  } catch (e) { /* ignore */ }
+
+  if (!result || typeof result !== 'object') result = {};
+  for (const key of ['model', 'clip']) {
+    const value = getQueryValue(key, key === 'model' ? 'dragonModel' : 'dragonClip');
+    if (value) result[key] = value;
+  }
+  for (const key of ['speed', 'scale', 'yaw', 'pitch', 'roll', 'x', 'height', 'z', 'camera', 'viewYaw', 'viewPitch']) {
+    const value = getQueryValue(key);
+    if (value !== null) result[key] = Number(value);
+  }
+  return result;
 }
 
 function prepareMaterials(model) {
@@ -355,10 +470,11 @@ function restoreOriginalPose() {
 
 function selectDefaultClip() {
   return getRequestedClip() ||
-    clips.find(clip => isNamedClip(clip, DERIVED_FLIGHT_CLIP)) ||
+    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Attack_Breath')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle_FlyTransition')) ||
-    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Patrol_Idle')) ||
+    clips.find(clip => isNamedClip(clip, DERIVED_FLIGHT_CLIP)) ||
+    clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Idle')) ||
     clips.find(clip => isNamedClip(clip, 'Dragon_Ancient_Dialogue_Relaxed_Idle')) ||
     clips.find(clip => /(^|[_|])idle($|[|])/i.test(clip.name)) ||
     clips[0];
@@ -392,10 +508,11 @@ function getQueryValue(...names) {
 }
 
 function getRequestedClip() {
-  const requested = getQueryValue('clip', 'dragonClip', 'dragonAnim');
+  const requested = getQueryValue('clip', 'dragonClip', 'dragonAnim') || pendingSettings.clip;
   if (!requested) return null;
   return clips.find(clip => clip.name === requested) ||
     clips.find(clip => clip.name.toLowerCase() === requested.toLowerCase()) ||
+    clips.find(clip => isNamedClip(clip, requested)) ||
     null;
 }
 
@@ -428,7 +545,13 @@ function updateTransform() {
   const roll = THREE.MathUtils.degToRad(Number(controls.roll.value));
   root.rotation.set(pitch, yaw, roll, 'YXZ');
   root.scale.setScalar(Number(controls.scale.value));
-  root.position.y = Number(controls.height.value);
+  root.position.set(
+    Number(controls.x.value),
+    Number(controls.height.value),
+    Number(controls.z.value)
+  );
+  orbitYaw = THREE.MathUtils.degToRad(Number(controls.viewYaw.value));
+  orbitPitch = THREE.MathUtils.degToRad(Number(controls.viewPitch.value));
   updateCamera();
   updateSettings();
 }
@@ -443,16 +566,46 @@ function updateCamera() {
 
 function currentSettings() {
   return {
-    clip: clipSelect.selectedOptions[0] ? clipSelect.selectedOptions[0].textContent : clipSelect.value,
+    clip: clipSelect.value,
+    clipLabel: clipSelect.selectedOptions[0] ? clipSelect.selectedOptions[0].textContent : clipSelect.value,
     model: modelSelect.value,
     speed: Number(controls.speed.value),
     scale: Number(controls.scale.value),
     yaw: Number(controls.yaw.value),
     pitch: Number(controls.pitch.value),
     roll: Number(controls.roll.value),
+    x: Number(controls.x.value),
     height: Number(controls.height.value),
-    camera: Number(controls.camera.value)
+    z: Number(controls.z.value),
+    camera: Number(controls.camera.value),
+    viewYaw: Number(controls.viewYaw.value),
+    viewPitch: Number(controls.viewPitch.value),
+    mainScene: mainSceneSettings()
   };
+}
+
+function mainSceneSettings() {
+  const x = Number(controls.x.value);
+  const y = Number(controls.height.value);
+  const z = Number(controls.z.value);
+  return {
+    clip: clipSelect.value === ORIGINAL_POSE_VALUE ? '' : clipSelect.value,
+    anchorX: clamp(0.28 + x * 0.04, 0.08, 0.92),
+    anchorY: clamp(0.22 - y * 0.05, 0.12, 0.92),
+    anchorXWide: clamp(0.26 + x * 0.035, 0.08, 0.92),
+    anchorYWide: clamp(0.2 - y * 0.045, 0.12, 0.92),
+    scrollAnchorX: clamp(0.18 + x * 0.035, 0.02, 0.98),
+    scrollAnchorY: clamp(-0.42 - y * 0.03, -0.58, 0.45),
+    zPlane: clamp(-0.42 + z * 0.16, -3, 2),
+    scale: clamp(0.54 * Number(controls.scale.value), 0.18, 1.4),
+    pitch: Number(controls.pitch.value),
+    yaw: Number(controls.yaw.value),
+    roll: Number(controls.roll.value)
+  };
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function updateSettings() {
@@ -467,7 +620,7 @@ async function load() {
     option.textContent = source.label;
     modelSelect.appendChild(option);
   });
-  const requestedModel = getQueryValue('model', 'dragonModel');
+  const requestedModel = pendingSettings.model || getQueryValue('model', 'dragonModel');
   const source = MODEL_SOURCES.find(candidate => candidate.id === requestedModel) || MODEL_SOURCES[0];
   modelSelect.value = source.id;
   await loadModel(source);
@@ -530,6 +683,52 @@ async function loadModel(source) {
     currentSettings,
     clips: () => [ORIGINAL_POSE_VALUE, ...clips.map(clip => clip.name)]
   };
+
+  if (pendingSettings && Object.keys(pendingSettings).length) {
+    applySettings(pendingSettings, { keepClipIfMissing: true });
+    pendingSettings = {};
+  }
+}
+
+function setControlValues(values) {
+  Object.entries(controls).forEach(([key, control]) => {
+    if (!control || values[key] === undefined || values[key] === null) return;
+    const next = Number(values[key]);
+    if (Number.isFinite(next)) control.value = String(next);
+  });
+}
+
+function applySettings(values, options = {}) {
+  if (!values || typeof values !== 'object') return false;
+  setControlValues(values);
+  if (values.model && values.model !== modelSelect.value) {
+    const source = MODEL_SOURCES.find(candidate => candidate.id === values.model);
+    if (source) {
+      pendingSettings = { ...values, model: source.id };
+      modelSelect.value = source.id;
+      loadModel(source).catch(error => {
+        console.error(error);
+        statusEl.textContent = error.message || String(error);
+      });
+      return true;
+    }
+  }
+  if (values.clip) {
+    const match = [...clipSelect.options].find(option => option.value === values.clip || option.textContent.includes(values.clip));
+    if (match) {
+      clipSelect.value = match.value;
+      playClip(match.value, true);
+    } else if (!options.keepClipIfMissing) {
+      statusEl.textContent = `Clip not found: ${values.clip}`;
+    }
+  }
+  updateTransform();
+  return true;
+}
+
+function applyPreset(name) {
+  const preset = PRESETS[name] || PRESETS.main;
+  applySettings(preset, { keepClipIfMissing: true });
 }
 
 modelSelect.addEventListener('change', () => {
@@ -546,20 +745,31 @@ document.getElementById('btn-pause').addEventListener('click', event => {
   event.target.textContent = playing ? 'Pause' : 'Resume';
 });
 document.getElementById('btn-reset').addEventListener('click', () => {
-  controls.speed.value = '1';
-  controls.scale.value = '1';
-  controls.yaw.value = '0';
-  controls.pitch.value = '0';
-  controls.roll.value = '0';
-  controls.height.value = '0';
-  controls.camera.value = '6.2';
-  orbitYaw = 0;
-  orbitPitch = 0.08;
-  updateTransform();
+  presetSelect.value = 'main';
+  applyPreset('main');
+});
+document.getElementById('btn-apply').addEventListener('click', () => {
+  try {
+    applySettings(JSON.parse(settingsEl.value));
+    localStorage.setItem(LAB_SETTINGS_KEY, JSON.stringify(currentSettings()));
+    statusEl.textContent = 'Settings applied.';
+  } catch (error) {
+    statusEl.textContent = error.message || String(error);
+  }
 });
 document.getElementById('btn-copy').addEventListener('click', async () => {
   updateSettings();
   try { await navigator.clipboard.writeText(settingsEl.value); } catch (e) { /* ignore */ }
+});
+document.getElementById('btn-save-main').addEventListener('click', async () => {
+  const settings = currentSettings();
+  try {
+    localStorage.setItem(LAB_SETTINGS_KEY, JSON.stringify(settings));
+    localStorage.setItem(MAIN_CINEMATIC_SETTINGS_KEY, JSON.stringify(settings.mainScene));
+    statusEl.textContent = 'Saved for main page cinematic mode.';
+  } catch (error) {
+    statusEl.textContent = error.message || String(error);
+  }
 });
 document.getElementById('btn-shot').addEventListener('click', () => {
   renderer.render(scene, camera);
@@ -573,6 +783,7 @@ document.getElementById('btn-panel-toggle').addEventListener('click', event => {
   const collapsed = panel.classList.toggle('is-collapsed');
   event.target.textContent = collapsed ? 'Controls' : 'Hide';
 });
+presetSelect.addEventListener('change', () => applyPreset(presetSelect.value));
 clipSelect.addEventListener('change', () => playClip(clipSelect.value, true));
 Object.values(controls).forEach(control => {
   control.addEventListener('input', updateTransform);
@@ -587,7 +798,10 @@ renderer.domElement.addEventListener('pointermove', event => {
   if (!drag) return;
   orbitYaw = drag.yaw - (event.clientX - drag.x) * 0.006;
   orbitPitch = THREE.MathUtils.clamp(drag.pitch + (event.clientY - drag.y) * 0.004, -0.75, 0.95);
+  controls.viewYaw.value = String(Math.round(THREE.MathUtils.radToDeg(orbitYaw)));
+  controls.viewPitch.value = String(Math.round(THREE.MathUtils.radToDeg(orbitPitch)));
   updateCamera();
+  updateSettings();
 });
 renderer.domElement.addEventListener('pointerup', () => { drag = null; });
 renderer.domElement.addEventListener('wheel', event => {
@@ -595,6 +809,7 @@ renderer.domElement.addEventListener('wheel', event => {
   const next = THREE.MathUtils.clamp(Number(controls.camera.value) + event.deltaY * 0.006, 2.5, 12);
   controls.camera.value = String(next);
   updateTransform();
+  updateSettings();
 }, { passive: false });
 
 function resize() {
