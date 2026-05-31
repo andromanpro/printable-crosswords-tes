@@ -743,7 +743,7 @@ body.theme-skyrim .editor-panel {
     inset 0 0 24px rgba(0,0,0,0.4),
     0 14px 40px rgba(0,0,0,0.5);
   padding: 28px 36px;
-  max-width: 1040px;
+  max-width: none;            /* редактор корпусов — на всю ширину экрана (было 1040px) */
   position: relative;
 }
 body.theme-skyrim .history-panel::before,

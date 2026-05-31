@@ -939,7 +939,7 @@ body.theme-dark .history-banner {
 
 .editor-panel {
   display: none;
-  max-width: 1400px;
+  max-width: none;            /* на всю ширину экрана (было 1400px) */
   margin: 0 auto;
   padding: 16px 24px 60px;
 }
@@ -1021,10 +1021,30 @@ body.mode-editor .history-panel { display: none; }
 }
 .editor-table {
   width: 100%;
-  min-width: 1420px;
+  min-width: 760px;           /* было 1420px: после схлопывания 6 хитрых → 1 столбец */
+  table-layout: fixed;        /* ширины колонок предсказуемы → ресайз работает */
   border-collapse: collapse;
   font-size: 13px;
 }
+/* Фикс-ширины служебных колонок; «Прямая подсказка» и «Хитрые» (без ширины)
+   делят остаток. Перетаскивание границы заголовка задаёт ширину инлайном. */
+.editor-table .col-word { width: 92px; }
+.editor-table .col-len { width: 44px; }
+.editor-table .col-theme { width: 108px; }
+.editor-table .col-diff { width: 86px; }
+.editor-table .col-actions { width: 38px; }
+/* Ручка ресайза на границе заголовка (th — sticky, служит containing-block). */
+.editor-table thead th { position: sticky; }
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+.col-resizer:hover { background: var(--color-accent, #b03020); opacity: 0.5; }
 .editor-table thead th {
   position: sticky;
   top: 0;

@@ -251,9 +251,24 @@
       return td;
     }
     tr.appendChild(makeTextarea('clue'));
-    for (const field of EXPERT_FIELDS) {
-      tr.appendChild(makeTextarea(field));
-    }
+    // 6 «хитрых» подсказок — ОДНОЙ ячейкой (по строке на вариант). Внутренняя
+    // модель остаётся 6 полей exp1..exp6 — сохранение/загрузка не меняются.
+    (function () {
+      const td = document.createElement('td');
+      td.className = 'col-expert';
+      const ta = document.createElement('textarea');
+      ta.rows = 6;
+      ta.placeholder = '6 хитрых подсказок — по одной на строку';
+      ta.value = EXPERT_FIELDS.map(f => row[f] || '').join('\n');
+      ta.addEventListener('input', () => {
+        const lines = ta.value.split('\n');
+        EXPERT_FIELDS.forEach((f, i) => { row[f] = (lines[i] || '').trim(); });
+        autoResize(ta);
+        validate();
+      });
+      td.appendChild(ta);
+      tr.appendChild(td);
+    })();
 
     const tdTheme = document.createElement('td');
     tdTheme.className = 'col-theme';
@@ -302,6 +317,44 @@
     return tr;
   }
 
+  // ── Ресайз колонок мышью (тянем границу заголовка), ширины запоминаются.
+  //    Двойной клик по границе — сброс колонки к авто-ширине. ──────────────
+  const COLW_KEY = 'cw_editor_colw_v1';
+  function loadColW() { try { return JSON.parse(localStorage.getItem(COLW_KEY) || '{}') || {}; } catch (_) { return {}; } }
+  function saveColW(w) { try { localStorage.setItem(COLW_KEY, JSON.stringify(w)); } catch (_) {} }
+  function setupColumnResize() {
+    const table = document.querySelector('.editor-table');
+    if (!table) return;
+    const ths = table.querySelectorAll('thead th');
+    const widths = loadColW();
+    ths.forEach((th, i) => {
+      if (widths[i]) th.style.width = widths[i] + 'px';
+      if (th.querySelector('.col-resizer')) return;   // уже навешен
+      const grip = document.createElement('span');
+      grip.className = 'col-resizer';
+      grip.title = 'Тянуть — изменить ширину; двойной клик — сбросить';
+      th.appendChild(grip);
+      grip.addEventListener('mousedown', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const startX = e.clientX;
+        const startW = th.getBoundingClientRect().width;
+        const onMove = (ev) => { th.style.width = Math.max(36, startW + (ev.clientX - startX)) + 'px'; };
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          const w = loadColW(); w[i] = Math.round(th.getBoundingClientRect().width); saveColW(w);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+      grip.addEventListener('dblclick', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        th.style.width = '';                            // сброс к ширине из CSS
+        const w = loadColW(); delete w[i]; saveColW(w);
+      });
+    });
+  }
+
   function renderTable() {
     const tbody = $('editor-tbody');
     tbody.innerHTML = '';
@@ -316,6 +369,7 @@
     if (!SUPPORTS_FIELD_SIZING) {
       tbody.querySelectorAll('textarea').forEach(autoResize);
     }
+    setupColumnResize();
     validate();
   }
 
