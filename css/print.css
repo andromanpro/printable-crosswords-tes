@@ -44,6 +44,24 @@
     display: none !important;
   }
 
+  /* Кинематографика/декор — НЕ печатать: свечи+виньетка, 3D-дракон, заставка,
+     снег, угли, canvas огня/частиц, fly-дракон. Иначе они лезут на лист
+     тёплыми пятнами и тёмной виньеткой (это и был «пиздец» при печати).
+     Чистая ч/б-страница: серая сетка + вопросы + печать Тёмного Братства + заголовок. */
+  .snow-layer,
+  .ember-layer,
+  .skyrim-ambiance,
+  #dragon-cinematic-stage,
+  .dragon-cinematic-stage,
+  #dragon-loading-screen,
+  .dragon-loading-screen,
+  .dragon-flight,
+  .dragon-svg,
+  .scroll-fire-canvas,
+  .scroll-fx-canvas {
+    display: none !important;
+  }
+
   main {
     margin: 0 !important;
     padding: 0 !important;
