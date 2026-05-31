@@ -947,6 +947,15 @@ body.mode-editor .editor-panel { display: block; }
 body.mode-editor .controls,
 body.mode-editor main,
 body.mode-editor .history-panel { display: none; }
+/* Редактор корпусов — CMS-страница: кинематографика не нужна. Прячем дракона,
+   загрузочный экран, свечи и весь декор. */
+body.mode-editor .dragon-cinematic-stage,
+body.mode-editor #dragon-loading-screen,
+body.mode-editor .skyrim-ambiance,
+body.mode-editor .snow-layer,
+body.mode-editor .ember-layer,
+body.mode-editor .dragon-flight,
+body.mode-editor .skyrim-dragon-skel { display: none !important; }
 
 .editor-toolbar {
   display: flex;
@@ -1028,7 +1037,7 @@ body.mode-editor .history-panel { display: none; }
 }
 /* Фикс-ширины служебных колонок; «Прямая подсказка» и «Хитрые» (без ширины)
    делят остаток. Перетаскивание границы заголовка задаёт ширину инлайном. */
-.editor-table .col-word { width: 92px; }
+.editor-table .col-word { width: 140px; }   /* шире — длинные слова (ДРАГОНСРИЧ) не режутся; колонку можно тянуть */
 .editor-table .col-len { width: 44px; }
 .editor-table .col-theme { width: 108px; }
 .editor-table .col-diff { width: 86px; }
