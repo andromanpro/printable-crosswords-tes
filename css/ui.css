@@ -763,7 +763,10 @@ body.theme-dark .cell.solve-highlight {
   background: #3a3520;
 }
 
-/* Результат проверки */
+/* Результат проверки. Подсветка ЯЧЕЙКИ (фон), а не только цвет буквы — видно
+   даже на мелких мобильных клетках. !important перебивает фон клетки темы. */
+.cell.solve-error { background: rgba(192, 16, 16, 0.20) !important; }
+.cell.solve-correct { background: rgba(40, 140, 40, 0.16) !important; }
 .cell.solve-error .user-letter { color: #c01010; }
 .cell.solve-correct .user-letter { color: #2a7a2a; }
 body.theme-dark .cell.solve-error .user-letter { color: #ff6060; }

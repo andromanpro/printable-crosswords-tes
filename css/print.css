@@ -154,6 +154,12 @@
     color-adjust: exact;
   }
 
+  /* Подсветка проверки (зелёный/красный фон) НЕ печатается — чистая сетка. */
+  .cell.solve-error,
+  .cell.solve-correct {
+    background: white !important;
+  }
+
   .cell .num {
     font: 400 6pt Arial, sans-serif !important;
     color: #666 !important;
