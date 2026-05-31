@@ -154,9 +154,10 @@
     color-adjust: exact;
   }
 
-  /* Подсветка проверки (зелёный/красный фон) НЕ печатается — чистая сетка. */
+  /* Подсветка проверки (зелёный/красный/закреплённый фон) НЕ печатается. */
   .cell.solve-error,
-  .cell.solve-correct {
+  .cell.solve-correct,
+  .cell.solve-locked {
     background: white !important;
   }
 

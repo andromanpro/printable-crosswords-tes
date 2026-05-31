@@ -615,6 +615,7 @@
 
   function setCellUserInput(r, c, letter) {
     if (!isSolvable(r, c)) return;
+    if (currentGrid.cells[r][c].locked) return;   // закреплённые верные буквы не трогаем
     currentGrid.cells[r][c].userInput = letter || null;
     const el = getCellEl(r, c);
     if (el) {
@@ -776,7 +777,8 @@
         total++;
         const expected = (cell.ch || '').toUpperCase();
         if (userIn === expected) {
-          el.classList.add('solve-correct');
+          el.classList.add('solve-correct', 'solve-locked');
+          cell.locked = true;            // закрепляем верную букву — больше не сотрётся
           correct++;
         } else {
           el.classList.add('solve-error');
@@ -791,15 +793,16 @@
 
   function onClearInput() {
     if (!currentGrid) return;
-    if (!confirm('Стереть все введённые буквы?')) return;
+    if (!confirm('Стереть все буквы (включая закреплённые верные)?')) return;
     for (let r = 0; r < currentGrid.size; r++) {
       for (let c = 0; c < currentGrid.size; c++) {
         const cell = currentGrid.cells[r][c];
         if (cell.isBlock) continue;
         cell.userInput = null;
+        cell.locked = false;            // полный сброс снимает и закрепление
         const el = getCellEl(r, c);
         if (el) {
-          el.classList.remove('solve-error', 'solve-correct');
+          el.classList.remove('solve-error', 'solve-correct', 'solve-locked');
           const ui = el.querySelector('.user-letter');
           if (ui) ui.textContent = '';
         }

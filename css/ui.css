@@ -771,6 +771,10 @@ body.theme-dark .cell.solve-highlight {
 .cell.solve-correct .user-letter { color: #2a7a2a; }
 body.theme-dark .cell.solve-error .user-letter { color: #ff6060; }
 body.theme-dark .cell.solve-correct .user-letter { color: #5cd05c; }
+/* Закреплённые верные буквы (после «Проверить») — нельзя стереть/перезаписать. */
+.cell.solve-locked { background: rgba(40, 140, 40, 0.26) !important; cursor: default; }
+.cell.solve-locked .user-letter { color: #1f6b1f; font-weight: 700; }
+body.theme-dark .cell.solve-locked .user-letter { color: #7fe87f; }
 
 .clues-container {
   display: grid;
