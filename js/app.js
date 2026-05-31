@@ -368,6 +368,7 @@
     const style = getCurrentClueStyle();
     const gridContainer = document.getElementById('grid-container');
     CW.Renderer.renderGrid(currentGrid, gridContainer, { cluestyle: style });
+    updateLiveProgress();
 
     const cluesContainer = document.getElementById('clues-container');
     CW.Renderer.renderCluesList(currentGrid, cluesContainer, { cluestyle: style });
@@ -509,6 +510,7 @@
     const style = opts.cluestyle || 'direct';
     const gridContainer = document.getElementById('grid-container');
     CW.Renderer.renderGrid(currentGrid, gridContainer, { cluestyle: style });
+    updateLiveProgress();
 
     const cluesContainer = document.getElementById('clues-container');
     CW.Renderer.renderCluesList(currentGrid, cluesContainer, { cluestyle: style });
@@ -624,6 +626,7 @@
       el.classList.remove('solve-error', 'solve-correct');
     }
     saveSolveProgress();
+    updateLiveProgress();
   }
 
   function onCellClick(ev) {
@@ -786,8 +789,14 @@
       }
     }
     const statusEl = document.getElementById('status');
-    if (statusEl && total > 0) {
-      statusEl.textContent = `Проверка: ${correct} из ${total} верно. ${correct === total ? '🎉' : ''}`;
+    if (statusEl) {
+      const s = computeWordStats() || { solvedWords: 0, totalWords: 0 };
+      if (total === 0) {
+        statusEl.textContent = 'Пока ничего не вписано — заполни клетки и нажми «Проверить».';
+      } else {
+        const done = s.totalWords > 0 && s.solvedWords === s.totalWords;
+        statusEl.textContent = `Разгадано слов: ${s.solvedWords} / ${s.totalWords} · верных букв: ${correct} из ${total}.` + (done ? ' 🎉 Кроссворд решён!' : '');
+      }
     }
   }
 
@@ -809,6 +818,9 @@
       }
     }
     saveSolveProgress();
+    updateLiveProgress();
+    const st = document.getElementById('status');
+    if (st) st.textContent = '';
   }
 
   // Сохранение прогресса в puzzle entry с debounce, чтобы каждое нажатие
@@ -844,6 +856,53 @@
         currentGrid.cells[r][c].userInput = entry.userInput[key];
       }
     }
+  }
+
+  // ===== Статистика по словам =====
+  function computeWordStats() {
+    if (!currentGrid || !Array.isArray(currentGrid.placements)) return null;
+    const G = currentGrid;
+    let totalWords = 0, filledWords = 0, solvedWords = 0;
+    let totalCells = 0, filledCells = 0, correctCells = 0;
+    for (let r = 0; r < G.size; r++) {
+      for (let c = 0; c < G.size; c++) {
+        const cell = G.cells[r][c];
+        if (cell.isBlock || !cell.ch) continue;
+        totalCells++;
+        if (cell.userInput) {
+          filledCells++;
+          if ((cell.userInput || '').toUpperCase() === (cell.ch || '').toUpperCase()) correctCells++;
+        }
+      }
+    }
+    for (const p of G.placements) {
+      totalWords++;
+      const dr = p.dir === 'D' ? 1 : 0, dc = p.dir === 'A' ? 1 : 0;
+      let filled = true, solved = true;
+      for (let i = 0; i < p.word.length; i++) {
+        const row = G.cells[p.row + dr * i];
+        const cell = row && row[p.col + dc * i];
+        if (!cell) { filled = false; solved = false; break; }
+        const ui = (cell.userInput || '').toUpperCase();
+        if (!ui) { filled = false; solved = false; }
+        else if (ui !== (cell.ch || '').toUpperCase()) solved = false;
+      }
+      if (filled) filledWords++;
+      if (solved) solvedWords++;
+    }
+    return { totalWords, filledWords, solvedWords, totalCells, filledCells, correctCells };
+  }
+
+  // Живой счётчик заполненных слов — без раскрытия правильности (не спойлит ответы).
+  function updateLiveProgress() {
+    const el = document.getElementById('solve-progress');
+    if (!el) return;
+    const s = computeWordStats();
+    if (!s || s.totalWords === 0) { el.hidden = true; el.textContent = ''; return; }
+    el.hidden = false;
+    let t = `Заполнено слов: ${s.filledWords} / ${s.totalWords}`;
+    if (s.filledWords === s.totalWords) t += ' — всё заполнено, можно проверять';
+    el.textContent = t;
   }
 
   function onToggleAnswers() {

@@ -1194,3 +1194,14 @@ body.mode-editor .skyrim-dragon-skel { display: none !important; }
 .site-credit a:hover { text-decoration: underline; }
 .site-credit-sep { opacity: 0.45; margin: 0 7px; }
 body.mode-editor .site-credit { display: none; }
+
+/* Живой счётчик заполненных слов (#solve-progress) — без спойлера правильности */
+.solve-progress {
+  text-align: center;
+  margin: 0 auto 12px;
+  font-size: 13px;
+  color: #b9a98a;
+  letter-spacing: 0.02em;
+}
+.solve-progress[hidden] { display: none; }
+@media print { .solve-progress { display: none !important; } }
