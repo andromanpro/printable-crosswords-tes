@@ -21,6 +21,8 @@
   // Пока идёт заставка загрузки сцены или горение — руны не показываем
   // (заставка pointer-events:none пропускает наведение на сетку под ней).
   function sceneBusy() {
+    // Тач-устройства: hover-руна не нужна и «залипает» (mouseout не приходит).
+    if (window.matchMedia && window.matchMedia('(hover: none)').matches) return true;
     return document.body.classList.contains('dragon-cinematic-loading') ||
            window.__cwBurnActive === true;
   }

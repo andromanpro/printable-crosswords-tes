@@ -17,6 +17,8 @@
   // оверлей заставки (pointer-events:none, z-8) пропускает наведение на сетку
   // под ним, а тултип (fixed, z-80) рисуется ПОВЕРХ заставки → «просвечивает».
   function sceneBusy() {
+    // Тач-устройства: hover-подсказка не нужна и «залипает» (mouseout не приходит).
+    if (window.matchMedia && window.matchMedia('(hover: none)').matches) return true;
     return document.body.classList.contains('dragon-cinematic-loading') ||
            window.__cwBurnActive === true;
   }
