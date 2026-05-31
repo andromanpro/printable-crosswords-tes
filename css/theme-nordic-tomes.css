@@ -2428,3 +2428,44 @@ body.theme-skyrim .skyrim-ambiance .vignette {
 @media (prefers-reduced-motion: reduce) {
   body.theme-skyrim .skyrim-ambiance .candle { animation: none !important; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   МОБИЛЬНАЯ АДАПТАЦИЯ (узкий экран). После добавления viewport-меты
+   телефон верстает по device-width. Здесь: вопросы в 1 колонку, сетка
+   ужимается под ширину, снятие форсированных min-width, компактные отступы.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Вопросы — одной колонкой (на узком 2 колонки тесные). */
+  body .clues-container {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Сетка влезает по ширине: клетка = min(дефолт, доступная ширина / размер).
+     renderer.js ставит --cell-size инлайном (36px) → перебиваем !important.
+     --grid-size инлайн от renderer тоже доступен. Буфер 40px — на отступы,
+     рамки и налезающие рулоны свитка. */
+  body #grid-container .grid {
+    --cell-size: min(34px, calc((100vw - 40px) / var(--grid-size, 13))) !important;
+  }
+
+  /* Снять форсированные min-width контейнера/свитка + компактные отступы. */
+  body.theme-skyrim #grid-container,
+  body.theme-skyrim .grid-container {
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    padding: 18px 6px 22px !important;
+  }
+  body.theme-skyrim .grid-container .scroll-paper {
+    min-width: 0 !important;
+    padding: 14px 10px 88px !important;
+  }
+  /* Рулоны не должны вылезать за экран (они на left/right:-8px). */
+  body.theme-skyrim #grid-container .scroll-rod-top,
+  body.theme-skyrim #grid-container .scroll-rod-bottom {
+    left: 0 !important;
+    right: 0 !important;
+  }
+  /* Подстраховка от горизонтального скролла от декора. */
+  html, body { overflow-x: hidden !important; }
+}
