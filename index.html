@@ -37,21 +37,6 @@
     </filter>
   </defs>
 </svg>
-<script>
-  (function () {
-    const valid = ['fly', 'cursor', 'cinematic', 'none'];
-    let saved = null;
-    let requested = null;
-    try { saved = localStorage.getItem('cw_dragon_mode_v1'); } catch (e) { /* ignore */ }
-    try { requested = new URLSearchParams(location.search).get('dragon'); } catch (e) { /* ignore */ }
-    const mode = valid.includes(requested) ? requested : (valid.includes(saved) ? saved : 'fly');
-    document.body.classList.add('dragon-mode-' + mode);
-    if (mode === 'cinematic') {
-      document.body.classList.add('dragon-cinematic-loading');
-    }
-  })();
-</script>
-
 <!-- Skyrim ambient: снежные хлопья (24 шт) + дракон-силуэт пролетающий через экран -->
 <div class="snow-layer" aria-hidden="true">
   <span></span><span></span><span></span><span></span><span></span><span></span>
