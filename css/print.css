@@ -291,4 +291,18 @@
   body.print-only-clues .clues-container ol {
     padding-left: 10mm !important;
   }
+
+  /* Кредит автора — печатается внизу страницы кроссворда (#site-credit) */
+  .site-credit {
+    display: block !important;
+    text-align: center !important;
+    margin: 8mm auto 0 !important;
+    padding-top: 3mm !important;
+    border-top: 0.5pt solid #aaa !important;
+    color: #666 !important;
+    font: 8.5pt "Times New Roman", serif !important;
+    page-break-inside: avoid;
+  }
+  .site-credit a { color: #666 !important; text-decoration: none !important; }
+  .site-credit-sep { color: #aaa !important; }
 }
