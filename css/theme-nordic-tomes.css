@@ -2466,6 +2466,13 @@ body.theme-skyrim .skyrim-ambiance .vignette {
     left: 0 !important;
     right: 0 !important;
   }
+  /* Дракон на мобиле не нужен — прячем 3D-сцену, заставку и декор-драконов
+     (контроллер и так ставит mode=none на ≤640px; это визуальная страховка). */
+  .dragon-cinematic-stage,
+  #dragon-loading-screen,
+  .dragon-loading-screen,
+  .dragon-flight,
+  .skyrim-dragon-skel { display: none !important; }
   /* Подстраховка от горизонтального скролла от декора. */
   html, body { overflow-x: hidden !important; }
 }

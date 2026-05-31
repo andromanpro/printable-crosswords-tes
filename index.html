@@ -15,7 +15,7 @@
     }
   </style>
   <link rel="stylesheet" href="css/ui.css?v=66">
-  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=99">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=100">
   <link rel="stylesheet" href="css/print.css?v=70">
 </head>
 <body class="font-medium theme-skyrim">
@@ -64,6 +64,7 @@
     try { saved = localStorage.getItem('cw_dragon_mode_v2'); } catch (e) {}
     var mode = VALID.indexOf(q) >= 0 ? q : (VALID.indexOf(saved) >= 0 ? saved : 'cinematic');
     if (mode === 'cinematic' && location.protocol === 'file:') mode = 'fly';
+    if (mode === 'cinematic' && window.innerWidth <= 640) mode = 'none';   // мобайл — без 3D-дракона
     if (mode === 'cinematic') {
       document.body.classList.add('dragon-mode-cinematic', 'dragon-cinematic-loading');
       setTimeout(function () { document.body.classList.remove('dragon-cinematic-loading'); }, 12000);
@@ -839,7 +840,7 @@
 <script src="js/generator-classic.js?v=62"></script>
 <script src="js/renderer.js?v=62"></script>
 <script src="js/app.js?v=64"></script>
-<script src="js/dragon-controller.js?v=64"></script>
+<script src="js/dragon-controller.js?v=65"></script>
 <script src="js/skyrim-decor.js?v=68"></script>
 <script src="js/dragon-wander.js?v=62"></script>
 <script src="js/skeleton-dragon.js?v=62"></script>

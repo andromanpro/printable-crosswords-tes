@@ -48,6 +48,11 @@
       initial = 'fly';
       userChoice = false;
     }
+    // Мобайл (узкий экран): 3D-дракон не нужен — не грузим 15МБ модель + WebGL.
+    if (initial === 'cinematic' && window.innerWidth <= 640) {
+      initial = 'none';
+      userChoice = false;
+    }
     const radio = document.querySelector('input[name="dragon"][value="' + initial + '"]');
     if (radio) radio.checked = true;
     apply(initial, userChoice);   // персистим только если это явный выбор пользователя
