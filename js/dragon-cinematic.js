@@ -1505,9 +1505,13 @@ function getBottomAnchor(elapsed) {
     && Number.isFinite(lab.anchorY);
 
   if (labViewportAnchor) {
-    // Lab/drag-editor: anchorX/Y в процентах viewport
-    px = window.innerWidth  * lab.anchorX / 100;
-    py = window.innerHeight * lab.anchorY / 100;
+    // Lab/drag-editor: anchorX/Y в процентах viewport.
+    let ax = lab.anchorX, ay = lab.anchorY;
+    // Мобайл (узкий экран): дракон маленький СВЕРХУ по центру, НАД сеткой —
+    // чтобы не закрывал колонку вопросов внизу. Размер ужимает responsiveFactor.
+    if (window.innerWidth <= 640) { ax = 50; ay = 15; }
+    px = window.innerWidth  * ax / 100;
+    py = window.innerHeight * ay / 100;
   } else {
     const scrollRect = getScrollRect();
     if (scrollRect) {
