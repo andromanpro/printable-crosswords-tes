@@ -639,6 +639,7 @@
       solveDir = solveDir === 'A' ? 'D' : 'A';
     }
     setActiveCell(r, c);
+    focusMobileInput();   // тач: открыть системную клавиатуру (на десктопе — no-op)
   }
 
   function onSolveKeydown(ev) {
@@ -693,6 +694,70 @@
         const dc = solveDir === 'A' ? 1 : 0;
         moveCursor(dr, dc);
       }
+    }
+  }
+
+  // ── Мобильный ввод: скрытый input открывает системную клавиатуру ──────
+  // На тач-устройствах span-клетки не дают всплыть клавиатуре. Решение:
+  // скрытый (но фокусируемый, НЕ display:none) input, который фокусируем по
+  // тапу в клетку; его input/keydown маршрутизируем в ту же solve-логику.
+  // Десктоп не трогаем — там по-прежнему document keydown (onSolveKeydown),
+  // input не фокусируется (isTouchDevice=false), стрелки/Tab работают как были.
+  function isTouchDevice() {
+    return !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+  }
+  function getMobileInput() {
+    let inp = document.getElementById('cw-mobile-input');
+    if (!inp) {
+      inp = document.createElement('input');
+      inp.id = 'cw-mobile-input';
+      inp.type = 'text';
+      inp.setAttribute('inputmode', 'text');
+      inp.setAttribute('autocapitalize', 'characters');
+      inp.setAttribute('autocomplete', 'off');
+      inp.setAttribute('autocorrect', 'off');
+      inp.setAttribute('aria-hidden', 'true');
+      inp.tabIndex = -1;
+      // Видимо-скрыт, но фокусируемый (font-size:16px — без iOS-зума).
+      inp.style.cssText = 'position:fixed;bottom:0;left:0;width:1px;height:1px;' +
+        'opacity:0;border:0;padding:0;margin:0;font-size:16px;z-index:-1;background:transparent;color:transparent;';
+      document.body.appendChild(inp);
+      inp.addEventListener('input', onMobileInput);
+      inp.addEventListener('keydown', onMobileInputKeydown);
+    }
+    return inp;
+  }
+  function focusMobileInput() {
+    if (!isTouchDevice()) return;
+    if (!solveActiveCell) return;
+    const inp = getMobileInput();
+    inp.value = '';
+    try { inp.focus({ preventScroll: true }); } catch (_) { inp.focus(); }
+  }
+  function typeLetterIntoActive(ch) {
+    if (!solveActiveCell || !currentGrid) return;
+    ch = ch.toUpperCase().replace('Ё', 'Е');
+    if (!/^[А-Я]$/.test(ch)) return;
+    const { row, col } = solveActiveCell;
+    setCellUserInput(row, col, ch);
+    moveCursor(solveDir === 'D' ? 1 : 0, solveDir === 'A' ? 1 : 0);
+  }
+  function onMobileInput(ev) {
+    const v = ev.target.value || '';
+    for (const ch of v) typeLetterIntoActive(ch);
+    ev.target.value = '';
+  }
+  function onMobileInputKeydown(ev) {
+    // Мягкие клавиатуры надёжно шлют keydown для Backspace.
+    if (ev.key !== 'Backspace') return;
+    ev.preventDefault();
+    if (!solveActiveCell || !currentGrid) return;
+    const { row, col } = solveActiveCell;
+    if (currentGrid.cells[row][col].userInput) {
+      setCellUserInput(row, col, '');
+    } else {
+      moveCursor(solveDir === 'D' ? -1 : 0, solveDir === 'A' ? -1 : 0);
+      if (solveActiveCell) setCellUserInput(solveActiveCell.row, solveActiveCell.col, '');
     }
   }
 
