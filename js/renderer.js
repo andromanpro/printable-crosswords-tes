@@ -20,6 +20,46 @@
     return p.shortClue || p.clue;
   }
 
+  // Карта кириллица → руна (детерминированная) для режима «руны-подсказки»:
+  // каждая буква ответа всегда даёт одну и ту же руну (одинаковые буквы — одинаковые руны).
+  const RUNE_MAP = {
+    'А':'ᚠ','Б':'ᚢ','В':'ᚦ','Г':'ᚨ','Д':'ᚩ','Е':'ᚪ','Ж':'ᚫ','З':'ᚬ','И':'ᚱ','Й':'ᚲ',
+    'К':'ᚳ','Л':'ᚷ','М':'ᚹ','Н':'ᚺ','О':'ᚻ','П':'ᚾ','Р':'ᛁ','С':'ᛃ','Т':'ᛇ','У':'ᛈ',
+    'Ф':'ᛉ','Х':'ᛊ','Ц':'ᛋ','Ч':'ᛏ','Ш':'ᛒ','Щ':'ᛖ','Ъ':'ᛗ','Ы':'ᛚ','Ь':'ᛜ','Э':'ᛞ',
+    'Ю':'ᛟ','Я':'ᛠ'
+  };
+  function runeFor(ch) {
+    if (!ch) return '';
+    return RUNE_MAP[ch.toUpperCase().replace('Ё', 'Е')] || '';
+  }
+  function runeHintsOn() {
+    const el = document.getElementById('rune-hints');
+    return !!(el && el.checked);
+  }
+  // Проставляет/снимает руны-подсказки во всех заполняемых клетках основной сетки.
+  function applyRuneHints(root) {
+    root = root || document.getElementById('grid-container');
+    if (!root) return;
+    const on = runeHintsOn();
+    root.querySelectorAll('.cell:not(.block)').forEach(el => {
+      let rh = el.querySelector('.rune-hint');
+      if (on) {
+        const ansEl = el.querySelector('.ans');
+        const rune = runeFor(ansEl ? ansEl.textContent : '');
+        if (!rune) { if (rh) rh.remove(); return; }
+        if (!rh) {
+          rh = document.createElement('span');
+          rh.className = 'rune-hint';
+          rh.setAttribute('aria-hidden', 'true');
+          el.appendChild(rh);
+        }
+        rh.textContent = rune;
+      } else if (rh) {
+        rh.remove();
+      }
+    });
+  }
+
   function cellSizeFor(size) {
     // Базовый размер ячейки по размеру сетки (десктоп).
     var base = size <= 11 ? 38 : (size <= 13 ? 34 : 30);
@@ -75,6 +115,7 @@
         div.appendChild(el);
       }
     }
+    if (!opts.showAnswers) applyRuneHints(div);   // руны-подсказки (если включены) — только основная сетка
     container.appendChild(div);
   }
 
@@ -145,5 +186,5 @@
   }
 
   window.CW = window.CW || {};
-  CW.Renderer = { renderGrid, renderCluesList, renderAnswerKey, cellSizeFor, pickClue, pickShort };
+  CW.Renderer = { renderGrid, renderCluesList, renderAnswerKey, cellSizeFor, pickClue, pickShort, applyRuneHints, runeFor };
 })();

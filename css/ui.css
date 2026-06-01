@@ -739,6 +739,25 @@ main {
 .show-answers .cell .ans { display: block; }
 .show-answers .cell.block .ans { display: none; }
 
+/* Руны-подсказки: бледная руна (= буква ответа) под пользовательским вводом.
+   Включается настройкой «Руны-подсказки»; одинаковые буквы → одинаковые руны. */
+.rune-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans Runic', 'Segoe UI Symbol', serif;
+  font-size: calc(var(--cell-size, 36px) * 0.58);
+  line-height: 1;
+  color: rgba(90, 120, 160, 0.42);
+  pointer-events: none;
+  z-index: 0;
+}
+.cell .user-letter { position: relative; z-index: 1; }
+/* Клетка заполнена пользователем — руну прячем (введённая буква важнее). */
+.cell:has(.user-letter:not(:empty)) .rune-hint { opacity: 0; }
+
 /* Пользовательский ввод: показывается всегда (если есть userInput),
    но при включенном «Показать ответы» уступает место правильному ответу. */
 .cell .user-letter {

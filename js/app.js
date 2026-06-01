@@ -73,6 +73,23 @@
       });
     }
 
+    // Ввод по наведению мыши (десктоп) + руны-подсказки
+    const hoverChk = document.getElementById('hover-type');
+    if (hoverChk) {
+      try { const s = localStorage.getItem('cw_hover_type'); if (s !== null) hoverChk.checked = s === '1'; } catch (e) {}
+      hoverChk.addEventListener('change', () => {
+        try { localStorage.setItem('cw_hover_type', hoverChk.checked ? '1' : '0'); } catch (e) {}
+      });
+    }
+    const runeChk = document.getElementById('rune-hints');
+    if (runeChk) {
+      try { const s = localStorage.getItem('cw_rune_hints'); if (s !== null) runeChk.checked = s === '1'; } catch (e) {}
+      runeChk.addEventListener('change', () => {
+        try { localStorage.setItem('cw_rune_hints', runeChk.checked ? '1' : '0'); } catch (e) {}
+        if (CW.Renderer && CW.Renderer.applyRuneHints) CW.Renderer.applyRuneHints();
+      });
+    }
+
     // История генерации
     document.getElementById('btn-history-toggle').addEventListener('click', onHistoryToggle);
     document.getElementById('btn-history-clear').addEventListener('click', onHistoryClear);
@@ -85,6 +102,7 @@
 
     // Режим решения: клик по сетке (через делегирование) и глобальная клавиатура.
     document.getElementById('grid-container').addEventListener('click', onCellClick);
+    document.getElementById('grid-container').addEventListener('mouseover', onCellHover);
     document.addEventListener('keydown', onSolveKeydown);
     document.getElementById('btn-check').addEventListener('click', onCheck);
     document.getElementById('btn-clear-input').addEventListener('click', onClearInput);
@@ -637,6 +655,25 @@
     }
     saveSolveProgress();
     updateLiveProgress();
+  }
+
+  function hoverTypeEnabled() {
+    const el = document.getElementById('hover-type');
+    return el ? el.checked : true;
+  }
+  // Десктоп: наведение мыши делает клетку активной — печатать можно без клика.
+  // Авто-переход при печати сохраняется: active меняется только при входе мыши
+  // в НОВУЮ клетку (mouseover), а печать двигает курсор сама.
+  function onCellHover(ev) {
+    if (!hoverTypeEnabled() || isTouchDevice()) return;
+    const cell = ev.target.closest && ev.target.closest('.cell');
+    if (!cell || cell.classList.contains('block')) return;
+    const root = gridContainerEl();
+    if (!root || !root.contains(cell)) return;
+    const r = parseInt(cell.dataset.row, 10), c = parseInt(cell.dataset.col, 10);
+    if (Number.isNaN(r) || Number.isNaN(c)) return;
+    if (solveActiveCell && solveActiveCell.row === r && solveActiveCell.col === c) return;
+    setActiveCell(r, c);
   }
 
   function onCellClick(ev) {

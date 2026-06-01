@@ -23,6 +23,10 @@
   function sceneBusy() {
     // Тач-устройства: hover-руна не нужна и «залипает» (mouseout не приходит).
     if (window.matchMedia && window.matchMedia('(hover: none)').matches) return true;
+    // Режим «руны-подсказки»: в клетках уже стоят детерминированные руны —
+    // случайная hover-руна не нужна (иначе задвоение).
+    const rh = document.getElementById('rune-hints');
+    if (rh && rh.checked) return true;
     return document.body.classList.contains('dragon-cinematic-loading') ||
            window.__cwBurnActive === true;
   }
