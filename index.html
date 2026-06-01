@@ -598,6 +598,14 @@
       <label><input type="radio" name="fontsize" value="xlarge"> Очень крупный</label>
     </fieldset>
 
+    <fieldset class="ctrl-group">
+      <legend>История без повторов</legend>
+      <label>Помнить последних кроссвордов:
+        <input type="number" id="history-limit" min="20" max="5000" step="10" value="200"
+               style="width:84px; margin-left:6px">
+      </label>
+    </fieldset>
+
     <!-- Тема Скайрим включена по умолчанию (скрытый radio для совместимости с app.js) -->
     <input type="radio" name="theme-ui" value="skyrim" checked style="display:none">
 
@@ -851,12 +859,12 @@
 <script src="js/data-loader.js?v=62"></script>
 <script src="js/editor.js?v=63"></script>
 <script src="js/rng.js?v=62"></script>
-<script src="js/history.js?v=62"></script>
+<script src="js/history.js?v=63"></script>
 <script src="js/puzzles.js?v=62"></script>
 <script src="js/grid.js?v=62"></script>
 <script src="js/generator-classic.js?v=62"></script>
 <script src="js/renderer.js?v=63"></script>
-<script src="js/app.js?v=67"></script>
+<script src="js/app.js?v=68"></script>
 <script src="js/dragon-controller.js?v=66"></script>
 <script src="js/skyrim-decor.js?v=68"></script>
 <script src="js/dragon-wander.js?v=62"></script>

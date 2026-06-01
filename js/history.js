@@ -5,7 +5,17 @@
   'use strict';
 
   const KEY = 'cw_history_v1';
-  const MAX_ENTRIES = 200;
+  const LIMIT_KEY = 'cw_history_limit';
+  const DEFAULT_LIMIT = 200;
+
+  // Глубина истории без повторов — настраиваемая (localStorage), дефолт 200.
+  function getLimit() {
+    try {
+      const v = parseInt(localStorage.getItem(LIMIT_KEY), 10);
+      if (v && v >= 20 && v <= 5000) return v;
+    } catch (e) { /* ignore */ }
+    return DEFAULT_LIMIT;
+  }
 
   let memoryFallback = null;
   let storageOk = true;
@@ -61,8 +71,9 @@
       data.shown.push({ id, at: now });
       existing.add(id);
     }
-    if (data.shown.length > MAX_ENTRIES) {
-      data.shown = data.shown.slice(-MAX_ENTRIES);
+    const limit = getLimit();
+    if (data.shown.length > limit) {
+      data.shown = data.shown.slice(-limit);
     }
     writeRaw(data);
   }
@@ -82,6 +93,17 @@
     return storageOk;
   }
 
+  function setLimit(n) {
+    n = parseInt(n, 10);
+    if (!n || n < 20) n = 20;
+    if (n > 5000) n = 5000;
+    try { localStorage.setItem(LIMIT_KEY, String(n)); } catch (e) { /* ignore */ }
+    // Подрезаем текущую историю под новый лимит.
+    const data = readRaw();
+    if (data.shown.length > n) { data.shown = data.shown.slice(-n); writeRaw(data); }
+    return n;
+  }
+
   window.CW = window.CW || {};
-  CW.History = { get, seenIds, add, reset, count, isPersistent, MAX_ENTRIES };
+  CW.History = { get, seenIds, add, reset, count, isPersistent, getLimit, setLimit, DEFAULT_LIMIT };
 })();

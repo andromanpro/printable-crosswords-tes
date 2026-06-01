@@ -63,6 +63,16 @@
       r.addEventListener('change', applyThemeUi);
     });
 
+    // Глубина истории без повторов — настраиваемая
+    const histInput = document.getElementById('history-limit');
+    if (histInput) {
+      histInput.value = CW.History.getLimit();
+      histInput.addEventListener('change', () => {
+        histInput.value = CW.History.setLimit(histInput.value);
+        updateStatus();
+      });
+    }
+
     // История генерации
     document.getElementById('btn-history-toggle').addEventListener('click', onHistoryToggle);
     document.getElementById('btn-history-clear').addEventListener('click', onHistoryClear);
@@ -969,7 +979,7 @@
       }
       return;
     }
-    let txt = `Корпус: ${corpusTotal} слов · В истории показанных: ${cnt} / ${CW.History.MAX_ENTRIES}.`;
+    let txt = `Корпус: ${corpusTotal} слов · В истории показанных: ${cnt} / ${CW.History.getLimit()}.`;
     if (!CW.History.isPersistent()) txt += ' (История не сохраняется — localStorage недоступен.)';
     if (result && result.metrics) {
       txt = `Размещено слов: ${result.metrics.placed}. Пересечений: ${result.metrics.intersections}. ` + txt;
