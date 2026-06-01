@@ -14,9 +14,10 @@
       color: #f2e0b6;
     }
   </style>
+  <link rel="preload" as="image" href="assets/images/dragon-intro-videoframe.png">
   <link rel="stylesheet" href="css/ui.css?v=68">
-  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=100">
-  <link rel="stylesheet" href="css/print.css?v=71">
+  <link rel="stylesheet" href="css/theme-nordic-tomes.css?v=101">
+  <link rel="stylesheet" href="css/print.css?v=72">
 </head>
 <body class="font-medium theme-skyrim">
 <!-- SVG filter defs для burn-эффекта свитка (feTurbulence + displacement
@@ -67,7 +68,7 @@
     if (mode === 'cinematic' && window.innerWidth <= 640) mode = 'none';   // мобайл — без 3D-дракона
     if (mode === 'cinematic') {
       document.body.classList.add('dragon-mode-cinematic', 'dragon-cinematic-loading');
-      setTimeout(function () { document.body.classList.remove('dragon-cinematic-loading'); }, 12000);
+      setTimeout(function () { document.body.classList.remove('dragon-cinematic-loading'); }, 18000);
     }
   } catch (e) {}
 })();
@@ -757,8 +758,6 @@
   <div id="grid-container" class="grid-container"></div>
   <div id="clues-container" class="clues-container"></div>
   <footer id="site-credit" class="site-credit">
-    Кроссворд сделал <a href="https://androman.pro" target="_blank" rel="noopener">Androman</a>
-    <span class="site-credit-sep">·</span>
     <a href="https://androman.pro" target="_blank" rel="noopener">androman.pro</a>
     <span class="site-credit-sep">·</span>
     <a href="https://t.me/andromanpro1c" target="_blank" rel="noopener">t.me/andromanpro1c</a>

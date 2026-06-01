@@ -1905,8 +1905,13 @@ body.theme-skyrim .dragon-intro-video {
   height: 100%;
   object-fit: cover;
   object-position: center bottom;
-  opacity: 0.98;
+  opacity: 0;
+  /* плавный кроссфейд видео поверх статичного кадра-постера — убирает «рывок старта» */
+  animation: dragon-intro-video-in 1500ms ease 250ms forwards;
   background: #05070a;
+}
+@keyframes dragon-intro-video-in {
+  to { opacity: 0.98; }
 }
 body.theme-skyrim .dragon-loading-screen::before,
 body.theme-skyrim .dragon-loading-screen::after {

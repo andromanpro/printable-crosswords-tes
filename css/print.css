@@ -305,4 +305,110 @@
   }
   .site-credit a { color: #666 !important; text-decoration: none !important; }
   .site-credit-sep { color: #aaa !important; }
+
+  /* ===== Перебиваем кинематографическую тему theme-skyrim при печати =====
+     Экранные правила `body.theme-skyrim …` специфичнее низкоуровневых выше,
+     поэтому при печати побеждали они (чёрные клетки, золотой заголовок-градиент,
+     декоративная рамка). Дублируем с той же специфичностью — print.css грузится
+     последним, поэтому выигрывает. */
+  body.theme-skyrim {
+    background: #ffffff !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  body.theme-skyrim main {
+    background: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  /* Свиток в кинематографике сворачивается clip-path/animation (intro-play /
+     is-revealing / is-rolled) и несёт PNG-фон пергамента (!important, ID-специфичность).
+     В печати принудительно разворачиваем его в плоский видимый блок без текстуры —
+     иначе сетка пропадает (свёрнутый clip-path) или печатается тёмная текстура. */
+  body.theme-skyrim .grid-container,
+  body.theme-skyrim #grid-container,
+  body.theme-skyrim .grid-container .scroll-paper,
+  body.theme-skyrim #grid-container .scroll-paper,
+  body.theme-skyrim #grid-container.is-rolled .scroll-paper,
+  body.theme-skyrim #grid-container.is-rolled:not(.is-empty-scroll) .scroll-paper,
+  body.theme-skyrim #grid-container.is-revealing .scroll-paper,
+  body.theme-skyrim .grid-container.intro-play .scroll-paper,
+  body.theme-skyrim #grid-container.is-empty-scroll .scroll-paper {
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    background-image: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    outline: none !important;
+  }
+  body.theme-skyrim .cell.block,
+  body.theme-skyrim .answer-key .cell.block {
+    background: #ececec !important;       /* светло-серые блок-клетки вместо чёрных */
+    background-image: none !important;
+    box-shadow: none !important;
+    border-color: #6a6a6a !important;
+  }
+  body.theme-skyrim .puzzle-title {
+    color: #333 !important;
+    -webkit-text-fill-color: #333 !important;  /* убираем золотой градиент-текст */
+    background: none !important;
+    text-shadow: none !important;
+    font: 700 13pt "Times New Roman", serif !important;
+    font-variant: normal !important;
+    letter-spacing: normal !important;
+    position: relative !important;
+    transform: none !important;
+    top: auto !important;
+    margin: 0 0 6mm !important;
+    padding: 0 !important;
+  }
+  /* Снимаем декоративную золотую рамку и псевдо-украшения заголовка,
+     НО восковую печать оставляем (она у .puzzle-title::after выше). */
+  body.theme-skyrim .puzzle-title::before {
+    content: none !important;
+    display: none !important;
+  }
+  body.theme-skyrim .grid-container::before,
+  body.theme-skyrim .grid-container::after,
+  body.theme-skyrim .scroll-paper::before,
+  body.theme-skyrim .scroll-paper::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Печать не должна зависеть от состояния загрузки 3D-дракона: экранное
+     правило `…dragon-cinematic-loading main { opacity:0 }` прячет кроссворд на
+     время сплэша — при печати в этот момент выходил пустой тёмный лист.
+     Форсируем видимость контента и белый фон независимо от стадии загрузки. */
+  body.dragon-cinematic-loading main,
+  body.theme-skyrim.dragon-mode-cinematic.dragon-cinematic-loading main {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+  body.dragon-cinematic-loading .dragon-loading-screen,
+  body.theme-skyrim .dragon-loading-screen,
+  #dragon-loading-screen {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
 }
