@@ -15,6 +15,14 @@
   const VALID = ['fly', 'cursor', 'cinematic', 'none'];
   const DEFAULT_MODE = 'cinematic';
 
+  function mobileNoWebGL() {
+    const vv = window.visualViewport;
+    const vw = Math.min(window.innerWidth || 9999, (vv && vv.width) || 9999);
+    let touchMobile = false;
+    try { touchMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (e) {}
+    return vw <= 720 || touchMobile;
+  }
+
   function apply(mode, persist) {
     if (!VALID.includes(mode)) mode = DEFAULT_MODE;
     document.body.classList.remove('dragon-mode-fly', 'dragon-mode-cursor', 'dragon-mode-cinematic', 'dragon-mode-none');
@@ -49,7 +57,7 @@
       userChoice = false;
     }
     // Мобайл (узкий экран): 3D-дракон не нужен — не грузим 15МБ модель + WebGL.
-    if (initial === 'cinematic' && window.innerWidth <= 640) {
+    if (initial === 'cinematic' && mobileNoWebGL()) {
       initial = 'none';
       userChoice = false;
     }

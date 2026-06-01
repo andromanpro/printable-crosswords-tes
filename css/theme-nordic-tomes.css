@@ -2439,7 +2439,7 @@ body.theme-skyrim .skyrim-ambiance .vignette {
    телефон верстает по device-width. Здесь: вопросы в 1 колонку, сетка
    ужимается под ширину, снятие форсированных min-width, компактные отступы.
    ════════════════════════════════════════════════════════════════ */
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   /* Вопросы — одной колонкой (на узком 2 колонки тесные). */
   body .clues-container {
     grid-template-columns: 1fr !important;
@@ -2471,8 +2471,7 @@ body.theme-skyrim .skyrim-ambiance .vignette {
     left: 0 !important;
     right: 0 !important;
   }
-  /* Дракон на мобиле не нужен — прячем 3D-сцену, заставку и декор-драконов
-     (контроллер и так ставит mode=none на ≤640px; это визуальная страховка). */
+  /* Mobile safety: hide 3D/dragon layers; JS also switches mode to none. */
   .dragon-cinematic-stage,
   #dragon-loading-screen,
   .dragon-loading-screen,
@@ -2480,4 +2479,12 @@ body.theme-skyrim .skyrim-ambiance .vignette {
   .skyrim-dragon-skel { display: none !important; }
   /* Подстраховка от горизонтального скролла от декора. */
   html, body { overflow-x: hidden !important; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .dragon-cinematic-stage,
+  #dragon-loading-screen,
+  .dragon-loading-screen,
+  .dragon-flight,
+  .skyrim-dragon-skel { display: none !important; }
 }
