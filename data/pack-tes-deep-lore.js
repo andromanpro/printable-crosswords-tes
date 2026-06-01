@@ -304,7 +304,7 @@
   CW.PACKS[ID] = {
     id: ID,
     name: 'TES — Глубокий лор',
-    description: 'Morrowind, Oblivion, Принцы Даэдра, древние расы, книги: Дагот Ур, Вивек, Мерунес Дагон, Боэта, Айлейды',
+    description: 'Morrowind и Oblivion: Принцы Даэдра, Великие Дома, древние расы, история, артефакты и книги вселенной TES вне Skyrim — без спойлеров.',
     words: words
   };
 })();
