@@ -117,6 +117,6 @@ py -3.14 -m http.server 8767 --bind 127.0.0.1
 
 ## Автор
 
-Сделал **[Androman](https://androman.pro)** — архитектор 1С и AI-интеграций, 17 лет в инженерии.
+Сделал **[Androman](https://androman.pro)** — инженер с 17-летним стажем; увлекаюсь вебом, 3D-графикой и вселенной The Elder Scrolls.
 
 🌐 [androman.pro](https://androman.pro) · ✈ [Telegram](https://t.me/andromanpro1c) · [GitHub @andromanpro](https://github.com/andromanpro)
