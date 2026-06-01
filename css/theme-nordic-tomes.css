@@ -2453,6 +2453,13 @@ body.theme-skyrim .skyrim-ambiance .vignette {
   body #grid-container .grid {
     --cell-size: min(34px, calc((100vw - 40px) / var(--grid-size, 13))) !important;
   }
+  /* theme-skyrim: свиток-пергамент добавляет боковые валики/поля → сетка вылезала
+     за правый край. Больший буфер + центрирование сетки в свитке. */
+  body.theme-skyrim #grid-container .grid {
+    --cell-size: min(30px, calc((100vw - 78px) / var(--grid-size, 13))) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 
   /* Снять форсированные min-width контейнера/свитка + компактные отступы. */
   body.theme-skyrim #grid-container,

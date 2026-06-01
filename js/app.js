@@ -130,21 +130,11 @@
     }, 6400);
   }
 
-  function isMobileFlat() {
-    try {
-      const vv = window.visualViewport;
-      const vw = Math.min(window.innerWidth || 9999, (vv && vv.width) || 9999);
-      return vw <= 820 || window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    } catch (e) { return false; }
-  }
   function applyThemeUi() {
-    let theme = document.querySelector('input[name="theme-ui"]:checked')?.value || 'light';
-    try { localStorage.setItem('cw_theme_ui_v1', theme); } catch (e) { /* ignore */ }
-    // На мобильном/тач кинематографика ломается (3D/частицы поверх клеток, сетка не
-    // влезает по ширине) — принудительно плоская тёмная тема вместо skyrim.
-    if (theme === 'skyrim' && isMobileFlat()) theme = 'dark';
+    const theme = document.querySelector('input[name="theme-ui"]:checked')?.value || 'light';
     document.body.classList.remove('theme-light', 'theme-dark', 'theme-skyrim');
     document.body.classList.add('theme-' + theme);
+    try { localStorage.setItem('cw_theme_ui_v1', theme); } catch (e) { /* ignore */ }
   }
 
   function onClueStyleChange() {
