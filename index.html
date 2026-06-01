@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache">
   <title>Кроссворды по The Elder Scrolls</title>
   <link rel="icon" href="data:,">
   <style>
@@ -68,8 +69,14 @@
     var vw = Math.min(window.innerWidth || 9999, (vv && vv.width) || 9999);
     var touchMobile = false;
     try { touchMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (e) {}
+    if (vw <= 820 || touchMobile) {
+      // Мобильный/тач: плоский кроссворд без кинематографики. 3D-дракон, частицы,
+      // прожиг и свиток ломаются на мобильных GPU (цветные «орбы» поверх клеток)
+      // и не влезают по ширине. Снимаем theme-skyrim целиком → базовая тема.
+      document.body.classList.remove('theme-skyrim');
+      mode = 'none';
+    }
     if (mode === 'cinematic' && location.protocol === 'file:') mode = 'fly';
-    if (mode === 'cinematic' && (vw <= 720 || touchMobile)) mode = 'none';   // мобайл — без 3D-дракона
     if (mode === 'cinematic') {
       document.body.classList.add('dragon-mode-cinematic', 'dragon-cinematic-loading');
       setTimeout(function () { document.body.classList.remove('dragon-cinematic-loading'); }, 18000);
@@ -849,8 +856,8 @@
 <script src="js/puzzles.js?v=62"></script>
 <script src="js/grid.js?v=62"></script>
 <script src="js/generator-classic.js?v=62"></script>
-<script src="js/renderer.js?v=62"></script>
-<script src="js/app.js?v=65"></script>
+<script src="js/renderer.js?v=63"></script>
+<script src="js/app.js?v=66"></script>
 <script src="js/dragon-controller.js?v=66"></script>
 <script src="js/skyrim-decor.js?v=68"></script>
 <script src="js/dragon-wander.js?v=62"></script>

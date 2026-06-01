@@ -21,10 +21,17 @@
   }
 
   function cellSizeFor(size) {
-    // Возвращает размер ячейки в px для экранного просмотра
-    if (size <= 11) return 38;
-    if (size <= 13) return 34;
-    return 30;
+    // Базовый размер ячейки по размеру сетки (десктоп).
+    var base = size <= 11 ? 38 : (size <= 13 ? 34 : 30);
+    // Адаптив: ужимаем под ширину экрана, чтобы сетка влезала на узких экранах.
+    try {
+      var vv = window.visualViewport;
+      var vw = Math.min(window.innerWidth || 9999, (vv && vv.width) || 9999);
+      var avail = vw - 22;                 // поля/рамки
+      var fit = Math.floor(avail / size);
+      if (fit < base) base = Math.max(15, fit);   // не меньше 15px ради читаемости
+    } catch (e) { /* ignore */ }
+    return base;
   }
 
   function renderGrid(grid, container, opts) {
