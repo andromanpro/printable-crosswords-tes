@@ -76,8 +76,8 @@ let FIRE_WINDOW_START = 3;
 let FIRE_WINDOW_END = 5;
 // Continuous emission — каждый burst добавляет неск-ко свободных частиц.
 // Раньше 0.18 + reset ВСЕХ → batch-визуал. Теперь 0.05 + 6 новых → smooth.
-const FIRE_BURST_INTERVAL = 0.05;
-const FIRE_BURST_COUNT = 6;
+const FIRE_BURST_INTERVAL = 0.045;
+const FIRE_BURST_COUNT = 8;
 const FIRE_ORIGIN_BACKSET = 0.72;
 const CINEMATIC_SETTINGS_KEY = 'cw_dragon_cinematic_settings_v7';
 const LAB_SETTINGS_KEY = 'cw_dragon_lab_settings_v1';
@@ -154,7 +154,9 @@ function applyLightIntensity() {
 let ashSeeds = [];
 let fireGroup = null;
 let flameTexture = null;
+let flameCoreTexture = null;
 let smokeTexture = null;
+let sparkTexture = null;
 let fireParticles = [];
 let fallbackParts = {};
 let fireBurstTimer = 0;
@@ -414,7 +416,7 @@ function init() {
 
   applyLightIntensity();
 
-  fireLight = new THREE.PointLight(0xff6f1d, 0, 8, 2);
+  fireLight = new THREE.PointLight(0xff7a24, 0, 9.5, 1.7);
   scene.add(fireLight);
 
   dragonGroup = new THREE.Group();
@@ -895,15 +897,23 @@ function createBackdropParticles() {
 
 function createFireSystem() {
   flameTexture = createFlameTexture();
+  flameCoreTexture = createFlameCoreTexture();
   smokeTexture = createSmokeTexture();
+  sparkTexture = createSparkTexture();
   fireGroup = new THREE.Group();
   fireParticles = [];
 
-  for (let i = 0; i < 72; i++) {
+  for (let i = 0; i < 54; i++) {
+    fireParticles.push(createFireSprite('core'));
+  }
+  for (let i = 0; i < 104; i++) {
     fireParticles.push(createFireSprite('flame'));
   }
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < 42; i++) {
     fireParticles.push(createFireSprite('smoke'));
+  }
+  for (let i = 0; i < 38; i++) {
+    fireParticles.push(createFireSprite('spark'));
   }
 
   scene.add(fireGroup);
@@ -911,9 +921,11 @@ function createFireSystem() {
 
 function createFireSprite(kind) {
   const isSmoke = kind === 'smoke';
+  const isCore = kind === 'core';
+  const isSpark = kind === 'spark';
   const material = new THREE.SpriteMaterial({
-    map: isSmoke ? smokeTexture : flameTexture,
-    color: isSmoke ? 0x5a4a3d : 0xffb13b,
+    map: isSmoke ? smokeTexture : (isSpark ? sparkTexture : (isCore ? flameCoreTexture : flameTexture)),
+    color: isSmoke ? 0x5a4a3d : (isSpark ? 0xffe58c : (isCore ? 0xfff2b5 : 0xff9a24)),
     transparent: true,
     opacity: 0,
     blending: isSmoke ? THREE.NormalBlending : THREE.AdditiveBlending,
@@ -936,28 +948,79 @@ function createFireSprite(kind) {
     life: 0,
     size: 1,
     spin: THREE.MathUtils.randFloat(-2.2, 2.2),
+    phase: Math.random() * Math.PI * 2,
+    heat: 1,
+    turbulence: 0,
     pos: new THREE.Vector3(),
     vel: new THREE.Vector3()
   };
 }
 
 function createFlameTexture() {
-  // Soft radial glow — НЕ teardrop с bezier-границами (был виден как
-  // треугольник под некоторыми углами). Чистый круговой gradient
-  // от ярко-белого ядра до alpha:0 на краях → круглые мягкие partile'ы.
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 256;
   const ctx = canvas.getContext('2d');
-  const grd = ctx.createRadialGradient(128, 128, 0, 128, 128, 120);
-  grd.addColorStop(0.00, 'rgba(255, 250, 220, 1.00)');
-  grd.addColorStop(0.10, 'rgba(255, 230, 130, 0.95)');
-  grd.addColorStop(0.28, 'rgba(255, 175, 50, 0.82)');
-  grd.addColorStop(0.55, 'rgba(255, 95, 20, 0.45)');
-  grd.addColorStop(0.78, 'rgba(160, 35, 5, 0.16)');
-  grd.addColorStop(1.00, 'rgba(0, 0, 0, 0.00)');
-  ctx.fillStyle = grd;
+
+  const glow = ctx.createRadialGradient(128, 134, 0, 128, 134, 122);
+  glow.addColorStop(0.00, 'rgba(255, 246, 205, 0.98)');
+  glow.addColorStop(0.12, 'rgba(255, 210, 78, 0.86)');
+  glow.addColorStop(0.34, 'rgba(255, 122, 24, 0.62)');
+  glow.addColorStop(0.62, 'rgba(190, 38, 6, 0.24)');
+  glow.addColorStop(1.00, 'rgba(0, 0, 0, 0.00)');
+  ctx.fillStyle = glow;
   ctx.fillRect(0, 0, 256, 256);
+
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 6; i++) {
+    const x = 84 + Math.random() * 88;
+    const y = 74 + Math.random() * 88;
+    const r = 26 + Math.random() * 42;
+    const lobe = ctx.createRadialGradient(x, y, 0, x, y, r);
+    lobe.addColorStop(0, 'rgba(255, 238, 150, 0.58)');
+    lobe.addColorStop(0.42, 'rgba(255, 122, 26, 0.24)');
+    lobe.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = lobe;
+    ctx.beginPath();
+    ctx.ellipse(x, y, r * 0.72, r * 1.15, Math.random() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function createFlameCoreTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 192;
+  canvas.height = 192;
+  const ctx = canvas.getContext('2d');
+  const core = ctx.createRadialGradient(96, 96, 0, 96, 96, 82);
+  core.addColorStop(0.00, 'rgba(255, 255, 235, 1.00)');
+  core.addColorStop(0.20, 'rgba(255, 238, 145, 0.94)');
+  core.addColorStop(0.52, 'rgba(255, 160, 40, 0.46)');
+  core.addColorStop(1.00, 'rgba(0, 0, 0, 0.00)');
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, 192, 192);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function createSparkTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 96;
+  canvas.height = 96;
+  const ctx = canvas.getContext('2d');
+  const spark = ctx.createRadialGradient(48, 48, 0, 48, 48, 44);
+  spark.addColorStop(0.00, 'rgba(255,255,240,1)');
+  spark.addColorStop(0.25, 'rgba(255,224,112,0.92)');
+  spark.addColorStop(0.62, 'rgba(255,112,28,0.34)');
+  spark.addColorStop(1.00, 'rgba(0,0,0,0)');
+  ctx.fillStyle = spark;
+  ctx.fillRect(0, 0, 96, 96);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -1631,30 +1694,70 @@ function spawnFire(emitMax = -1) {
   const up = new THREE.Vector3(0, 1, 0);
 
   let emittedFlame = 0;
+  let emittedCore = 0;
   let emittedSmoke = 0;
+  let emittedSpark = 0;
   const flameQuota = emitMax > 0 ? emitMax : Infinity;
-  // Smoke редкий — 1 на 4 пламени (но не блокирует quota)
+  const coreQuota = emitMax > 0 ? Math.max(2, Math.round(emitMax * 0.55)) : Infinity;
+  const sparkQuota = emitMax > 0 ? Math.max(1, Math.round(emitMax * 0.38)) : Infinity;
+  // Smoke редкий — примерно 1 на 4 пламени (но не блокирует quota)
   const smokeQuota = emitMax > 0 ? Math.max(1, Math.floor(emitMax / 4)) : Infinity;
 
   fireParticles.forEach((particle, i) => {
-    const isSmoke = particle.kind === 'smoke';
+    const kind = particle.kind;
+    const isCore = kind === 'core';
+    const isSmoke = kind === 'smoke';
+    const isSpark = kind === 'spark';
     // В continuous-mode: пропустить уже активные + лимит на новые
     if (emitMax > 0) {
       if (particle.active) return;
+      if (isCore && emittedCore >= coreQuota) return;
       if (isSmoke && emittedSmoke >= smokeQuota) return;
-      if (!isSmoke && emittedFlame >= flameQuota) return;
+      if (isSpark && emittedSpark >= sparkQuota) return;
+      if (!isSmoke && !isCore && !isSpark && emittedFlame >= flameQuota) return;
     }
-    const distance = isSmoke ? THREE.MathUtils.randFloat(0.08, 1.05) : THREE.MathUtils.randFloat(-0.12, 0.62);
-    const spread = (Math.random() - 0.5) * (isSmoke ? 0.46 : 0.24) * (0.48 + Math.max(distance, 0));
-    const lift = (Math.random() - (isSmoke ? 0.04 : 0.26)) * (isSmoke ? 0.58 : 0.34);
-    const pushRaw = isSmoke ? THREE.MathUtils.randFloat(0.75, 1.55) : THREE.MathUtils.randFloat(1.65, 3.35);
+
+    const distance = isCore
+      ? THREE.MathUtils.randFloat(-0.08, 0.34)
+      : isSmoke
+        ? THREE.MathUtils.randFloat(0.42, 1.52)
+        : isSpark
+          ? THREE.MathUtils.randFloat(0.18, 1.24)
+          : THREE.MathUtils.randFloat(-0.04, 0.88);
+    const spreadBase = isCore ? 0.15 : (isSmoke ? 0.66 : (isSpark ? 0.36 : 0.30));
+    const spread = (Math.random() - 0.5) * spreadBase * (0.58 + Math.max(distance, 0));
+    const lift = (Math.random() - (isSmoke ? -0.02 : isSpark ? 0.12 : 0.24)) *
+      (isSmoke ? 0.72 : isSpark ? 0.42 : 0.38);
+    const pushRaw = isCore
+      ? THREE.MathUtils.randFloat(1.95, 3.65)
+      : isSmoke
+        ? THREE.MathUtils.randFloat(0.72, 1.62)
+        : isSpark
+          ? THREE.MathUtils.randFloat(2.7, 4.5)
+          : THREE.MathUtils.randFloat(1.7, 3.75);
     // Lab fireLength scales jet length (push), fireIntensity scales particle size.
     const push = pushRaw * labFireLengthMul;
 
     particle.active = true;
-    particle.age = Math.random() * -0.12;
-    particle.life = isSmoke ? THREE.MathUtils.randFloat(0.72, 1.34) : THREE.MathUtils.randFloat(0.34, 0.78);
-    particle.size = (isSmoke ? THREE.MathUtils.randFloat(0.38, 0.82) : THREE.MathUtils.randFloat(0.16, 0.38)) * labFireIntensityMul;
+    particle.age = Math.random() * (isSmoke ? -0.18 : -0.08);
+    particle.life = isCore
+      ? THREE.MathUtils.randFloat(0.22, 0.46)
+      : isSmoke
+        ? THREE.MathUtils.randFloat(0.88, 1.72)
+        : isSpark
+          ? THREE.MathUtils.randFloat(0.24, 0.62)
+          : THREE.MathUtils.randFloat(0.36, 0.82);
+    particle.size = (isCore
+      ? THREE.MathUtils.randFloat(0.12, 0.28)
+      : isSmoke
+        ? THREE.MathUtils.randFloat(0.42, 0.96)
+        : isSpark
+          ? THREE.MathUtils.randFloat(0.055, 0.14)
+          : THREE.MathUtils.randFloat(0.20, 0.46)) * labFireIntensityMul;
+    particle.heat = THREE.MathUtils.randFloat(0.82, 1.18);
+    particle.phase = Math.random() * Math.PI * 2;
+    particle.turbulence = THREE.MathUtils.randFloat(0.025, isSmoke ? 0.11 : 0.085);
+    particle.spin = THREE.MathUtils.randFloat(isSpark ? -7.5 : -2.8, isSpark ? 7.5 : 2.8);
     particle.pos.copy(origin)
       .addScaledVector(dir, distance)
       .addScaledVector(side, spread * 0.22)
@@ -1666,7 +1769,10 @@ function spawnFire(emitMax = -1) {
     particle.sprite.scale.setScalar(0.01);
     particle.sprite.material.opacity = 0;
     particle.sprite.visible = true;
-    if (isSmoke) emittedSmoke++; else emittedFlame++;
+    if (isCore) emittedCore++;
+    else if (isSmoke) emittedSmoke++;
+    else if (isSpark) emittedSpark++;
+    else emittedFlame++;
   });
 }
 
@@ -1695,28 +1801,49 @@ function updateFire(dt) {
     activeCount++;
     if (particle.kind !== 'smoke') flameCount++;
     const k = particle.age / particle.life;
+    const isCore = particle.kind === 'core';
     const isSmoke = particle.kind === 'smoke';
-    particle.vel.multiplyScalar(1 - dt * (isSmoke ? 0.34 : 0.18));
-    particle.vel.y += dt * (isSmoke ? 0.74 : 0.16);
+    const isSpark = particle.kind === 'spark';
+    particle.vel.multiplyScalar(1 - dt * (isSmoke ? 0.34 : isSpark ? 0.12 : 0.18));
+    particle.vel.y += dt * (isSmoke ? 0.84 : isSpark ? -0.04 : 0.20);
     particle.pos.addScaledVector(particle.vel, dt);
+    if (!isSpark) {
+      const t = performance.now() * 0.001;
+      particle.pos.x += Math.sin(t * (isSmoke ? 2.1 : 7.4) + particle.phase) * particle.turbulence * dt;
+      particle.pos.z += Math.cos(t * (isSmoke ? 1.7 : 6.2) + particle.phase) * particle.turbulence * dt;
+    }
 
     const fadeIn = Math.min(1, k * 7);
-    const fadeOut = Math.pow(1 - k, isSmoke ? 1.25 : 1.8);
-    const opacity = fadeIn * fadeOut * (isSmoke ? 0.26 : 0.56);
-    const scale = particle.size * (isSmoke ? (0.9 + k * 1.6) : (0.62 + k * 1.05));
+    const fadeOut = Math.pow(1 - k, isSmoke ? 1.18 : isSpark ? 1.55 : isCore ? 1.05 : 1.62);
+    const opacity = fadeIn * fadeOut *
+      (isSmoke ? 0.22 : isSpark ? 0.94 : isCore ? 0.76 : 0.60) * particle.heat;
+    const scale = particle.size *
+      (isSmoke ? (0.88 + k * 1.95) : isSpark ? (0.52 + k * 0.72) : isCore ? (0.64 + k * 1.24) : (0.72 + k * 1.35));
 
     particle.sprite.position.copy(particle.pos);
-    particle.sprite.scale.set(scale, scale * (isSmoke ? 0.82 : 1.35), scale);
+    particle.sprite.scale.set(
+      scale * (isSpark ? 0.48 : isCore ? 0.92 : 1.0),
+      scale * (isSmoke ? 0.82 : isSpark ? 2.65 : isCore ? 1.08 : 1.48),
+      scale
+    );
     particle.sprite.material.opacity = opacity;
     particle.sprite.material.rotation += particle.spin * dt;
     if (!isSmoke && particle.sprite.material.color) {
-      particle.sprite.material.color.setHSL(THREE.MathUtils.lerp(0.1, 0.025, k), 1, THREE.MathUtils.lerp(0.58, 0.34, k));
+      if (isCore) {
+        particle.sprite.material.color.setHSL(THREE.MathUtils.lerp(0.12, 0.045, k), 1, THREE.MathUtils.lerp(0.86, 0.48, k));
+      } else if (isSpark) {
+        particle.sprite.material.color.setHSL(THREE.MathUtils.lerp(0.14, 0.06, k), 1, THREE.MathUtils.lerp(0.86, 0.46, k));
+      } else {
+        particle.sprite.material.color.setHSL(THREE.MathUtils.lerp(0.09, 0.018, k), 1, THREE.MathUtils.lerp(0.62, 0.32, k));
+      }
     }
   });
 
   const mouth = getMouthWorldPosition();
   fireLight.position.copy(mouth);
-  fireLight.intensity = Math.min(8.2, flameCount * 0.13) * labFireIntensityMul;
+  fireLight.color.setHSL(0.075 + Math.sin(performance.now() * 0.018) * 0.012, 1, 0.56);
+  fireLight.intensity = Math.min(10.5, flameCount * 0.15) *
+    (0.86 + Math.sin(performance.now() * 0.021) * 0.14) * labFireIntensityMul;
 
   if (!activeCount && fireTime <= 0) {
     stage.classList.remove('is-breathing');

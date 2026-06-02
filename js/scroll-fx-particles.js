@@ -18,7 +18,7 @@
   let canvas = null, ctx = null, dpr = 1, w = 0, h = 0;
   let parts = [];
   let raf = 0, running = false, lastTs = 0;
-  const MAX_PARTS = 700;   // жёсткий потолок — на ultrawide/высоком DPR не копим частицы
+  const MAX_PARTS = 900;   // жёсткий потолок — на ultrawide/высоком DPR не копим частицы
 
   function resize() {
     if (!canvas) return;
@@ -50,18 +50,23 @@
   function emitAt(x, y, intensity) {
     ensure();
     if (parts.length >= MAX_PARTS) { kick(); return; }   // потолок частиц
-    const n = Math.max(1, Math.round((intensity || 1) * 3));
+    const n = Math.max(1, Math.round((intensity || 1) * 4));
     for (let i = 0; i < n; i++) {
       if (parts.length >= MAX_PARTS) break;
       const r = Math.random();
-      if (r < 0.5) {                 // уголёк (летит вверх, тлеет)
+      if (r < 0.28) {                // короткий язык пламени у кромки
+        parts.push({ t: 'flame', x: x + rnd(-4, 4), y: y + rnd(-5, 4),
+          vx: rnd(-18, 18), vy: rnd(-46, -8), life: rnd(.16, .38), age: 0,
+          size: rnd(9, 22), rot: rnd(-0.7, 0.7), vr: rnd(-1.8, 1.8),
+          hue: rnd(20, 38), flick: rnd(0, 6.28) });
+      } else if (r < 0.56) {         // уголёк (летит вверх, тлеет)
         parts.push({ t: 'ember', x: x + rnd(-3, 3), y: y + rnd(-4, 5),
           vx: rnd(-16, 16), vy: rnd(-85, -28), life: rnd(.6, 1.5), age: 0,
           size: rnd(.8, 2.6), hue: rnd(18, 42), flick: rnd(0, 6.28) });
-      } else if (r < 0.68) {         // яркая искра (быстрая, гаснет)
+      } else if (r < 0.72) {         // яркая искра (быстрая, гаснет)
         parts.push({ t: 'spark', x, y, vx: rnd(-55, 55), vy: rnd(-150, -65),
           life: rnd(.25, .6), age: 0, size: rnd(.6, 1.4) });
-      } else if (r < 0.88) {         // хлопок пепла (планирует вниз)
+      } else if (r < 0.90) {         // хлопок пепла (планирует вниз)
         parts.push({ t: 'ash', x, y, vx: rnd(-20, 20), vy: rnd(8, 38),
           life: rnd(2, 4.2), age: 0, size: rnd(1.6, 4.2), rot: rnd(0, 6.28),
           vr: rnd(-3, 3), g: rnd(.6, .85) });
@@ -112,7 +117,25 @@
     ctx.globalCompositeOperation = 'lighter';
     for (const p of parts) {
       const k = p.age / p.life;
-      if (p.t === 'ember') {
+      if (p.t === 'flame') {
+        p.vy -= 18 * dt; p.vx *= 0.98; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+        const a = Math.sin(Math.min(k, 1) * Math.PI) * 0.72;
+        const w0 = p.size * (0.34 + k * 0.12);
+        const h0 = p.size * (0.95 + k * 0.42);
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot + Math.sin(now / 80 + p.flick) * 0.12);
+        const g = ctx.createRadialGradient(0, h0 * 0.08, 0, 0, 0, h0);
+        g.addColorStop(0.00, 'rgba(255,248,215,' + a + ')');
+        g.addColorStop(0.18, 'rgba(255,210,78,' + (a * 0.86) + ')');
+        g.addColorStop(0.48, 'rgba(255,96,20,' + (a * 0.56) + ')');
+        g.addColorStop(1.00, 'rgba(90,18,4,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w0, h0, 0, 0, 6.2832);
+        ctx.fill();
+        ctx.restore();
+      } else if (p.t === 'ember') {
         p.vy += 10 * dt; p.vx += Math.sin(now / 200 + p.flick) * 8 * dt;
         p.x += p.vx * dt; p.y += p.vy * dt;
         const a = (1 - k);

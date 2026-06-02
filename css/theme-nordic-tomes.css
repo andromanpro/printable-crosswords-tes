@@ -1426,7 +1426,7 @@ body.theme-skyrim .scroll-fire-canvas {
   height: 106%;
   z-index: 26;
   pointer-events: none;
-  filter: blur(0.8px);
+  filter: blur(0.45px);
   mix-blend-mode: normal;
 }
 /* content/display с !important — перебиваем глобальный
