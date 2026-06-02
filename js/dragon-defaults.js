@@ -23,12 +23,12 @@ window.CW_DRAGON_DEFAULTS = {
 
   // — трансформ дракона —
   dragonYaw: 23, dragonPitch: 0, dragonRoll: 0,
-  dragonScale: 0.89,
+  dragonScale: 0.22,
   dragonOffsetX: 0.5, dragonOffsetY: 0.08, dragonOffsetZ: -0.08,
 
   // — платформа —
   showPedestal: true,
-  pedestalScale: 1.04,
+  pedestalScale: 0.34,
   runeBeltOffset: 0.36,
 
   // — адаптив размера по ширине экрана (0 = выкл, 1 = полная кривая) —
