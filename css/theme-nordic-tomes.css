@@ -413,6 +413,13 @@ body.theme-skyrim legend {
   text-transform: uppercase;
   padding: 0 10px;
 }
+body.theme-skyrim .ctrl-section-title {
+  font-family: 'Constantia', 'Cambria', serif;
+  color: var(--tome-gold);
+  letter-spacing: 0.18em;
+  opacity: 0.92;
+  border-bottom-color: rgba(212, 175, 55, 0.28);
+}
 body.theme-skyrim .ctrl-group label { color: var(--tome-gold-warm); position: relative; z-index: 1; }
 body.theme-skyrim input[type="radio"],
 body.theme-skyrim input[type="checkbox"] { accent-color: var(--tome-gold); }

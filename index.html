@@ -567,6 +567,10 @@
 
   <div class="ctrl-grid" id="ctrl-grid">
 
+    <section class="ctrl-section">
+      <h3 class="ctrl-section-title">🎲 Генерация</h3>
+      <div class="ctrl-section-body">
+
     <fieldset class="ctrl-group">
       <legend>Размер</legend>
       <label><input type="radio" name="size" value="11"> S 11×11</label>
@@ -591,6 +595,35 @@
     </fieldset>
 
     <fieldset class="ctrl-group">
+      <legend>История без повторов</legend>
+      <label>Помнить последних кроссвордов:
+        <input type="number" id="history-limit" min="20" max="5000" step="10" value="200"
+               style="width:84px; margin-left:6px">
+      </label>
+    </fieldset>
+
+    <fieldset class="ctrl-group ctrl-packs" id="packs-fieldset">
+      <legend>Включённые паки</legend>
+      <div id="packs-list" class="packs-list">
+        <span class="status-muted">Загрузка…</span>
+      </div>
+      <div class="packs-upload">
+        <button type="button" id="btn-upload-pack" class="btn-subtle" title="Загрузить свой пак из .js-файла">
+          + Загрузить свой пак
+        </button>
+        <input type="file" id="input-upload-pack" accept=".js" hidden>
+        <span id="upload-pack-status" class="upload-pack-status"></span>
+      </div>
+    </fieldset>
+
+      </div>
+    </section>
+
+    <section class="ctrl-section">
+      <h3 class="ctrl-section-title">👁 Отображение и ввод</h3>
+      <div class="ctrl-section-body">
+
+    <fieldset class="ctrl-group">
       <legend>Размер шрифта</legend>
       <label><input type="radio" name="fontsize" value="small"> Мелкий</label>
       <label><input type="radio" name="fontsize" value="medium" checked> Средний</label>
@@ -599,21 +632,20 @@
     </fieldset>
 
     <fieldset class="ctrl-group">
-      <legend>История без повторов</legend>
-      <label>Помнить последних кроссвордов:
-        <input type="number" id="history-limit" min="20" max="5000" step="10" value="200"
-               style="width:84px; margin-left:6px">
-      </label>
-    </fieldset>
-
-    <fieldset class="ctrl-group">
       <legend>Ввод и подсказки</legend>
       <label><input type="checkbox" id="hover-type" checked> Печатать по наведению мыши (без клика)</label>
       <label><input type="checkbox" id="rune-hints"> Руны-подсказки (руна = буква ответа)</label>
     </fieldset>
 
+      </div>
+    </section>
+
     <!-- Тема Скайрим включена по умолчанию (скрытый radio для совместимости с app.js) -->
     <input type="radio" name="theme-ui" value="skyrim" checked style="display:none">
+
+    <section class="ctrl-section">
+      <h3 class="ctrl-section-title">🐉 Дракон и сцена</h3>
+      <div class="ctrl-section-body">
 
 
     <fieldset class="ctrl-group">
@@ -736,25 +768,21 @@
       <textarea id="dp-export-out" readonly style="display:none; width:100%; height:120px; margin-top:6px; font-family:monospace; font-size:9px; background:#0a0805; color:#cca767; border:1px solid #5a4030;"></textarea>
     </fieldset>
 
+      </div>
+    </section>
+
+    <section class="ctrl-section">
+      <h3 class="ctrl-section-title">🖨 Печать</h3>
+      <div class="ctrl-section-body">
+
     <fieldset class="ctrl-group">
       <legend>Печать</legend>
       <label><input type="checkbox" id="fit-a4"> Уместить всё на 1 лист A4</label>
       <label><input type="checkbox" id="hide-answers-print"> Не печатать ответы</label>
     </fieldset>
 
-    <fieldset class="ctrl-group ctrl-packs" id="packs-fieldset">
-      <legend>Включённые паки</legend>
-      <div id="packs-list" class="packs-list">
-        <span class="status-muted">Загрузка…</span>
       </div>
-      <div class="packs-upload">
-        <button type="button" id="btn-upload-pack" class="btn-subtle" title="Загрузить свой пак из .js-файла">
-          + Загрузить свой пак
-        </button>
-        <input type="file" id="input-upload-pack" accept=".js" hidden>
-        <span id="upload-pack-status" class="upload-pack-status"></span>
-      </div>
-    </fieldset>
+    </section>
 
   </div>
 

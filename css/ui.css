@@ -510,6 +510,29 @@ html, body {
   margin-bottom: 14px;
 }
 
+/* Смысловая группа настроек: заголовок на всю ширину + вложенная сетка блоков. */
+.ctrl-section {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.ctrl-section + .ctrl-section { margin-top: 6px; }
+.ctrl-section-title {
+  margin: 2px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+.ctrl-section-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
 .ctrl-group {
   border: 1px solid var(--color-panel-border);
   border-radius: 4px;
@@ -753,10 +776,17 @@ main {
   color: rgba(90, 120, 160, 0.42);
   pointer-events: none;
   z-index: 0;
+  /* По умолчанию скрыта; проступает по наведению (как .rune-ghost), затем
+     подержится ~0.5с и плавно гаснет. */
+  opacity: 0;
+  transition: opacity 700ms ease 500ms;
 }
+/* Наведение на клетку — руна проступает быстро и без задержки. */
+.cell:hover .rune-hint { opacity: 1; transition: opacity 180ms ease 0ms; }
 .cell .user-letter { position: relative; z-index: 1; }
-/* Клетка заполнена пользователем — руну прячем (введённая буква важнее). */
-.cell:has(.user-letter:not(:empty)) .rune-hint { opacity: 0; }
+/* Клетка заполнена пользователем — руну прячем всегда (введённая буква важнее). */
+.cell:has(.user-letter:not(:empty)) .rune-hint,
+.cell:has(.user-letter:not(:empty)):hover .rune-hint { opacity: 0; transition: opacity 120ms ease; }
 
 /* Пользовательский ввод: показывается всегда (если есть userInput),
    но при включенном «Показать ответы» уступает место правильному ответу. */
