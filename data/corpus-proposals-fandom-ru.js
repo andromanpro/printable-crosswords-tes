@@ -1,0 +1,20 @@
+/*
+ * Candidate TES crossword words from the Russian The Elder Scrolls Wiki.
+ *
+ * Review buffer (NOT loaded by index.html). Remaining entries are long
+ * multi-word compounds (>=15 letters) deferred from the merge — move into
+ * a pack only after deciding they read well as crossword answers.
+ */
+(() => {
+  const proposals = [
+    { id:"cand_sk_sky_haven", word:"ХРАМНЕБЕСНОЙГАВАНИ", sourceTitle:"Храм Небесной гавани", targetPack:"skyrim_core", clue:"Убежище Клинков в Пределе, где находится Стена Алдуина.", shortClue:"Стена Алдуина.", expertClues:["Древняя база Клинков, открывающая пророчество о Пожирателе Мира.","Место, куда Эсберн приводит знания, а Дельфина — старую войну."], theme:"general", difficulty:2, len:18, tags:["location","skyrim","main-quest"] },
+    { id:"cand_sk_ebony_blade", word:"ЭБОНИТОВЫЙКЛИНОК", sourceTitle:"Эбонитовый Клинок", targetPack:"skyrim_core", clue:"Даэдрический меч Мефалы, питающийся предательством доверившихся герою людей.", shortClue:"Клинок Мефалы.", expertClues:["Оружие из запертой комнаты Драконьего Предела, которому нужны друзья-жертвы.","Меч, где улучшение звучит морально хуже любого кузнечного рецепта."], theme:"general", difficulty:2, len:16, tags:["artifact","skyrim","daedra"] },
+    { id:"cand_sk_ghostblade", word:"ПРИЗРАЧНЫЙКЛИНОК", sourceTitle:"Призрачный клинок", targetPack:"skyrim_core", clue:"Эфирный меч из Ансилвунда, почти невесомый и пробивающий броню.", shortClue:"Эфирный меч.", expertClues:["Оружие, оставшееся после истории некромантки и двух мёртвых воинов.","Клинок, который выглядит как призрак и режет куда реальнее."], theme:"general", difficulty:3, len:16, tags:["artifact","skyrim"] },
+    { id:"cand_sk_forbidden_legend", word:"ЗАПРЕТНАЯЛЕГЕНДА", sourceTitle:"Запретная легенда", targetPack:"skyrim_core", clue:"Квест о Голдуре, его сыновьях и расколотом амулете.", shortClue:"Амулет Голдура.", expertClues:["Древняя семейная история, спрятанная сразу в нескольких курганах.","Легенда, которую запретили так плохо, что герой всё равно собирает её по частям."], theme:"general", difficulty:1, len:16, tags:["quest","skyrim"] },
+    { id:"cand_sk_season", word:"БЕСКОНЕЧНАЯПОРА", sourceTitle:"Бесконечная пора", targetPack:"skyrim_core", clue:"Мирные переговоры у Седобородых, если гражданская война мешает ловить дракона.", shortClue:"Совет у монахов.", expertClues:["Квест, где за одним столом пытаются усадить Ульфрика и Туллия.","Дипломатия, которую приходится терпеть даже Довакину."], theme:"general", difficulty:2, len:15, tags:["quest","skyrim","main-quest"] },
+    { id:"cand_sk_aetherial_crown", word:"ЭТЕРИЕВАЯКОРОНА", sourceTitle:"Этериевая корона", targetPack:"skyrim_core", clue:"Одна из наград этериевой кузницы, позволяющая хранить силу двух камней-хранителей.", shortClue:"Коронa кузницы.", expertClues:["Двемерская реликвия, которую выбирают те, кто любит постоянные благословения.","Награда за долгую историю Катрии и потерянной кузницы."], theme:"general", difficulty:3, len:15, tags:["artifact","skyrim","dawnguard"] },
+    { id:"cand_tes_mythic_dawn", word:"МИФИЧЕСКИЙРАССВЕТ", sourceTitle:"Мифический Рассвет", targetPack:"tes_deep_lore", clue:"Культ Мерунеса Дагона, открывший путь Кризису Обливиона.", shortClue:"Культ Дагона.", expertClues:["Секта, чьи красные одежды идут вместе с убийством императора.","Последователи Манкара Каморана, обещающие рай через разрушение мира."], theme:"general", difficulty:1, len:17, tags:["oblivion","tes","faction"] },
+  ];
+  const root = typeof window !== 'undefined' ? window : globalThis;
+  root.CW_CORPUS_PROPOSALS_FANDOM_RU = proposals;
+})();
