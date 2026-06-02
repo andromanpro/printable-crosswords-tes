@@ -57,7 +57,7 @@
       if (r < 0.28) {                // короткий язык пламени у кромки
         parts.push({ t: 'flame', x: x + rnd(-4, 4), y: y + rnd(-5, 4),
           vx: rnd(-18, 18), vy: rnd(-46, -8), life: rnd(.16, .38), age: 0,
-          size: rnd(9, 22), rot: rnd(-0.7, 0.7), vr: rnd(-1.8, 1.8),
+          size: rnd(8, 18), rot: rnd(-0.25, 0.25), vr: rnd(-0.45, 0.45),
           hue: rnd(20, 38), flick: rnd(0, 6.28) });
       } else if (r < 0.56) {         // уголёк (летит вверх, тлеет)
         parts.push({ t: 'ember', x: x + rnd(-3, 3), y: y + rnd(-4, 5),
@@ -120,11 +120,11 @@
       if (p.t === 'flame') {
         p.vy -= 18 * dt; p.vx *= 0.98; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
         const a = Math.sin(Math.min(k, 1) * Math.PI) * 0.72;
-        const w0 = p.size * (0.34 + k * 0.12);
-        const h0 = p.size * (0.95 + k * 0.42);
+        const w0 = p.size * (0.56 + k * 0.10);
+        const h0 = p.size * (0.82 + k * 0.24);
         ctx.save();
         ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot + Math.sin(now / 80 + p.flick) * 0.12);
+        ctx.rotate(p.rot + Math.sin(now / 120 + p.flick) * 0.035);
         const g = ctx.createRadialGradient(0, h0 * 0.08, 0, 0, 0, h0);
         g.addColorStop(0.00, 'rgba(255,248,215,' + a + ')');
         g.addColorStop(0.18, 'rgba(255,210,78,' + (a * 0.86) + ')');

@@ -934,7 +934,7 @@ function createFireSprite(kind) {
     // Fog в main делал пламя тусклым. Lab фога не имеет — отключаем
     // fog для fire-материалов чтобы выглядело так же ярко.
     fog: false,
-    rotation: Math.random() * Math.PI * 2
+    rotation: isSpark ? 0 : Math.random() * Math.PI * 2
   });
   const sprite = new THREE.Sprite(material);
   sprite.visible = false;
@@ -947,7 +947,7 @@ function createFireSprite(kind) {
     age: 0,
     life: 0,
     size: 1,
-    spin: THREE.MathUtils.randFloat(-2.2, 2.2),
+    spin: isSpark ? 0 : THREE.MathUtils.randFloat(-2.2, 2.2),
     phase: Math.random() * Math.PI * 2,
     heat: 1,
     turbulence: 0,
@@ -1699,7 +1699,7 @@ function spawnFire(emitMax = -1) {
   let emittedSpark = 0;
   const flameQuota = emitMax > 0 ? emitMax : Infinity;
   const coreQuota = emitMax > 0 ? Math.max(2, Math.round(emitMax * 0.55)) : Infinity;
-  const sparkQuota = emitMax > 0 ? Math.max(1, Math.round(emitMax * 0.38)) : Infinity;
+  const sparkQuota = emitMax > 0 ? Math.max(1, Math.round(emitMax * 0.24)) : Infinity;
   // Smoke редкий — примерно 1 на 4 пламени (но не блокирует quota)
   const smokeQuota = emitMax > 0 ? Math.max(1, Math.floor(emitMax / 4)) : Infinity;
 
@@ -1733,7 +1733,7 @@ function spawnFire(emitMax = -1) {
       : isSmoke
         ? THREE.MathUtils.randFloat(0.72, 1.62)
         : isSpark
-          ? THREE.MathUtils.randFloat(2.7, 4.5)
+          ? THREE.MathUtils.randFloat(2.25, 3.65)
           : THREE.MathUtils.randFloat(1.7, 3.75);
     // Lab fireLength scales jet length (push), fireIntensity scales particle size.
     const push = pushRaw * labFireLengthMul;
@@ -1752,12 +1752,12 @@ function spawnFire(emitMax = -1) {
       : isSmoke
         ? THREE.MathUtils.randFloat(0.42, 0.96)
         : isSpark
-          ? THREE.MathUtils.randFloat(0.055, 0.14)
+          ? THREE.MathUtils.randFloat(0.045, 0.105)
           : THREE.MathUtils.randFloat(0.20, 0.46)) * labFireIntensityMul;
     particle.heat = THREE.MathUtils.randFloat(0.82, 1.18);
     particle.phase = Math.random() * Math.PI * 2;
     particle.turbulence = THREE.MathUtils.randFloat(0.025, isSmoke ? 0.11 : 0.085);
-    particle.spin = THREE.MathUtils.randFloat(isSpark ? -7.5 : -2.8, isSpark ? 7.5 : 2.8);
+    particle.spin = isSpark ? 0 : THREE.MathUtils.randFloat(-2.8, 2.8);
     particle.pos.copy(origin)
       .addScaledVector(dir, distance)
       .addScaledVector(side, spread * 0.22)
@@ -1814,20 +1814,20 @@ function updateFire(dt) {
     }
 
     const fadeIn = Math.min(1, k * 7);
-    const fadeOut = Math.pow(1 - k, isSmoke ? 1.18 : isSpark ? 1.55 : isCore ? 1.05 : 1.62);
+    const fadeOut = Math.pow(1 - k, isSmoke ? 1.18 : isSpark ? 1.75 : isCore ? 1.05 : 1.62);
     const opacity = fadeIn * fadeOut *
-      (isSmoke ? 0.22 : isSpark ? 0.94 : isCore ? 0.76 : 0.60) * particle.heat;
+      (isSmoke ? 0.22 : isSpark ? 0.72 : isCore ? 0.76 : 0.60) * particle.heat;
     const scale = particle.size *
-      (isSmoke ? (0.88 + k * 1.95) : isSpark ? (0.52 + k * 0.72) : isCore ? (0.64 + k * 1.24) : (0.72 + k * 1.35));
+      (isSmoke ? (0.88 + k * 1.95) : isSpark ? (0.55 + k * 0.44) : isCore ? (0.64 + k * 1.24) : (0.72 + k * 1.35));
 
     particle.sprite.position.copy(particle.pos);
     particle.sprite.scale.set(
-      scale * (isSpark ? 0.48 : isCore ? 0.92 : 1.0),
-      scale * (isSmoke ? 0.82 : isSpark ? 2.65 : isCore ? 1.08 : 1.48),
+      scale * (isSpark ? 0.88 : isCore ? 0.92 : 1.0),
+      scale * (isSmoke ? 0.82 : isSpark ? 0.88 : isCore ? 1.08 : 1.48),
       scale
     );
     particle.sprite.material.opacity = opacity;
-    particle.sprite.material.rotation += particle.spin * dt;
+    if (!isSpark) particle.sprite.material.rotation += particle.spin * dt;
     if (!isSmoke && particle.sprite.material.color) {
       if (isCore) {
         particle.sprite.material.color.setHSL(THREE.MathUtils.lerp(0.12, 0.045, k), 1, THREE.MathUtils.lerp(0.86, 0.48, k));
