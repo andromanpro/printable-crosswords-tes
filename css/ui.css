@@ -1239,9 +1239,21 @@ body.mode-editor .skyrim-dragon-skel { display: none !important; }
   color: #9a8b6a;
   border-top: 1px solid rgba(180, 150, 90, 0.18);
 }
-.site-credit a { color: #caa44e; text-decoration: none; }
-.site-credit a:hover { text-decoration: underline; }
-.site-credit-sep { opacity: 0.45; margin: 0 7px; }
+.site-credit .credit-caption {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 10px;
+}
+.site-credit .credit-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.site-credit a.credit-link { color: #caa44e; text-decoration: none; }
 body.mode-editor .site-credit { display: none; }
 
 /* Живой счётчик заполненных слов (#solve-progress) — без спойлера правильности */

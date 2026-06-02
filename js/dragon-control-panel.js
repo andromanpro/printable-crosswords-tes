@@ -178,11 +178,23 @@
       const s = loadSettings();
       const out = document.getElementById('dp-export-out');
       const json = JSON.stringify(s, null, 2);
-      if (out) { out.style.display = 'block'; out.textContent = json; out.select && out.select(); }
-      // Попытка скопировать в буфер
+      if (out) {
+        out.style.display = 'block';
+        out.value = json;                         // для textarea — именно .value, не textContent
+        out.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        try { out.focus(); out.select(); } catch (_) {}
+      }
+      // Копируем в буфер обмена
+      let copied = false;
       try {
-        if (navigator.clipboard) navigator.clipboard.writeText(json);
+        if (navigator.clipboard) { navigator.clipboard.writeText(json); copied = true; }
       } catch (_) { /* ignore */ }
+      // Фолбэк-копирование, если Clipboard API недоступен
+      if (!copied && out) { try { document.execCommand('copy'); } catch (_) {} }
+      // Подсказка на кнопке
+      const old = exportBtn.textContent;
+      exportBtn.textContent = '✓ Скопировано в буфер';
+      window.setTimeout(() => { exportBtn.textContent = old; }, 1600);
     });
   }
 

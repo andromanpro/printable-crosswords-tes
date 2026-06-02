@@ -17,25 +17,25 @@ window.CW_DRAGON_DEFAULTS = {
   // Боковая композиция: дракон стоит слева от свитка и дышит в его сторону.
   // Не привязываем к самому scrollRect, иначе на широких экранах он уезжает
   // в центр и закрывает сетку.
-  anchorX: 13.5, anchorY: 76.5,
+  anchorX: 13, anchorY: 76.5,
   followScroll: false,
   trackCursor: true,
 
   // — трансформ дракона —
   dragonYaw: 23, dragonPitch: 0, dragonRoll: 0,
-  dragonScale: 0.22,
-  dragonOffsetX: 0.34, dragonOffsetY: 0.08, dragonOffsetZ: 0.02,
+  dragonScale: 0.89,
+  dragonOffsetX: 0.5, dragonOffsetY: 0.08, dragonOffsetZ: -0.08,
 
   // — платформа —
   showPedestal: true,
-  pedestalScale: 0.34,
+  pedestalScale: 1.04,
   runeBeltOffset: 0.36,
 
   // — адаптив размера по ширине экрана (0 = выкл, 1 = полная кривая) —
   responsiveStrength: 1,
 
   // — освещение —
-  lightIntensity: 0.65,
+  lightIntensity: 0.55,
   platformLight: 0,
 
   // — огонь (bone-local координаты пасти) —

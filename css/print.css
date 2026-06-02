@@ -303,8 +303,21 @@
     font: 8.5pt "Times New Roman", serif !important;
     page-break-inside: avoid;
   }
-  .site-credit a { color: #666 !important; text-decoration: none !important; }
-  .site-credit-sep { color: #aaa !important; }
+  .site-credit .credit-caption,
+  .site-credit .credit-ico { display: none !important; }
+  .site-credit .credit-links { display: block !important; }
+  .site-credit a,
+  .site-credit a.credit-link {
+    color: #666 !important;
+    text-decoration: none !important;
+    display: inline !important;
+    padding: 0 6px !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .site-credit a.credit-link::before,
+  .site-credit a.credit-link::after { display: none !important; }
 
   /* ===== Перебиваем кинематографическую тему theme-skyrim при печати =====
      Экранные правила `body.theme-skyrim …` специфичнее низкоуровневых выше,

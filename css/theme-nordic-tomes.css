@@ -414,15 +414,193 @@ body.theme-skyrim legend {
   padding: 0 10px;
 }
 body.theme-skyrim .ctrl-section-title {
+  display: flex;
+  align-items: center;
   font-family: 'Constantia', 'Cambria', serif;
   color: var(--tome-gold);
   letter-spacing: 0.18em;
   opacity: 0.92;
-  border-bottom-color: rgba(212, 175, 55, 0.28);
+  /* двойная декор-линия «под переплёт» вместо простой границы */
+  border-bottom: 1px solid rgba(212, 175, 55, 0.30);
+  box-shadow: 0 2px 0 -1px rgba(167, 131, 72, 0.14);
 }
-body.theme-skyrim .ctrl-group label { color: var(--tome-gold-warm); position: relative; z-index: 1; }
+/* Руна-значок секции (шрифт Noto Sans Runic бандлится локально). */
+body.theme-skyrim .ctrl-section-rune {
+  font-family: 'Noto Sans Runic', 'Segoe UI Symbol', serif;
+  margin-right: 9px;
+  color: var(--tome-gold-bright);
+  font-size: 1.1em;
+  line-height: 1;
+  text-shadow: 0 0 7px rgba(235, 210, 138, 0.45);
+}
+
+/* ── Поле ввода «История без повторов» (number) — под тёмную тему ── */
+body.theme-skyrim #history-limit {
+  color-scheme: dark;                 /* нативные стрелки спиннера в тёмном виде */
+  background: var(--color-input-bg);
+  color: var(--tome-gold-bright);
+  border: 1px solid var(--tome-bronze);
+  border-radius: 0;
+  padding: 3px 6px;
+  font-family: 'Constantia', 'Cambria', serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+body.theme-skyrim #history-limit:hover { border-color: var(--tome-gold); }
+body.theme-skyrim #history-limit:focus {
+  border-color: var(--tome-gold);
+  box-shadow: 0 0 0 2px rgba(167, 131, 72, 0.28), inset 0 0 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Лейблы радио/чекбоксов: ховер + подсветка выбранного ── */
+body.theme-skyrim .ctrl-group label {
+  color: var(--tome-gold-warm);
+  position: relative;
+  z-index: 1;
+  border-radius: 2px;
+  padding-left: 4px;
+  transition: color .14s ease, background .14s ease;
+}
+body.theme-skyrim .ctrl-group label:hover {
+  color: var(--tome-gold-bright);
+  background: rgba(167, 131, 72, 0.09);
+}
+body.theme-skyrim .ctrl-group label:has(input:checked) {
+  color: var(--tome-gold-bright);
+  text-shadow: 0 0 6px rgba(235, 210, 138, 0.25);
+}
+/* ── Радио и чекбоксы — золотые самоцветы в бронзовой оправе ── */
 body.theme-skyrim input[type="radio"],
-body.theme-skyrim input[type="checkbox"] { accent-color: var(--tome-gold); }
+body.theme-skyrim input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0 6px 0 0;
+  padding: 0;
+  vertical-align: -3px;
+  background: linear-gradient(180deg, #1c150d, #0c0805);
+  border: 1px solid var(--tome-bronze);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  position: relative;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+body.theme-skyrim input[type="radio"] { border-radius: 50%; }
+body.theme-skyrim input[type="checkbox"] { border-radius: 2px; }
+body.theme-skyrim input[type="radio"]:hover,
+body.theme-skyrim input[type="checkbox"]:hover {
+  border-color: var(--tome-gold);
+  box-shadow: 0 0 6px rgba(235, 210, 138, 0.3), inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+body.theme-skyrim input[type="radio"]:checked,
+body.theme-skyrim input[type="checkbox"]:checked {
+  border-color: var(--tome-gold);
+  box-shadow: 0 0 7px rgba(235, 210, 138, 0.5), inset 0 0 4px rgba(0, 0, 0, 0.5);
+}
+/* радио — золотой самоцвет внутри */
+body.theme-skyrim input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--tome-gold-bright), var(--tome-gold) 55%, var(--tome-bronze));
+  box-shadow: 0 0 5px rgba(235, 210, 138, 0.7);
+}
+/* чекбокс — золотая руническая галка */
+body.theme-skyrim input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tome-gold-bright);
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(235, 210, 138, 0.7);
+}
+body.theme-skyrim input[type="radio"]:focus-visible,
+body.theme-skyrim input[type="checkbox"]:focus-visible {
+  outline: none;
+  border-color: var(--tome-gold-bright);
+  box-shadow: 0 0 0 2px rgba(235, 210, 138, 0.4);
+}
+
+/* ── Ползунки (range) — золотой самоцвет на тёмной бороздке ── */
+body.theme-skyrim input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  height: 18px;
+  cursor: pointer;
+}
+body.theme-skyrim input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #0c0805, #211910);
+  border: 1px solid var(--tome-bronze-dk);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.6);
+}
+body.theme-skyrim input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #0c0805, #211910);
+  border: 1px solid var(--tome-bronze-dk);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.6);
+}
+/* Firefox: заполненная часть слева — золотой градиент */
+body.theme-skyrim input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--tome-bronze), var(--tome-gold));
+}
+body.theme-skyrim input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--tome-gold-bright), var(--tome-gold) 55%, var(--tome-bronze-dk));
+  border: 1px solid var(--tome-bronze);
+  box-shadow: 0 0 6px rgba(235, 210, 138, 0.5), 0 1px 3px rgba(0, 0, 0, 0.6);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+body.theme-skyrim input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--tome-gold-bright), var(--tome-gold) 55%, var(--tome-bronze-dk));
+  border: 1px solid var(--tome-bronze);
+  box-shadow: 0 0 6px rgba(235, 210, 138, 0.5), 0 1px 3px rgba(0, 0, 0, 0.6);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+body.theme-skyrim input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 11px rgba(235, 210, 138, 0.75), 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+body.theme-skyrim input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 11px rgba(235, 210, 138, 0.75), 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+body.theme-skyrim input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(235, 210, 138, 0.35), 0 0 8px rgba(235, 210, 138, 0.6);
+}
+
+/* ── Блоки настроек: лёгкая золотая подсветка по наведению ── */
+body.theme-skyrim .ctrl-group {
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+body.theme-skyrim .ctrl-group:hover {
+  border-color: var(--tome-bronze);
+  box-shadow:
+    inset 0 1px 0 rgba(235, 210, 138, 0.10),
+    inset 0 0 18px rgba(0, 0, 0, 0.30),
+    0 0 0 1px rgba(167, 131, 72, 0.16);
+}
 
 /* ── Кнопки: в стиле кованой пластины с тиснением ───────────────── */
 body.theme-skyrim button {
@@ -1391,6 +1569,102 @@ body.theme-skyrim .cell .rune-ghost.rune-fading {
 @keyframes rune-glow-out {
   0%   { opacity: .82; transform: scale(1);   filter: blur(0); }
   100% { opacity: 0;   transform: scale(.88); filter: blur(1.5px); }
+}
+
+/* Руна-подсказка (= буква ответа): тот же магика-голубой ореол, что и у hover-руны.
+   Появление/затухание — через opacity-переход в ui.css (hover-reveal). */
+body.theme-skyrim .cell .rune-hint {
+  color: #d6f1ff;
+  text-shadow:
+    0 0 3px #6dc6ff,
+    0 0 8px #3f9fe6,
+    0 0 15px rgba(40, 120, 210, .7);
+}
+
+/* ── Контакты автора — рунические печати-кнопки ─────────────────── */
+body.theme-skyrim .site-credit {
+  border-top: 1px solid rgba(167, 131, 72, 0.22);
+}
+body.theme-skyrim .site-credit .credit-caption {
+  font-family: 'Constantia', 'Cambria', serif;
+  color: var(--tome-gold);
+  opacity: 0.6;
+}
+body.theme-skyrim .site-credit a.credit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 13px;
+  color: var(--tome-gold-warm);
+  font-family: 'Constantia', 'Cambria', serif;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, rgba(58, 44, 24, 0.55), rgba(26, 20, 14, 0.6));
+  border: 1px solid var(--tome-bronze-dk);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(235, 210, 138, 0.07),
+    inset 0 0 14px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+  transition: color .18s ease, border-color .18s ease, background .18s ease,
+              box-shadow .18s ease, transform .18s ease;
+}
+/* декоративная внутренняя рамка-печать */
+body.theme-skyrim .site-credit a.credit-link::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(167, 131, 72, 0.18);
+  border-radius: 1px;
+  pointer-events: none;
+  transition: border-color .18s ease;
+}
+/* блик, пробегающий по кнопке при наведении */
+body.theme-skyrim .site-credit a.credit-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 32%, rgba(255, 240, 190, 0.20) 50%, transparent 68%);
+  background-size: 220% 100%;
+  background-position: 180% 0;
+  opacity: 0;
+}
+body.theme-skyrim .site-credit a.credit-link .credit-ico {
+  font-family: 'Noto Sans Runic', 'Segoe UI Symbol', serif;
+  font-size: 1.15em;
+  line-height: 1;
+  color: var(--tome-gold);
+  text-shadow: 0 0 6px rgba(235, 210, 138, 0.4);
+  transition: color .18s ease, text-shadow .18s ease, transform .18s ease;
+}
+body.theme-skyrim .site-credit a.credit-link:hover {
+  color: var(--tome-gold-bright);
+  border-color: var(--tome-gold);
+  background: linear-gradient(180deg, rgba(82, 62, 32, 0.72), rgba(40, 30, 18, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(235, 210, 138, 0.14),
+    0 0 16px rgba(167, 131, 72, 0.38),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+body.theme-skyrim .site-credit a.credit-link:hover::before { border-color: rgba(235, 210, 138, 0.4); }
+body.theme-skyrim .site-credit a.credit-link:hover::after { opacity: 1; animation: credit-sheen 900ms ease; }
+body.theme-skyrim .site-credit a.credit-link:hover .credit-ico {
+  color: var(--tome-gold-bright);
+  text-shadow: 0 0 5px #ffe9a8, 0 0 13px rgba(235, 210, 138, 0.85);
+  transform: scale(1.14);
+}
+body.theme-skyrim .site-credit a.credit-link:active { transform: translateY(0); }
+body.theme-skyrim .site-credit a.credit-link:focus-visible {
+  outline: none;
+  border-color: var(--tome-gold-bright);
+  box-shadow: 0 0 0 2px rgba(235, 210, 138, 0.4), 0 0 16px rgba(167, 131, 72, 0.4);
+}
+@keyframes credit-sheen {
+  from { background-position: 180% 0; }
+  to   { background-position: -80% 0; }
 }
 
 /* ── ВСПЛЫВАЮЩИЙ СВИТОК-ПОДСКАЗКА (hover на цифру) ───────────── */
