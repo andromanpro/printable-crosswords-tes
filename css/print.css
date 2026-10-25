@@ -338,6 +338,11 @@
     box-shadow: none !important;
     outline: none !important;
   }
+  /* Внутренняя экранная рамка переживала сброс main и пересекала заголовок. */
+  body.theme-skyrim main::before {
+    content: none !important;
+    display: none !important;
+  }
   /* Свиток в кинематографике сворачивается clip-path/animation (intro-play /
      is-revealing / is-rolled) и несёт PNG-фон пергамента (!important, ID-специфичность).
      В печати принудительно разворачиваем его в плоский видимый блок без текстуры —

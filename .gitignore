@@ -11,6 +11,7 @@ Thumbs.db
 *.tmp
 node_modules/
 artifacts/
+/Поставки/
 
 # Local 3D model drops. Keep attribution notes in assets/models/README.md.
 assets/models/*.zip

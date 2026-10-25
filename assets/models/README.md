@@ -1,5 +1,11 @@
 # Dragon model drop zone
 
+The repository already includes `the_elder_scrolls_blades_ancient_dragon.glb`
+by **OrangeSauceu**, under **CC BY 4.0**. No separate model download is needed
+for the default cinematic scene. See [ATTRIBUTION.md](ATTRIBUTION.md) for the
+source, license and conversion notes. The paths below also support optional
+local models.
+
 The cinematic dragon scene looks for local models in this order:
 
 1. `the_elder_scrolls_blades_ancient_dragon.glb`
@@ -32,4 +38,6 @@ Fallback TES look:
 - The Alduin Dragon  
   https://sketchfab.com/3d-models/the-alduin-dragon-dd04d9599a2d40b49a26d197b12b475c
 
-Downloaded model files are intentionally ignored by git here. Keep attribution/license notes with any model you use or distribute.
+Additional downloaded models are ignored by git; the shipped Ancient Dragon
+is an explicit exception. Keep attribution/license notes with any model you
+use or distribute.
